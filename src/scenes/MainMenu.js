@@ -7,15 +7,27 @@ export class MainMenu extends Scene
         super('MainMenu');
     }
 
+    preload ()
+    { 
+        this.load.setPath('assets');
+
+        // this.load.tilemapTiledJSON('battlefield', '/gameAssets/battlefield.json'); //loads the battlefield.json file
+
+        // this.load.image('tilesKey', '/gameAssets/battlefield.png'); //loads the battlefield.png file that the tile battlefiled.json file regerences
+    }
+
+
     create ()
     {
-        this.add.image(512, 384, 'background');
+        this.add.image(512, 384, 'theArrowGame');
 
-        this.add.image(512, 300, 'logo');
+        // this.add.image(512, 384, 'background');
 
-        this.add.text(512, 460, 'Main Menu', {
-            fontFamily: 'Arial Black', fontSize: 38, color: '#ffffff',
-            stroke: '#000000', strokeThickness: 8,
+        // this.add.image(512, 300, 'logo');
+
+        this.add.text(530, 720, 'START GAME', {
+            fontFamily: 'Arial Black', fontSize: 38, color: '#39ff14',
+            stroke: '#000000', strokeThickness: 33,
             align: 'center'
         }).setOrigin(0.5);
 

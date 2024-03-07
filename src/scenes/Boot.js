@@ -9,18 +9,21 @@ export class Boot extends Scene
 
     preload ()
     {
-    
-        this.load.image('background', 'assets/bg.png'); //
+        this.load.setPath('assets');
+        
+        this.load.image('background', 'bg.png');     
+            // this is used to load a background image (in this case, a blue color) before the landing page "The Arrow Game" loads. 
     }
 
     create ()
     {
-        this.scene.start('Preloader');
+        this.scene.start('Preloader'); // forwards to the Preloader scene
     }
 }
 
 //*The `Boot.js` file is defining a Phaser scene named 'Boot'. This scene is typically the first scene that runs in the game and is often used to load some minimal assets that are needed right away followed by the preloader scene 
-
+    // Think of boot.js as the first step in the game. It's where you'd load any assets that are needed right away, such as a background image or a loading bar.
+  
     // A breakdown of what this file is doing:
     // - `import { Scene } from 'phaser';`: This line is importing the `Scene` class from Phaser, which is used to create new scenes.
     // - `export class Boot extends Scene`: This line is defining a new class named `Boot` that extends the `Scene` class. This means that `Boot` is a type of `Scene` and inherits all of its properties and methods.

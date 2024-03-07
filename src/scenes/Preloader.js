@@ -9,10 +9,10 @@ export class Preloader extends Scene
 
     init ()
     {
-        //  We loaded this image in our Boot Scene, so we can display it here
+        //  This image was loaded in Boot.js 'Scene', so it can be display it here without Preload
         this.add.image(512, 384, 'background');
 
-        //  A simple progress bar. This is the outline of the bar.
+        //  A simple progress bar - this is the outline of the bar.
         this.add.rectangle(512, 384, 468, 32).setStrokeStyle(1, 0xffffff);
 
         //  This is the progress bar itself. It will increase in size from the left based on the % of progress.
@@ -29,10 +29,14 @@ export class Preloader extends Scene
 
     preload ()
     {
-        //  Load the assets for the game - Replace with your own assets
-        this.load.setPath('assets');
+        //  TODO Load the assets for the game - Replace with your own assets
+        this.load.setPath('assets'); //when loading assests, the baseURL or initial path is given first 
 
-        this.load.image('logo', 'logo.png');
+        this.load.image('theArrowGame', 'thearrowGame.png'); //followed by filename (logo), and the path to that file (logo.png)
+
+        // this.load.image('logo', 'logo.png'); phaser logo - no longer needed
+
+        
     }
 
     create ()
@@ -41,6 +45,11 @@ export class Preloader extends Scene
         //  For example, you can define global animations here, so we can use them in other scenes.
 
         //  Move to the MainMenu. You could also swap this for a Scene Transition, such as a camera fade.
-        this.scene.start('MainMenu');
+        this.add.image(512, 384, 'background');
+
+        
+        this.scene.start('MainMenu'); // forwards to the MainMenu scene
+
+        
     }
 }
