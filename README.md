@@ -106,3 +106,17 @@ Created by [Phaser Studio](mailto:support@phaser.io). Powered by coffee, anime, 
 The Phaser logo and characters are &copy; 2011 - 2024 Phaser Studio Inc.
 
 All rights reserved.
+
+
+### Resources 
+
+
+**Visit** [Get Started with Phaser 3: Fast and Painless] (https://blog.ourcade.co/posts/2019/get-started-phaser3-fast-painless/)
+
+
+**Clone** [template-parcel to set up a modern Javascript workspace capable of running npm ruin dev, and npm build seamlessly] (https://github.com/phaserjs/template-parcel)
+
+*Watch* [00 Phaser JS with ParcelJS + Typescript - To get and understanding of parcel] (https://www.youtube.com/watch?v=0FFv6DFPJAo)
+
+**Watch** [Javascript Game Development With Phaser - Tiles Mnaps & Plugins] (https://www.youtube.com/watch?v=MR2CvWxOEsw)
+
