@@ -11,19 +11,22 @@ export class MainMenu extends Scene
     { 
         this.load.setPath('assets');
 
-        // this.load.tilemapTiledJSON('battlefield', '/gameAssets/battlefield.json'); //loads the battlefield.json file
-
-        // this.load.image('tilesKey', '/gameAssets/battlefield.png'); //loads the battlefield.png file that the tile battlefiled.json file regerences
+        //loads the battlefield.json file
+        this.load.tilemapTiledJSON("map", "/map/battlefield.json"); 
+      
+        //loads the battlefield.png file that the tile battlefiled.json file references
+        this.load.image("tiles", "/map/battlefield.png");
+    
+        //the archer character preload
+        this.load.spritesheet("player", "/Archers/Characters/All_Archers/Archer-1.png",
+            { frameWidth: 12, frameHeight: 12 }
+        );    
     }
 
 
     create ()
     {
         this.add.image(512, 384, 'theArrowGame');
-
-        // this.add.image(512, 384, 'background');
-
-        // this.add.image(512, 300, 'logo');
 
         this.add.text(530, 720, 'START GAME', {
             fontFamily: 'Arial Black', fontSize: 38, color: '#39ff14',

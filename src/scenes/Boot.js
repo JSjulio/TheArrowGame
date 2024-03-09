@@ -9,15 +9,14 @@ export class Boot extends Scene
 
     preload ()
     {
-        this.load.setPath('assets');
-        
-        this.load.image('background', 'bg.png');     
+        // this.load.setPath('assets');
+        // *This is where assets that require immediate rendering will be loaded. Following asset will be created in Preloader   
             // this is used to load a background image (in this case, a blue color) before the landing page "The Arrow Game" loads. 
     }
 
     create ()
     {
-        this.scene.start('Preloader'); // forwards to the Preloader scene
+        this.scene.start('Preloader'); // forwards to the Preloader scene 
     }
 }
 

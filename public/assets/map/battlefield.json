@@ -1,13 +1,3 @@
-(function(name,data){
- if(typeof onTileMapLoaded === 'undefined') {
-  if(typeof TileMaps === 'undefined') TileMaps = {};
-  TileMaps[name] = data;
- } else {
-  onTileMapLoaded(name,data);
- }
- if(typeof module === 'object' && module && module.exports) {
-  module.exports = data;
- }})("battlefield",
 { "compressionlevel":-1,
  "height":80,
  "infinite":false,
@@ -931,8 +921,14 @@
          "offsetx":1,
          "offsety":0,
          "opacity":1,
+         "properties":[
+                {
+                 "name":"collide",
+                 "type":"bool",
+                 "value":true
+                }],
          "type":"tilelayer",
-         "visible":true,
+         "visible":false,
          "width":140,
          "x":0,
          "y":0
@@ -1025,7 +1021,7 @@
          "offsety":0,
          "opacity":1,
          "type":"tilelayer",
-         "visible":true,
+         "visible":false,
          "width":140,
          "x":0,
          "y":0
@@ -1131,31 +1127,129 @@
  "tileheight":12,
  "tilesets":[
         {
+         "columns":0,
          "firstgid":1,
-         "source":"..\/..\/..\/..\/unusedFiles\/map\/Background.tsx"
+         "grid":
+            {
+             "height":1,
+             "orientation":"orthogonal",
+             "width":1
+            },
+         "margin":0,
+         "name":"Background",
+         "spacing":0,
+         "tilecount":4,
+         "tileheight":320,
+         "tiles":[
+                {
+                 "id":0,
+                 "image":"FreePlatformerNA\/Background\/BGBack.png",
+                 "imageheight":320,
+                 "imagewidth":512
+                }, 
+                {
+                 "id":1,
+                 "image":"FreePlatformerNA\/Background\/BGFront.png",
+                 "imageheight":320,
+                 "imagewidth":512
+                }, 
+                {
+                 "id":2,
+                 "image":"FreePlatformerNA\/Background\/CloudsBack.png",
+                 "imageheight":320,
+                 "imagewidth":512
+                }, 
+                {
+                 "id":3,
+                 "image":"FreePlatformerNA\/Background\/CloudsFront.png",
+                 "imageheight":320,
+                 "imagewidth":512
+                }],
+         "tilewidth":512
         }, 
         {
+         "columns":34,
          "firstgid":5,
-         "source":"..\/..\/..\/..\/unusedFiles\/map\/TilesExamples.tsx"
+         "image":"FreePlatformerNA\/Foreground\/TilesExamples.png",
+         "imageheight":240,
+         "imagewidth":416,
+         "margin":0,
+         "name":"TilesExamples",
+         "spacing":0,
+         "tilecount":680,
+         "tileheight":12,
+         "tilewidth":12
         }, 
         {
+         "columns":13,
          "firstgid":685,
-         "source":"..\/..\/..\/..\/unusedFiles\/map\/Tileset.tsx"
+         "image":"FreePlatformerNA\/Foreground\/Tileset.png",
+         "imageheight":96,
+         "imagewidth":160,
+         "margin":0,
+         "name":"Tileset",
+         "spacing":0,
+         "tilecount":104,
+         "tileheight":12,
+         "tilewidth":12
         }, 
         {
+         "columns":21,
          "firstgid":789,
-         "source":"..\/..\/..\/..\/unusedFiles\/map\/Trees.tsx"
+         "image":"FreePlatformerNA\/Foreground\/Trees.png",
+         "imageheight":128,
+         "imagewidth":256,
+         "margin":0,
+         "name":"Trees",
+         "spacing":0,
+         "tilecount":210,
+         "tileheight":12,
+         "tilewidth":12
         }, 
         {
+         "columns":0,
          "firstgid":999,
-         "source":"..\/..\/..\/..\/unusedFiles\/map\/ladder.tsx"
+         "grid":
+            {
+             "height":12,
+             "orientation":"orthogonal",
+             "width":12
+            },
+         "margin":0,
+         "name":"ladder",
+         "spacing":0,
+         "tilecount":2,
+         "tileheight":128,
+         "tiles":[
+                {
+                 "id":0,
+                 "image":"wood_set\/ladder\/28x128\/2.png",
+                 "imageheight":128,
+                 "imagewidth":28
+                }, 
+                {
+                 "id":1,
+                 "image":"wood_set\/ladder\/28x128\/1.png",
+                 "imageheight":128,
+                 "imagewidth":28
+                }],
+         "tilewidth":28
         }, 
         {
+         "columns":1,
          "firstgid":1001,
-         "source":"..\/..\/..\/..\/unusedFiles\/map\/collision.tsx"
+         "image":"FreePlatformerNA\/collision.png",
+         "imageheight":12,
+         "imagewidth":12,
+         "margin":0,
+         "name":"collision",
+         "spacing":0,
+         "tilecount":1,
+         "tileheight":12,
+         "tilewidth":12
         }],
  "tilewidth":12,
  "type":"map",
  "version":"1.10",
  "width":140
-});
+}

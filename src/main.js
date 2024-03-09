@@ -6,12 +6,22 @@ import { GameOver } from "./scenes/GameOver";
 import { MainMenu } from "./scenes/MainMenu";
 import { Preloader } from "./scenes/Preloader";
 
+const speedDown = 300;
+
 const config = {
-  type: Phaser.AUTO, // The rendering context. Either AUTO, CANVAS, WEBGL, or HEADLESS 
+  type: Phaser.WEBGL, // The rendering context. Either AUTO, CANVAS, WEBGL, or HEADLESS 
   width: 1024, // The width of the game in pixels
   height: 768, // The height of the game in pixels
+  // canvas: gameCanvbas
   parent: "game-container", // The DOM element that will contain the game canvas
   backgroundColor: "#028af8", // The background color of the game
+  physics: { 
+    default: "arcade",
+      arcade: { 
+        gravity: {y: speedDown }, 
+        debug: true, 
+      }, 
+  }, 
   scale: {
     mode: Phaser.Scale.FIT, // The scale mode to be used by the Scale Manager
     autoCenter: Phaser.Scale.CENTER_BOTH, //
