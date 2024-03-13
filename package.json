@@ -1,0 +1,15 @@
+{
+  "name": "arrow_game",
+  "version": "1.0.0",
+  "description": "arrow game",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Mario Herrera Jr",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.3",
+    "phaser": "^3.80.1"
+  }
+}

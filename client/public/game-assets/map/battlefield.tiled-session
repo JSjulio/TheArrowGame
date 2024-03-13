@@ -1,0 +1,93 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "battlefield.tmx",
+    "expandedProjectPaths": [
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "Background.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "CloudsBack.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Ladder.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "TilesExamples.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Tileset.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1.5,
+            "scaleInEditor": 1
+        },
+        "Trees.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "battlefield.tmx": {
+            "scale": 1,
+            "selectedLayer": 9,
+            "viewCenter": {
+                "x": 769,
+                "y": 316.5
+            }
+        },
+        "collision.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "ladder.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        }
+    },
+    "last.exportedFilePath": "/Users/marioherrera/Desktop/arrow_game/game-assets",
+    "last.imagePath": "/Users/marioherrera/Desktop/arrow_game/game-assets/FreePlatformerNA",
+    "map.height": 40,
+    "map.lastUsedExportFilter": "JavaScript map files (*.js)",
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 12,
+    "map.tileWidth": 12,
+    "map.width": 70,
+    "openFiles": [
+        "battlefield.tmx",
+        "Background.tsx",
+        "Tileset.tsx",
+        "Trees.tsx",
+        "TilesExamples.tsx",
+        "ladder.tsx",
+        "collision.tsx"
+    ],
+    "project": "battlefield.tiled-project",
+    "recentFiles": [
+        "collision.tsx",
+        "ladder.tsx",
+        "TilesExamples.tsx",
+        "Trees.tsx",
+        "Tileset.tsx",
+        "Background.tsx",
+        "battlefield.tmx",
+        "Ladder.tsx",
+        "CloudsBack.tsx"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 12,
+        "width": 12
+    },
+    "tileset.type": 0
+}

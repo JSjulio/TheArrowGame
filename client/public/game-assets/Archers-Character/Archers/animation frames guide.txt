@@ -1,0 +1,8 @@
+idle = 0 - 4
+run = 5 - 12
+jump = 13 - 15
+fall = 16 - 17
+ground impact = 18
+attack = 19 - 22
+taking damage = 23
+dead = 24 - 26
