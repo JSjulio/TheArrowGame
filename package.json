@@ -5,8 +5,10 @@
     "source": "./index.html",
     "browserslist": "> 0.25%, last 2 versions, not dead",
     "scripts": {
-        "dev": "parcel index.html --no-cache --config ./parcel/.parcel.dev --open",
-        "build": "parcel build index.html --public-url _relativeroute_ --no-source-maps --log-level error --config ./parcel/.parcel.prod"
+        "dev": "NODE_ENV=development parcel index.html --no-cache --config ./parcel/.parcel.dev --open",
+        "start": "NODE_ENV=production node server/index.js",
+        "build": "NODE_ENV=production parcel build index.html --public-url _relativeroute_ --no-source-maps --log-level error --config ./parcel/.parcel.prod",
+        "seed": "node prisma/seed.js"
     },
     "repository": {
         "type": "git",
@@ -25,9 +27,17 @@
         "parcel": "^2.11.0",
         "parcel-reporter-clean-dist": "^1.0.4",
         "parcel-reporter-static-files-copy": "^1.5.3",
+        "prisma": "^5.11.0",
         "process": "^0.11.10"
     },
     "dependencies": {
+        "compression": "^1.7.4",
+        "dotenv": "^16.4.5",
+        "i": "^0.3.7",
+        "jsonwebtoken": "^9.0.2",
+        "morgan": "^1.10.0",
+        "nodemon": "^3.1.0",
+        "pg": "^8.11.3",
         "phaser": "^3.80.1"
     },
     "staticFiles": {
