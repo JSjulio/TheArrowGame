@@ -9,6 +9,7 @@ TODO : ensure you have 'Better Comments' extension when you read this for improv
 
 
 ?PORTS: 
+
     
     *FRONT-END PORT: 1234:
     The front-end sever runs on PORT 1234 by default. In the case 1234 is not available, Parcel automatically chooses a random port for the server to run on. There is the CORS method of fusing both servers to run on one, but for dev purposeses , we'll the ports on individual ports. 
@@ -24,7 +25,8 @@ TODO : ensure you have 'Better Comments' extension when you read this for improv
             In the case you happen to break the forbidden rule of not running the seed.js file while in production; the seed file has a fail safe code so nothing from your database will delete. Unless you instruct otherwise in the command line. 
 
     *BACK-END PORT: 3000: 
-        By default, the backend will run on this port. 
+        "npm run server": By default, the backend will run on this port. To run this code excute the following: 
+            
 
     *PORT: 5432: 
     -If you happen to see this port while setting up your prisma.schema (specifically during "DATABASE_URL setup, then ensure to leave it as 5432). 
