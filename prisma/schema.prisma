@@ -8,17 +8,18 @@ datasource db {
 }
 
 model game {
-  id       Int       @id @default(autoincrement())
-  players  player[]
-  active   Boolean   @default(true)
+  id      Int      @id @default(autoincrement())
+  active  Boolean  @default(true)
+  players player[]
 }
 
 model player {
-  id      Int      @id @default(autoincrement())
-  name    String
-  lives   Int
-  kills   Int      @default(0)
-  inGame  Boolean  @default(true)
-  Game    game?    @relation(fields: [gameId], references: [id])
-  gameId  Int?
+  id       Int     @id @default(autoincrement())
+  name     String
+  lives    Int
+  kills    Int     @default(0)
+  inGame   Boolean @default(true)
+  gameId   Int?
+  password String
+  Game     game?   @relation(fields: [gameId], references: [id])
 }

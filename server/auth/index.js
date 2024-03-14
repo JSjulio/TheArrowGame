@@ -1,35 +1,38 @@
 const router = require("express").Router();
 const { PrismaClient } = require("@prisma/client");
 const Prisma = new PrismaClient();
+const jwt = require("jsonwebtoken")
 
 
 // TODO refactor this file to work with new game/player models, instead of instructor/student from previous project 
   // only player username required 
 
+// here im tracking i'll have to still user an authentication middleware, however it'll be adjusted to take a username 
+// no password 
+    // meaning  
 
 // Register a new instructor account
 router.post("/register", async (req, res, next) => {
   try {
-    const { username } = req.body;
+    const { name } = req.body;
     const existingPlayer = await Prisma.player.findUnique({
       where: {
-        username: username,
+        id: playerId,
       },
     });
 
     if (existingInstructor) {
-      return res.status(409).send({ error: "Username already exist" });
+      return res.status(409).send({ error: "User already exist" });
     }
     
-    const instructor = await Prisma.instructor.create({
+    const player = await Prisma.player.create({
       data: {
-        username: username,
-        password: password,
+        name: name,
       },
     });
 
-    if (instructor) {
-      const token = jwt.sign({ id: instructor.id }, JWT_SECRET);
+    if (player) {
+      const token = jwt.sign({ id: player.id }, JWT_SECRET);
       res.status(200).send({ token });
     }
   } catch (error) {

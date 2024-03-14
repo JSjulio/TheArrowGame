@@ -34,10 +34,10 @@ async function main() {
     data: {
       players: {
         create: [
-          { name: 'Archer One', lives: 3, kills: 0, inGame: true },
-          { name: 'Bowmaster Two', lives: 2, kills: 1, inGame: true },
-          { name: 'Arrow Slinger Three', lives: 1, kills: 2, inGame: true },
-          { name: 'Crossbower Four', lives: 3, kills: 3, inGame: true },
+          { name: 'Archer One', lives: 3, kills: 0, inGame: true, password: 'password1' },
+          { name: 'Bowmaster Two', lives: 2, kills: 1, inGame: true, password: 'password2' },
+          { name: 'Arrow Slinger Three', lives: 1, kills: 2, inGame: true, password: 'password3' },
+          { name: 'Crossbower Four', lives: 3, kills: 3, inGame: true, password: 'password4' },
         ],
       },
       active: true,
