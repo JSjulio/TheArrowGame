@@ -3,8 +3,7 @@ const db = require("../db");
 const { PrismaClient } = require("@prisma/client");
 const Prisma = new PrismaClient();
 
-
-
+// TODO refactor file / all second order effects to be game/player related, not instructor/student
 
 // Get all students
 router.get("/", async (req, res, next) => {

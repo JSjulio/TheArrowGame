@@ -1,15 +1,17 @@
 const router = require("express").Router();
-const db = require("../db");
 const { PrismaClient } = require("@prisma/client");
 const Prisma = new PrismaClient();
-const jwt = require("jsonwebtoken");
-const { JWT_SECRET } = process.env;
+
+
+// TODO refactor this file to work with new game/player models, instead of instructor/student from previous project 
+  // only player username required 
+
 
 // Register a new instructor account
 router.post("/register", async (req, res, next) => {
   try {
-    const { username, password } = req.body;
-    const existingInstructor = await Prisma.instructor.findUnique({
+    const { username } = req.body;
+    const existingPlayer = await Prisma.player.findUnique({
       where: {
         username: username,
       },

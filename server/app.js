@@ -1,4 +1,5 @@
 require('dotenv').config(); 
+
 const path = require("path");
 const express = require("express");
 const morgan = require("morgan");
@@ -9,7 +10,7 @@ const jwt = require("jsonwebtoken");
 // Logging middleware
 app.use(morgan("dev"));
 
-// Body parsing middleware
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
