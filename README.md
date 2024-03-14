@@ -25,7 +25,7 @@ TODO : ensure you have 'Better Comments' extension when you read this for improv
             In the case you happen to break the forbidden rule of not running the seed.js file while in production; the seed file has a fail safe code so nothing from your database will delete. Unless you instruct otherwise in the command line. 
 
     *BACK-END PORT: 3000: 
-        "npm run server": By default, the backend will run on this port. To run this code excute the following: 
+        "npm run server": The backend is hard coded to run on port 3000. 
             
 
     *PORT: 5432: 
