@@ -2,6 +2,175 @@
 
 This is a Phaser 3 project template that uses Parcel for bundling. It supports hot-reloading for quick development workflow and includes scripts to generate production-ready builds.
 
+## If you have DOWNLOADED THIS FILE TO CONTINUE DEV, READ THIS ! 
+
+<!-- 
+TODO : ensure you have 'Better Comments' extension when you read this for improved readibilility. 
+
+
+?PORTS: 
+    
+    *FRONT-END PORT: 1234:
+    The front-end sever runs on PORT 1234 by default. In the case 1234 is not available, Parcel automatically chooses a random port for the server to run on. There is the CORS method of fusing both servers to run on one, but for dev purposeses , we'll the ports on individual ports. 
+
+        *Development / Production Front-end server calls: 
+        As shown in the package.json, you can start the frontend with a development call or a production call. This is a safety measure to ensure data will not be erased. 
+
+            *Development:  
+            "npm run dev": allows access to seed.js. Seed.js will clear all tables in the db if ran. This is
+
+            *Production: 
+            "npm start": allows you run the production server. 
+            In the case you happen to break the forbidden rule of not running the seed.js file while in production; the seed file has a fail safe code so nothing from your database will delete. Unless you instruct otherwise in the command line. 
+
+    *BACK-END PORT: 3000: 
+        By default, the backend will run on this port. 
+
+    *PORT: 5432: 
+    -If you happen to see this port while setting up your prisma.schema (specifically during "DATABASE_URL setup, then ensure to leave it as 5432). 
+        *Prisma uses PORT 5432 to communicate with the db and it listens to the Front-end on PORT 3000,  
+
+
+
+? Getting Started with this app after cloning a Repo: 
+
+
+    ? PSQL:
+
+        Steps: 
+
+            1.  Create the db as it shows below with the same camel casing
+                    *DB name is: theArrowGame
+
+
+    ? Prisma: 
+
+    https://www.prisma.io/docs/getting-started/setup-prisma/add-to-existing-project/relational-databases-typescript-postgresql
+
+        *0 look at the package.json and install the required modules 
+
+        *0.5 set up the pqsl 
+
+        *1. npm i --save-dev prisma@latest
+            install
+
+        *2 npx prisma init
+            explination same as shown above
+
+
+        *3. set up DATABASEURL prisma.schema file
+        
+        generator client {
+                provider = "prisma-client-js"
+                }
+
+                define the database to connect to
+                datasource db {
+                provider = "postgresql"
+                url      = env("DATABASE_URL")
+            }
+        
+
+        *3.5 set up .env with the following info: 
+
+        .env: 
+                DATABASE_URL="postgresql://<your psql user>:@localhost:5432/theArrowGame"
+                JWT="coolPassword"
+                NODE_ENV="development"
+
+
+        * Of note: 
+            
+            -env file goes within the main directory so backend can access it.
+
+            -the app is set up with "theArrowGame" as the db. When creating your db i urge you to mirrow this nomenclature. It'll make things easier. 
+
+        
+
+
+
+        *4: npm i @prisma/client@latest
+
+        Install Prisma/Cient
+
+            If you do not have a seed.js from PSQL you can use the prima version of seeding a database: 
+            *a.create the seed.js file 
+                
+
+    *		b.install the Prisma Client (see step 5)
+
+    *		c.add a seed command within the package.json scripts 
+            "scripts": {
+                "seed": "node prisma/seed.js"
+                }
+                *OFNOTE: 
+                    -make sure to create a development and production environment. Do this by manipulating the code within package.json : 
+                    -from this 
+                        "scripts": {
+                            "dev": "parcel index.html --no-cache --config ./parcel/.parcel.dev --open",
+                            "build": "parcel build index.html --public-url _relativeroute_ --no-source-maps --log-level error --config ./parcel/.parcel.prod"
+                        },
+                    -to this: 
+                        "scripts": {
+                            "dev": "NODE_ENV=development parcel index.html --no-cache --config ./parcel/.parcel.dev --open",
+                            "start": "NODE_ENV=production node server/index.js",
+                            "build": "NODE_ENV=production parcel build index.html --public-url _relativeroute_ --no-source-maps --log-level error --config ./parcel/.parcel.prod",
+                            "seed": "node prisma/seed.js"
+                    },
+                
+                    then make your seed.js file only run within development by running this code at the beginning 
+                        if (process.env.NODE_ENV === 'production') {
+                            console.log('Seeding is not permitted in production!');
+                            process.exit();
+                        }
+
+        TODO: Cloned the repo? ... Start here: 
+
+    Steps: 
+
+        *3.7 
+
+
+
+        *4 npx prisma migrate dev --name init
+            Creates the DB with defined models(Tables) that are in the schema.prisma file
+            ?Run this code if you want to restructure the db (Add more rows or columns)
+            ?Followed by npx prisma generate 
+
+
+        *5  npx prisma db pull
+            This commmand is dope! It read the Database_URL (located in the .env) and connects to the db following. It then introspects the database & translates the database schema from SQL into a prisma data model within the prisma.schema
+
+                TODO Whenever you clone a project with prisma, you start here. 
+                    Which makes sense, you need the env files to operate the project 
+                ? If it is your own project copy the env file over, if not, create one. 
+                WALLAH! MAGIC!
+            
+            
+            To get the latest prisma run:
+        *6 npm i @prisma/client@latest
+            this command creates a node module which houses the prisma client. That node module is changed evertime the schema is modified but in order to change it you have to run the following: 
+
+            *7 npx prisma generate
+                This reads the prisma schema and generates my prisma client library within the @prisma/client node_modules
+
+
+        *8 set up the enviornment and do you first prisma quiery
+
+            *a. Import Prisma Client
+            const { PrismaClient } = require('@prisma/client)
+            const prisma = new PrismaClient()
+
+            *b crud methods can be found here:
+            ! https://www.prisma.io/docs/orm/prisma-client/queries/crud
+
+
+
+
+
+
+-->
+
 ### Versions
 
 This template has been updated for:

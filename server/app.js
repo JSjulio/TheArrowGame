@@ -10,7 +10,6 @@ const jwt = require("jsonwebtoken");
 // Logging middleware
 app.use(morgan("dev"));
 
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -35,7 +34,7 @@ app.use((req, res, next) => {
 app.use("/auth", require("./auth"));
 app.use("/api", require("./api"));
 
-// Serves the HTML file that Vite builds
+// refactor?
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "client/dist/index.html"));
 });

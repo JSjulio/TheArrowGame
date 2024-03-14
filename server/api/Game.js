@@ -3,7 +3,15 @@ const db = require("../db");
 const { PrismaClient } = require("@prisma/client");
 const Prisma = new PrismaClient();
 
-// TODO refactor file / all second order effects to be game/player related, not instructor/student
+// TODO refactor this file to match the game and player models 
+
+//Deny access if player is not logged in
+router.use((req, res, next) => {
+  if (!req.user) {
+    return res.status(401).send("You must be logged in to do that.");
+  }
+  next();
+});
 
 // Get all students
 router.get("/", async (req, res, next) => {

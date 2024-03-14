@@ -1,33 +1,31 @@
 const router = require("express").Router();
 const { PrismaClient } = require("@prisma/client");
 const Prisma = new PrismaClient();
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken"); 
+const { JWT_SECRET } = process.env; 
 
 
-// TODO refactor this file to work with new game/player models, instead of instructor/student from previous project 
-  // only player username required 
+//  refactor this file to work with new game/player models
+// TODO incorperate hashedPassword once these three endpoints are complete / when conv.
 
-// here im tracking i'll have to still user an authentication middleware, however it'll be adjusted to take a username 
-// no password 
-    // meaning  
-
-// Register a new instructor account
+// Register a new player account
 router.post("/register", async (req, res, next) => {
   try {
-    const { name } = req.body;
+    const { name, password } = req.body;
     const existingPlayer = await Prisma.player.findUnique({
       where: {
-        id: playerId,
+        name: name,
       },
     });
 
-    if (existingInstructor) {
+    if (existingPlayer) {
       return res.status(409).send({ error: "User already exist" });
     }
     
     const player = await Prisma.player.create({
       data: {
         name: name,
+        password: password,
       },
     });
 
@@ -40,22 +38,23 @@ router.post("/register", async (req, res, next) => {
   }
 });
 
-// Login to an existing instructor account
+
+// Login to an existing player account
 router.post("/login", async (req, res, next) => {
   try {
-    const { username } = req.body;
-    const instructor = await Prisma.instructor.findUnique({
+    const { name } = req.body;
+    const player = await Prisma.player.findUnique({
       where: {
-        username: username,
+        name: name,
       },
     });
 
-    if (!instructor) {
+    if (!player) {
      return res.status(401).send("Invalid credentials");
     }
 
-    if (instructor) {
-      const token = jwt.sign({ id: instructor.id }, process.env.JWT);
+    if (player) {
+      const token = jwt.sign({ id: player.id }, JWT_SECRET);
       res.status(200).send({token})
     }
   } catch (error) {
@@ -66,12 +65,12 @@ router.post("/login", async (req, res, next) => {
 
 router.get("/me", async (req, res, next) => {
   try {
-    const instructor = await Prisma.instructor.findUnique({
+    const player = await Prisma.player.findUnique({
       where: {
         id: req.user.id
       },
     });
-      res.send(instructor);
+      res.send(player);
   } catch (error) {
     console.log(error.message)
     next(error);
@@ -84,21 +83,3 @@ module.exports = router;
 
 
 
-
-
-
-
-// Get the currently logged in instructor
-// router.get("/me", async (req, res, next) => {
-//   try {
-//     const {
-//       rows: [instructor],
-//     } = await db.query("SELECT * FROM instructor WHERE id = $1", [
-//       req.user?.id,
-//     ]);
-
-//     res.send(instructor);
-//   } catch (error) {
-//     next(error);
-//   }
-// });

@@ -55,3 +55,34 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+
+
+
+  // Register a new instructor account
+router.post("/register", async (req, res, next) => {
+  try {
+    const { name } = req.body;
+    const existingPlayer = await Prisma.player.findUnique({
+      where: {
+        id: playerId,
+      },
+    });
+
+    if (existingInstructor) {
+      return res.status(409).send({ error: "User already exist" });
+    }
+    
+    const player = await Prisma.player.create({
+      data: {
+        name: name,
+      },
+    });
+
+    if (player) {
+      const token = jwt.sign({ id: player.id }, JWT_SECRET);
+      res.status(200).send({ token });
+    }
+  } catch (error) {
+    next(error);
+  }
+});
