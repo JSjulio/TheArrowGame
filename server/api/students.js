@@ -3,23 +3,18 @@ const db = require("../db");
 const { PrismaClient } = require("@prisma/client");
 const Prisma = new PrismaClient();
 
-// Deny access if user is not logged in
-router.use((req, res, next) => {
-  if (!req.user) {
-    return res.status(401).send("You must be logged in to do that.");
-  }
-  next();
-});
+
+
 
 // Get all students
 router.get("/", async (req, res, next) => {
   try {
-    const student = await Prisma.student.findMany({
+    const players = await Prisma.player.findMany({
       where: {
         instructorid: req.user.id,
       },
     });
-    res.send(student);
+    res.send(players);
   } catch (error) {
     next(error);
   }
