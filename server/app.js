@@ -1,9 +1,10 @@
+require('dotenv').config(); 
 const path = require("path");
 const express = require("express");
 const morgan = require("morgan");
-const compresssion = require("compression")
 const app = express();
 const jwt = require("jsonwebtoken");
+
 
 // Logging middleware
 app.use(morgan("dev"));

@@ -4,5 +4,21 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("theArrowGame")
+  url      = env("DATABASE_URL")
+}
+
+model game {
+  id       Int       @id @default(autoincrement())
+  players  player[]
+  active   Boolean   @default(true)
+}
+
+model player {
+  id      Int      @id @default(autoincrement())
+  name    String
+  lives   Int
+  kills   Int      @default(0)
+  inGame  Boolean  @default(true)
+  Game    game?    @relation(fields: [gameId], references: [id])
+  gameId  Int?
 }
