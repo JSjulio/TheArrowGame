@@ -1,6 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 require('dotenv').config(); 
+const bcrypt = require('bcrypt'); 
 
 if (process.env.NODE_ENV === 'production') {
     console.log('Seeding is not permitted in production!');

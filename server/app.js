@@ -4,18 +4,27 @@ const express = require("express");
 const morgan = require("morgan");
 const app = express();
 const jwt = require("jsonwebtoken");
-const { JWT_SECRET } = process.env;
+const { JWT_SECRET } = process.env; 
+const cors = require('cors');
 
-// Logging middleware
+// CORS middleware (Cross origin resource sharing) allows the frontend and backend to communicate 
+app.use(cors());
+
+
+// Logging middleware 
 app.use(morgan("dev"));
 
+// Body parsing middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// // Static file-serving middleware
-// app.use(express.static(path.join(__dirname, "..", "dist")));
+// Static file-serving middleware 
+  //* not used since parcel renders the application. 
+// app.use(express.static(path.join(__dirname, "..", "client/dist")));
 
-//TODO Check requests for a token and attach the decoded id to the request
+// Authorization middleware 
+// Synchronously verifies the token and the secret JWT key in order to get req.user
+  // req.user  is required to access private endpoints within the app 
 app.use((req, res, next) => {
   const auth = req.headers.authorization;
   const token = auth?.startsWith("Bearer ") ? auth.slice(7) : null;
@@ -29,14 +38,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// Backend routes
+// Backend routes 
 app.use("/auth", require("./auth"));
 app.use("/api", require("./api"));
-
-// refactor?
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "client/dist/index.html"));
-});
 
 // Error handling middleware
 app.use((err, req, res, next) => {

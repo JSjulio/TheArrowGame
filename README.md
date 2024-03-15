@@ -5,7 +5,7 @@ This is a Phaser 3 project template that uses Parcel for bundling. It supports h
 ## If you have DOWNLOADED THIS FILE TO CONTINUE DEV, READ THIS ! 
 
 <!-- 
-TODO : ensure you have 'Better Comments' extension when you read this for improved readibilility. 
+TODO : ensure you have 'Better Comments' extension when you read this for improved readibilility.  
 
 
 ?PORTS: 

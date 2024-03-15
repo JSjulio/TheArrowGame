@@ -5,9 +5,8 @@ const Prisma = new PrismaClient();
 const jwt = require("jsonwebtoken");
 const { token } = require("morgan");
 const { JWT_SECRET } = process.env;
+const bcrypt = require("bcrypt"); 
 
-//  refactor this file to work with new game/player models
-// TODO incorperate hashedPassword once these three endpoints are complete / when conv.
 
 // Register a new player account
 router.post("/register", async (req, res, next) => {
@@ -18,24 +17,27 @@ router.post("/register", async (req, res, next) => {
         name: name,
       },
     });
-    console.log("request coming through is:", req.body);
+    console.log("req.body is:", req.body);
 
 
     if (existingPlayer) {
       return res.status(409).send({ error: "User already exist" });
     }
 
+    //bcrypt password hashing 
+    const hashedPassword = await bcrypt.hash(password, 10)
+
     const player = await Prisma.player.create({
       data: {
         name: name,
-        password: password,
+        password: hashedPassword,
       },
     });
 
     if (player) {
       const token = jwt.sign({ id: player.id }, JWT_SECRET);
       console.log('your token is:', token); 
-      res.status(200).send({ token });
+      res.status(200).send({ player, token });
     } 
   } catch (error) {
     next(error);
@@ -45,7 +47,7 @@ router.post("/register", async (req, res, next) => {
 // Login to an existing player account
 router.post("/login", async (req, res, next) => {
   try {
-    const { name } = req.body;
+    const { name, password } = req.body;
     const player = await Prisma.player.findUnique({
       where: {
         name: name,
@@ -56,15 +58,20 @@ router.post("/login", async (req, res, next) => {
       return res.status(401).send("Invalid credentials");
     }
 
-    if (player) {
-      const token = jwt.sign({ id: player.id }, JWT_SECRET);
-      res.status(200).send({ token });
+    // verify that entered password is the same as hashed password 
+        // bcrypt compare method handes the salt. 
+    const passwordMatch = await bcrypt.compare(password, player.password);
+    if (!passwordMatch) {
+      return res.status(401).send("Invalid credentials");
     }
-    console.log(token);
-  } catch (error) {
+
+    const token = jwt.sign({ id: player.id }, JWT_SECRET);
+    res.status(200).send({ token });
+    } catch (error) {
     next(error);
-  }
-});
+    }
+    });
+
 
 router.get("/me", async (req, res, next) => {
   try {

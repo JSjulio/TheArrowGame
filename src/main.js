@@ -27,7 +27,7 @@ const config = {
     mode: Phaser.Scale.FIT, // The scale mode to be used by the Scale Manager
     autoCenter: Phaser.Scale.CENTER_BOTH, //
   },
-  scene: [Boot, Preloader, MainMenu, Game, GameOver], // The scenes to add to the game
+  scene: [Boot, Preloader, MainMenu, Login, Game, GameOver], // The scenes to add to the game
 };
 
 export default new Phaser.Game(config); //
