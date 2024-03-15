@@ -1,10 +1,11 @@
 
-# Phaser Parcel Template
+# theArrowGame - Development Setup 
+This repo is used to build the Fronted and Backend of theArrowGame. It is created as a failsafe. Work from this repo will be merged to main once complete. 
 
-This is a Phaser 3 project template that uses Parcel for bundling. It supports hot-reloading for quick development workflow and includes scripts to generate production-ready builds.
+## Phaser Parcel Template
 
+theArrowGame uses a Phaser 3 project template that uses Parcel for bundling the frontend. Parcel allows for hot-reloading enabling for quick development workflow and includes scripts to generate production-ready builds.
 
-## theArrowGame - Development Setup
 
 
 ### Ports
