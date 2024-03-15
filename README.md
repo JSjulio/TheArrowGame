@@ -1,6 +1,6 @@
 
 # theArrowGame - Development Setup 
-This repo is used to build the Fronted and Backend of theArrowGame. It is created as a failsafe. Work from this repo will be merged to main once complete. 
+This repo is used to build the Fronted and Backend of theArrowGame. It is created as a failsafe. This repo will be merged to [TheArrowGame. ](https://github.com/JSjulio/Fullstack-Capstone-Starter-Project) as major miles stones are reached in development. 
 
 ## Phaser Parcel Template
 
