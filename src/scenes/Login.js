@@ -15,9 +15,18 @@ export class Login extends Scene {
     this.passwordInput = this.add.dom(200, 140, "input").setOrigin(0);
     this.passwordInput.node.type = "password";
 
-    // Add CSS styles to the input elements
-    this.usernameInput.node.style.background = 'white';
-    this.passwordInput.node.style.background = 'white';
+  // Add CSS styles to the input elements to ensure visibility
+  this.usernameInput.node.style.backgroundColor = 'white'; // Background color white for visibility
+  this.usernameInput.node.style.opacity = '1';             // Fully opaque
+  this.usernameInput.node.style.outline = 'none';          // No outline on focus
+  this.usernameInput.node.style.border = '1px solid #000'; // Black border for definition
+  this.usernameInput.node.style.zIndex = '1000';           // Ensure the input is above the game canvas
+
+  this.passwordInput.node.style.backgroundColor = 'white';
+  this.passwordInput.node.style.opacity = '1';
+  this.passwordInput.node.style.outline = 'none';
+  this.passwordInput.node.style.border = '1px solid #000';
+  this.passwordInput.node.style.zIndex = '1000';
 
     // Create a login button
     this.loginButton = this.add
