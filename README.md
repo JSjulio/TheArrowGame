@@ -1,139 +1,45 @@
+
 # Phaser Parcel Template
 
 This is a Phaser 3 project template that uses Parcel for bundling. It supports hot-reloading for quick development workflow and includes scripts to generate production-ready builds.
 
-## If you have DOWNLOADED THIS FILE TO CONTINUE DEV, READ THIS ! 
 
-<!-- 
-TODO : ensure you have 'Better Comments' extension when you read this for improved readibilility.  
+## theArrowGame - Development Setup
 
 
-?PORTS: 
-
-    
-    *FRONT-END PORT: 1234:
-    The front-end sever runs on PORT 1234 by default. In the case 1234 is not available, Parcel automatically chooses a random port for the server to run on. There is the CORS method of fusing both servers to run on one, but for dev purposeses , we'll the ports on individual ports. 
-
-        *Development / Production Front-end server calls: 
-        As shown in the package.json, you can start the frontend with a development call or a production call. This is a safety measure to ensure data will not be erased. 
-
-            *Development:  
-            "npm run dev": allows access to seed.js. Seed.js will clear all tables in the db if ran. This is
-
-            *Production: 
-            "npm start": allows you run the production server. 
-            In the case you happen to break the forbidden rule of not running the seed.js file while in production; the seed file has a fail safe code so nothing from your database will delete. Unless you instruct otherwise in the command line. 
-
-    *BACK-END PORT: 3000: 
-        "npm run server": The backend is hard coded to run on port 3000. 
-            
-
-    *PORT: 5432: 
-    -If you happen to see this port while setting up your prisma.schema (specifically during "DATABASE_URL setup, then ensure to leave it as 5432). 
-        *Prisma uses PORT 5432 to communicate with the db and it listens to the Front-end on PORT 3000,  
+### Ports
 
 
+Front-end Port (1234): 
+    The front-end server runs on PORT 1234 by default. If 1234 is not available, Parcel automatically chooses a random port. For development purposes, we'll keep the ports separate.
 
-? Getting Started with this app after cloning a Repo: 
+Back-end Port (3000): 
+    The backend is hard-coded to run on port 3000.
 
+Database Port (5432):   
+    Prisma uses PORT 5432 to communicate with the database and listens to the Front-end on PORT 3000.
 
-    ? PSQL:
+### Getting Started
 
-        
-TODO   Steps: 
+Follow these steps after cloning the repository:
 
-            1.  Create the db as it shows below with the same camel casing
-                   *theArrowGame
+1. Clone the repository using git clone <repository-url>.
+2. Install all required modules with npm install.
+3. Install the latest Prisma version with npm i --save-dev prisma@latest.
+4. Initialize Prisma with npx prisma init.
+5. Set up DATABASE_URL in the .env file.
+6. Update the schema.prisma file to reflect your database schema.
+7. Run Prisma Migrate with npx prisma migrate dev --name init.
+8. Generate Prisma Client with npx prisma generate.9. 
+9. Seed the database with npm run seed.
+10. Install the latest Prisma Client with npm i @prisma/client@latest.
+11. Generate Prisma Client again with npx prisma generate.
+12. Start your application with:
 
+    a. npm run dev for front end 
+    b. npm run server for back end 
 
-    ? Prisma: 
-
-        *0 install all required modules
-            identify requirede modules in package.json file  
-
-
-        *1. npm i --save-dev prisma@latest
-            install prisma
-
-        *2 npx prisma init
-            create prisma files 
-
-
-        *3. set up DATABASEURL (in /prisma.shema)         &      .env file 
-            This enables the prisma.schema file 
-        
-
-        *a. 
-        generator client {
-                provider = "prisma-client-js"
-                }
-
-                define the database to connect to
-                datasource db {
-                provider = "postgresql"
-                url      = env("DATABASE_URL")
-            }
-        
-
-        *3.5 set up .env with the following info: 
-
-        .env: 
-                DATABASE_URL="postgresql://<your psql user>:@localhost:5432/theArrowGame"
-                JWT="coolPassword"
-                NODE_ENV="development"
-
-
-        * Of note: 
-            
-            -env file goes within the main directory so backend can access it.
-
-            -the app is set up with "theArrowGame" as the db. When creating your db i urge you to mirrow this nomenclature. It'll make things easier. 
-
-    
-
-
-    Steps:
-
-
-
-        *4 npx prisma migrate dev --name init
-            Creates the DB with defined models(Tables) that are in the schema.prisma file
-            ?Run this code if you want to restructure the db (Add more rows or columns)
-            ?Followed by npx prisma generate 
-
-
-        *5  npx prisma db pull
-            This commmand is dope! It read the Database_URL (located in the .env) and connects to the db following. It then introspects the database & translates the database schema from SQL into a prisma data model within the prisma.schema
-
-                TODO Whenever you clone a project with prisma, you start here. 
-                    Which makes sense, you need the env files to operate the project 
-                ? If it is your own project copy the env file over, if not, create one. 
-                WALLAH! MAGIC!
-            
-            
-            To get the latest prisma run:
-        *6 npm i @prisma/client@latest
-            this command creates a node module which houses the prisma client. That node module is changed evertime the schema is modified but in order to change it you have to run the following: 
-
-            *7 npx prisma generate
-                This reads the prisma schema and generates my prisma client library within the @prisma/client node_modules
-
-
-        *8 set up the enviornment and do you first prisma quiery
-
-            *a. Import Prisma Client
-            const { PrismaClient } = require('@prisma/client)
-            const prisma = new PrismaClient()
-
-            *b crud methods can be found here:
-            ! https://www.prisma.io/docs/orm/prisma-client/queries/crud
-
-
-
-
-
-
--->
+## Additional Parcel/Phaser Instructions: 
 
 ### Versions
 
