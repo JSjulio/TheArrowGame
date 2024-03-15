@@ -39,29 +39,31 @@ TODO : ensure you have 'Better Comments' extension when you read this for improv
 
     ? PSQL:
 
-        Steps: 
+        
+TODO   Steps: 
 
             1.  Create the db as it shows below with the same camel casing
-                    *DB name is: theArrowGame
+                   *theArrowGame
 
 
     ? Prisma: 
 
-    https://www.prisma.io/docs/getting-started/setup-prisma/add-to-existing-project/relational-databases-typescript-postgresql
+        *0 install all required modules
+            identify requirede modules in package.json file  
 
-        *0 look at the package.json and install the required modules 
-
-        *0.5 set up the pqsl 
 
         *1. npm i --save-dev prisma@latest
-            install
+            install prisma
 
         *2 npx prisma init
-            explination same as shown above
+            create prisma files 
 
 
-        *3. set up DATABASEURL prisma.schema file
+        *3. set up DATABASEURL (in /prisma.shema)         &      .env file 
+            This enables the prisma.schema file 
         
+
+        *a. 
         generator client {
                 provider = "prisma-client-js"
                 }
@@ -87,50 +89,10 @@ TODO : ensure you have 'Better Comments' extension when you read this for improv
 
             -the app is set up with "theArrowGame" as the db. When creating your db i urge you to mirrow this nomenclature. It'll make things easier. 
 
-        
+    
 
 
-
-        *4: npm i @prisma/client@latest
-
-        Install Prisma/Cient
-
-            If you do not have a seed.js from PSQL you can use the prima version of seeding a database: 
-            *a.create the seed.js file 
-                
-
-    *		b.install the Prisma Client (see step 5)
-
-    *		c.add a seed command within the package.json scripts 
-            "scripts": {
-                "seed": "node prisma/seed.js"
-                }
-                *OFNOTE: 
-                    -make sure to create a development and production environment. Do this by manipulating the code within package.json : 
-                    -from this 
-                        "scripts": {
-                            "dev": "parcel index.html --no-cache --config ./parcel/.parcel.dev --open",
-                            "build": "parcel build index.html --public-url _relativeroute_ --no-source-maps --log-level error --config ./parcel/.parcel.prod"
-                        },
-                    -to this: 
-                        "scripts": {
-                            "dev": "NODE_ENV=development parcel index.html --no-cache --config ./parcel/.parcel.dev --open",
-                            "start": "NODE_ENV=production node server/index.js",
-                            "build": "NODE_ENV=production parcel build index.html --public-url _relativeroute_ --no-source-maps --log-level error --config ./parcel/.parcel.prod",
-                            "seed": "node prisma/seed.js"
-                    },
-                
-                    then make your seed.js file only run within development by running this code at the beginning 
-                        if (process.env.NODE_ENV === 'production') {
-                            console.log('Seeding is not permitted in production!');
-                            process.exit();
-                        }
-
-        TODO: Cloned the repo? ... Start here: 
-
-    Steps: 
-
-        *3.7 
+    Steps:
 
 
 

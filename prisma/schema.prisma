@@ -15,10 +15,10 @@ model game {
 
 model player {
   id       Int     @id @default(autoincrement())
-  name     String
-  lives    Int
+  name     String  @unique
+  lives    Int     @default(3)
   kills    Int     @default(0)
-  inGame   Boolean @default(true)
+  inGame   Boolean @default(false)
   gameId   Int?
   password String
   Game     game?   @relation(fields: [gameId], references: [id])

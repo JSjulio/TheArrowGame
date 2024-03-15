@@ -34,10 +34,10 @@ async function main() {
     data: {
       players: {
         create: [
-          { name: 'Archer One', lives: 3, kills: 0, inGame: true, password: 'password1' },
-          { name: 'Bowmaster Two', lives: 2, kills: 1, inGame: true, password: 'password2' },
-          { name: 'Arrow Slinger Three', lives: 1, kills: 2, inGame: true, password: 'password3' },
-          { name: 'Crossbower Four', lives: 3, kills: 3, inGame: true, password: 'password4' },
+          { name: 'Archer One', password: 'password1' },
+          { name: 'Bowmaster Two', password: 'password2' },
+          { name: 'Arrow Slinger Three', password: 'password3' },
+          { name: 'Crossbower Four', password: 'password4' },
         ],
       },
       active: true,
@@ -57,32 +57,3 @@ main()
   });
 
 
-
-  // Register a new instructor account
-router.post("/register", async (req, res, next) => {
-  try {
-    const { name } = req.body;
-    const existingPlayer = await Prisma.player.findUnique({
-      where: {
-        id: playerId,
-      },
-    });
-
-    if (existingInstructor) {
-      return res.status(409).send({ error: "User already exist" });
-    }
-    
-    const player = await Prisma.player.create({
-      data: {
-        name: name,
-      },
-    });
-
-    if (player) {
-      const token = jwt.sign({ id: player.id }, JWT_SECRET);
-      res.status(200).send({ token });
-    }
-  } catch (error) {
-    next(error);
-  }
-});

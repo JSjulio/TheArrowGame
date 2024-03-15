@@ -1,11 +1,10 @@
-require('dotenv').config(); 
-
+require("dotenv").config();
 const path = require("path");
 const express = require("express");
 const morgan = require("morgan");
 const app = express();
 const jwt = require("jsonwebtoken");
-
+const { JWT_SECRET } = process.env;
 
 // Logging middleware
 app.use(morgan("dev"));
@@ -13,16 +12,16 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Static file-serving middleware
-app.use(express.static(path.join(__dirname, "..", "dist")));
+// // Static file-serving middleware
+// app.use(express.static(path.join(__dirname, "..", "dist")));
 
-// Check requests for a token and attach the decoded id to the request
+//TODO Check requests for a token and attach the decoded id to the request
 app.use((req, res, next) => {
   const auth = req.headers.authorization;
   const token = auth?.startsWith("Bearer ") ? auth.slice(7) : null;
 
   try {
-    req.user = jwt.verify(token, process.env.JWT);
+    req.user.id = jwt.verify(token, JWT_SECRET);
   } catch {
     req.user = null;
   }
