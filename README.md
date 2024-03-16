@@ -1,6 +1,6 @@
 
 # TheArrowGame - Development Setup 
-This repo is used to create the Node.js/express backend and initiate the Phaser3/Parcel template for theArrowGame. It functions as a personal failsafe. Progress from this repo will be merged with three other teammates' work in order to build [TheArrowGame. ](https://github.com/JSjulio/Fullstack-Capstone-Starter-Project) as major miles stones are reached in development. 
+This repo is used to create the Node.js/express backend and initiate the Phaser3/Parcel template for theArrowGame. It functions as a personal failsafe. Progress from this repo will be merged with three other teammates' contributions in order to build the TheArrowGame. To read more visit [TheOfficialArrowGame ](https://github.com/JSjulio/Fullstack-Capstone-Starter-Project) site. 
 
 ## Phaser Parcel Template
 
