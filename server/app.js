@@ -7,9 +7,10 @@ const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = process.env; 
 const cors = require('cors');
 
-// CORS middleware (Cross origin resource sharing) allows the frontend and backend to communicate 
-app.use(cors());
-
+// CORS middleware (Cross origin resource sharing) connects the Phaser Application via the frontend PORT 
+app.use(cors({ 
+  origin: 'http://localhost:1234'
+}));
 
 // Logging middleware 
 app.use(morgan("dev"));
@@ -18,13 +19,10 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Static file-serving middleware 
-  //* not used since parcel renders the application. 
-// app.use(express.static(path.join(__dirname, "..", "client/dist")));
 
 // Authorization middleware 
-// Synchronously verifies the token and the secret JWT key in order to get req.user
-  // req.user  is required to access private endpoints within the app 
+// Verifies the user token and the private JWT_SECRET passcode to authorize users
+// req.user parameter- is required to access server/api private endpoints
 app.use((req, res, next) => {
   const auth = req.headers.authorization;
   const token = auth?.startsWith("Bearer ") ? auth.slice(7) : null;
