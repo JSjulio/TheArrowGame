@@ -1,6 +1,6 @@
-// TODO - FIX BUG: input boxes are not showing on Registration or Login Forms
-// user has not been created from frontend as a result
-// Frontend IS connected to the backend
+// TODO - FIX BUG 
+// BUG: input boxes are not showing on Registration or Login Forms. This prevents user from registrations/login. 
+// Frontend IS connected successfully to backend as observed by error codes after pressing login/register. 
 
 import { Scene } from "phaser";
 
@@ -10,7 +10,9 @@ export class AuthScene extends Scene {
   }
 
   create() {
-    // TODO uncomment "this.input.once" function below while debugging to move to the game scene. May require a manual reload of the frontend server
+    // ! uncomment "this.input.once" function below while debugging login/register issue to move to the game scene. 
+    // otherwise you cannot move forward to the Game scene. 
+
     this.input.once("pointerdown", () => {
       this.scene.start("Game"); // this line allows you to send the user to the following scene you define in quotations
     });
@@ -35,7 +37,8 @@ export class AuthScene extends Scene {
       .text(100, 300, "Register", { fill: "#0f0" })
       .setInteractive()
       .on("pointerdown", () => this.register());
-  }
+
+  } 
 
   // Login form elements
   createLoginForm() {
@@ -59,7 +62,7 @@ export class AuthScene extends Scene {
   register() {
     const username = this.registerUsernameInput.node.value;
     const password = this.registerPasswordInput.node.value;
-
+// call the othe backend Auth endpoint
     fetch("http://localhost:3000/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -78,13 +81,16 @@ export class AuthScene extends Scene {
       .catch((error) => {
         console.error("Error during registration:", error);
       });
+        
+      // TODO here is where you can place the this.scene.start('Game) statement once bug is fixed  
+
   }
 
   // Login fetch call
   login() {
     const username = this.loginUsernameInput.node.value;
     const password = this.loginPasswordInput.node.value;
-
+// call the othe backend Auth endpoint
     fetch("http://localhost:3000/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -103,5 +109,8 @@ export class AuthScene extends Scene {
       .catch((error) => {
         console.error("Error during login:", error);
       });
+
+      // TODO here is where you can place the this.scene.start('Game) statement once bug is fixed  
+
   }
 }

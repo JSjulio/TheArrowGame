@@ -4,7 +4,7 @@ export class GameOver extends Scene
 {
     constructor ()
     {
-        super('GameOver');
+        super('GameOver'); //Gameover scene 
     }
 
     create ()
