@@ -9,7 +9,6 @@ theArrowGame uses a Phaser 3 project template that uses Parcel for bundling the 
 
 ### Ports
 
-
 Front-end Port (1234): 
     The front-end server runs on PORT 1234 by default. If 1234 is not available, Parcel automatically chooses a random port. For development purposes, we'll keep the ports separate.
 
@@ -19,9 +18,9 @@ Back-end Port (3000):
 Database Port (5432):   
     Prisma uses PORT 5432 to communicate with the database and listens to the Front-end on PORT 3000.
 
-### Getting Started
+## Getting Started
 
-Follow these steps after cloning the repository:
+### Follow these steps after cloning the repository:
 
 1. Clone the repository using git clone <repository-url>.
 2. Install all required modules with npm install.
@@ -30,7 +29,7 @@ Follow these steps after cloning the repository:
 5. Set up DATABASE_URL in the .env file.
 6. Update the schema.prisma file to reflect your database schema.
 7. Run Prisma Migrate with npx prisma migrate dev --name init.
-8. Generate Prisma Client with npx prisma generate.9. 
+8. Generate Prisma Client with npx prisma generate
 9. Seed the database with npm run seed.
 10. Install the latest Prisma Client with npm i @prisma/client@latest.
 11. Generate Prisma Client again with npx prisma generate.
