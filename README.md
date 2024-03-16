@@ -27,6 +27,10 @@ Database Port (5432):
 3. Install the latest Prisma version with npm i --save-dev prisma@latest.
 4. Initialize Prisma with npx prisma init.
 5. Set up DATABASE_URL in the .env file.
+    DATABASE_URL="postgresql://jsjulio:@localhost:5432/theArrowGame"
+    JWT_SECRET="----"
+    NODE_ENV="development"
+
 6. Update the schema.prisma file to reflect your database schema.
 7. Run Prisma Migrate with npx prisma migrate dev --name init.
 8. Generate Prisma Client with npx prisma generate

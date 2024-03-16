@@ -1,6 +1,7 @@
 // TODO - FIX BUG 
-// BUG: input boxes are not showing on Registration or Login Forms. This prevents user from registrations/login. 
-// Frontend IS connected successfully to backend as observed by error codes after pressing login/register. 
+// BUG: Not sure why by the Login/Reg input boxes are not visible on the Auth Scene. This prevents user from registrations/login. 
+// GOOD NEW: Frontend IS connected successfully to backend as observed by error codes after pressing login/register. 
+  // You'll notice that when you click on the login or register button, automatically you are sent to the next scene. Commentout line 17-19 to disable
 
 import { Scene } from "phaser";
 
@@ -62,11 +63,11 @@ export class AuthScene extends Scene {
   register() {
     const username = this.registerUsernameInput.node.value;
     const password = this.registerPasswordInput.node.value;
-// call the othe backend Auth endpoint
+//Auth endpoint call 
     fetch("http://localhost:3000/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: username, password: password }), // take note that the backend is expected a key of 'name' not 'username'
+      body: JSON.stringify({ name: username, password: password }), // of note:  the backend is expected a key of 'name' not 'username' / DON'T CHANGE 'user' key 
     })
       .then((response) => response.json())
       .then((data) => {
@@ -90,11 +91,11 @@ export class AuthScene extends Scene {
   login() {
     const username = this.loginUsernameInput.node.value;
     const password = this.loginPasswordInput.node.value;
-// call the othe backend Auth endpoint
+//Auth endpoint call 
     fetch("http://localhost:3000/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: username, password: password }), // take note that the backend is expected a key of 'name' not 'username'
+      body: JSON.stringify({ name: username, password: password }), // of note: the backend is expected a key of 'name' not 'username' / DON'T CHANGE 'user' key 
     })
       .then((response) => response.json())
       .then((data) => {

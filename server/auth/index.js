@@ -25,6 +25,7 @@ router.post("/register", async (req, res, next) => {
     }
 
     //bcrypt password hashing 
+    // might need to implement a try catch here? 
     const hashedPassword = await bcrypt.hash(password, 10)
 
     const player = await Prisma.player.create({
@@ -58,8 +59,8 @@ router.post("/login", async (req, res, next) => {
       return res.status(401).send("Invalid credentials");
     }
 
-    // verify that entered password is the same as hashed password 
-        // bcrypt compare method handes the salt. 
+    // verify that entered password is the same as hashed password stored in the db 
+        // bcrypt compares method handles the salting in the process
     const passwordMatch = await bcrypt.compare(password, player.password);
     if (!passwordMatch) {
       return res.status(401).send("Invalid credentials");
@@ -72,7 +73,8 @@ router.post("/login", async (req, res, next) => {
     }
     });
 
-
+// TODO have not refactored code below 
+// TODO - finish login scene on front end, then create a lobby scene that this code directs the current logged in user to
 router.get("/me", async (req, res, next) => {
   try {
     const player = await Prisma.player.findUnique({

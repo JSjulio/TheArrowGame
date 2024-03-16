@@ -3,6 +3,8 @@ const prisma = new PrismaClient();
 require('dotenv').config(); 
 const bcrypt = require('bcrypt'); 
 
+// This code detects whether you are in production or development. It does this by refering to what code what used to start the server and what the NODE_ENV is set to within the .env file 
+  // for more information on what CLI codes to use to launch dev/prod. check the README.md
 if (process.env.NODE_ENV === 'production') {
     console.log('Seeding is not permitted in production!');
     process.exit();
@@ -30,7 +32,8 @@ async function main() {
   await prisma.game.deleteMany({});
   
 
-  // Create a new game instance
+  // Create a new game instance. Since this code is for seeding, no password hashing is implemented. 
+    // feel free to implement password hashing 
   const game = await prisma.game.create({
     data: {
       players: {

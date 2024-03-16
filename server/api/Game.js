@@ -3,7 +3,9 @@ const db = require("../db");
 const { PrismaClient } = require("@prisma/client");
 const Prisma = new PrismaClient();
 
-// TODO refactor this file to match the game and player models 
+// TODO refactor this file to match the app game/player models 
+// This file will handle request that change persistent data within the database 
+// This code is from julio's block 34A - classroom manager
 
 //Deny access if player is not logged in
 router.use((req, res, next) => {

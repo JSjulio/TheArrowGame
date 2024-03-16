@@ -21,7 +21,7 @@ export class GameOver extends Scene
 
         this.input.once('pointerdown', () => {
 
-            this.scene.start('MainMenu');
+            this.scene.start('MainMenu'); // redirects user to the main menu. Once a lobby scene is created, this can be changed to the lobby scene 
 
         });
     }
