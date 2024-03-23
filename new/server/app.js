@@ -27,12 +27,15 @@ app.use((req, res, next) => {
   const auth = req.headers.authorization;
   const token = auth?.startsWith("Bearer ") ? auth.slice(7) : null;
 
+req.user = {};
+
   try {
-    req.user.id = jwt.verify(token, JWT_SECRET);
-  } catch {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded; 
+  } catch (error) {
+    console.error(error);
     req.user = null;
   }
-
   next();
 });
 

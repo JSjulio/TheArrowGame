@@ -73,8 +73,6 @@ router.post("/login", async (req, res, next) => {
     }
     });
 
-// TODO have not refactored code below 
-// TODO - finish login scene on front end, then create a lobby scene that this code directs the current logged in user to
 router.get("/me", async (req, res, next) => {
   try {
     const player = await Prisma.player.findUnique({

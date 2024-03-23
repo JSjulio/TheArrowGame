@@ -12,7 +12,8 @@ export class MainMenu extends Scene
     {   
         this.load.setPath('assets');
 
-        // ? THIS IS WHERE THE GAME SCENE IS PRELOADED
+       this.load.image('loginImage', 'login.png'); // renders the login image on the landing page.
+
         //the battlefield.json and battlefield.png files work together to load game map 
         this.load.tilemapTiledJSON("map", "/map/battlefield.json");//loads the battlefield.json file
         this.load.image("tiles", "/map/battlefield.png");//loads the battlefield.png file that the tile battlefiled.json file references

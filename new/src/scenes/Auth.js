@@ -1,8 +1,3 @@
-// TODO - FIX BUG 
-// BUG: Not sure why by the Login/Reg input boxes are not visible on the Auth Scene. This prevents user from registrations/login. 
-// GOOD NEW: Frontend IS connected successfully to backend as observed by error codes after pressing login/register. 
-  // You'll notice that when you click on the login or register button, automatically you are sent to the next scene. Commentout line 17-19 to disable
-
 import { Scene } from "phaser";
 
 export class AuthScene extends Scene {
@@ -11,107 +6,65 @@ export class AuthScene extends Scene {
   }
 
   create() {
-    // ! uncomment "this.input.once" function below while debugging login/register issue to move to the game scene. 
-    // otherwise you cannot move forward to the Game scene. 
-
-    this.input.once("pointerdown", () => {
-      this.scene.start("Game"); // this line allows you to send the user to the following scene you define in quotations
-    });
-    this.createRegisterForm();
+    const bImage = this.add.image(512, 384, 'loginImage');
+    bImage.setAlpha(.6);
     this.createLoginForm();
-
+    this.createRegisterForm();
   }
 
-  // Registration Form Elements
-  createRegisterForm() {
-    // Create text objects for labels
-    this.add.text(100, 220, "Register Username:");
-    this.add.text(100, 260, "Register Password:");
+  // Unified form creation for login and registration
+  createForm(type, yPosition) {
+    const text = type === 'login' ? 'Login' : 'Register';
+    this.add.text(100, yPosition, `${text} Username:`, {fill: '#000'});
+    this.add.text(100, yPosition + 40, `${text} Password:`, {fill: '#000'});
 
-    // Create HTML input elements for username and password
-    this.registerUsernameInput = this.add.dom(250, 220, "input").setOrigin(0);
-    this.registerPasswordInput = this.add.dom(250, 260, "input").setOrigin(0);
-    this.registerPasswordInput.node.type = "password";
+    // input fields for login/registration
+    const usernameInput = this.add.dom(300, yPosition, 'input').setOrigin(0);
+    const passwordInput = this.add.dom(300, yPosition + 40, 'input', { type: 'password' }, ).setOrigin(0);
 
-    // Create a register button
-    this.registerButton = this.add
-      .text(100, 300, "Register", { fill: "#0f0" })
+    // action button for login/registration
+    const actionButton = this.add.text(100, yPosition + 80, text, { fill: '#0f0', backgroundColor: '#000', padding: 10})
       .setInteractive()
-      .on("pointerdown", () => this.register());
+      .on('pointerdown', () => {
+        const username = usernameInput.node.value;
+        const password = passwordInput.node.value;
+        this.handleAuth(username, password, type);
+      });
 
-  } 
+    return { usernameInput, passwordInput, actionButton };
+  }
 
-  // Login form elements
+  // Create login form
   createLoginForm() {
-    // Create text objects for labels
-    this.add.text(100, 100, "Login Username:");
-    this.add.text(100, 140, "Login Password:");
-
-    // Create HTML input elements for username and password
-    this.loginUsernameInput = this.add.dom(250, 100, "input").setOrigin(0);
-    this.loginPasswordInput = this.add.dom(250, 140, "input").setOrigin(0);
-    this.loginPasswordInput.node.type = "password";
-
-    // Create a login button
-    this.loginButton = this.add
-      .text(100, 180, "Login", { fill: "#0f0" })
-      .setInteractive()
-      .on("pointerdown", () => this.login());
+    this.loginElements = this.createForm('login', 100);
   }
 
-  // Register fetch call
-  register() {
-    const username = this.registerUsernameInput.node.value;
-    const password = this.registerPasswordInput.node.value;
-//Auth endpoint call 
-    fetch("http://localhost:3000/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: username, password: password }), // of note:  the backend is expected a key of 'name' not 'username' / DON'T CHANGE 'user' key 
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.player && data.token) {
-          // Handle successful registration
-          console.log("Registration successful, token:", data.token);
-        } else {
-          // Handle registration failure
-          console.error("Registration failed:", data.error);
-        }
-      })
-      .catch((error) => {
-        console.error("Error during registration:", error);
-      });
-        
-      // TODO here is where you can place the this.scene.start('Game) statement once bug is fixed  
-
+  // Create registration form
+  createRegisterForm() {
+    this.registerElements = this.createForm('register', 220);
   }
 
-  // Login fetch call
-  login() {
-    const username = this.loginUsernameInput.node.value;
-    const password = this.loginPasswordInput.node.value;
-//Auth endpoint call 
-    fetch("http://localhost:3000/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: username, password: password }), // of note: the backend is expected a key of 'name' not 'username' / DON'T CHANGE 'user' key 
+  // Handle authentication (login/register)
+  handleAuth(username, password, type) {
+    const path = type === 'login' ? '/auth/login' : '/auth/register';
+    fetch(`http://localhost:3000${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: username, password: password }),
     })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.token) {
-          // Handle successful login, e.g., save token, start game scene
-          console.log("Login successful, token:", data.token);
-        } else {
-          // Handle login failure
-          console.error("Login failed:", data.error);
-        }
-      })
-      .catch((error) => {
-        console.error("Error during login:", error);
-      });
-
-      // TODO here is where you can place the this.scene.start('Game) statement once bug is fixed  
-
+    .then(response => response.json())
+    .then(data => {
+      if (data.token) {
+        // Handle successful authentication
+        console.log(`${type} successful, token:`, data.token);
+        this.scene.start('LobbyScene');
+      } else {
+        // Handle authentication failure
+        console.error(`${type} failed:`, data.error);
+      }
+    })
+    .catch(error => {
+      console.error(`Error during ${type}:`, error);
+    });
   }
 }
