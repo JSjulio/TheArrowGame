@@ -12,7 +12,7 @@ export class MainMenu extends Scene
     {   
         this.load.setPath('assets');
 
-       this.load.image('loginImage', 'login.png'); // renders the login image on the landing page.
+       this.load.image('loginImage', 'login.png'); // loads the login background-image 
 
         //the battlefield.json and battlefield.png files work together to load game map 
         this.load.tilemapTiledJSON("map", "/map/battlefield.json");//loads the battlefield.json file
@@ -20,7 +20,7 @@ export class MainMenu extends Scene
 
         //Archer character preload
         this.load.spritesheet("player", 
-        "/Archers-Character/Archers/knight.png",
+        "/Archers-Character/Archers/Archer-1-left.png",
             { frameWidth: 64, frameHeight: 64 }
         );    
     }
@@ -39,7 +39,7 @@ export class MainMenu extends Scene
         // this is an event listener - once user clicks the page once, user is forwarded to the following scene defined below 
         this.input.once('pointerdown', () => {
 
-            this.scene.start('AuthScene');
+            this.scene.start('Game');
 
         });
     }

@@ -1,20 +1,46 @@
 import { Scene } from "phaser"; // scenes are where the game logic is written for different parts of the game
-import Player from "../sprites/Player";
+import Phaser, { NONE } from "phaser";
+import Player from "../../js/Player"
+import io from "socket.io-client";
+
+
+const serverUrl = "http://localhost:3000";
+
+const speedDown = 300;
+const sock = io(serverUrl);
+let playerId = -1;
+
 
 export class Game extends Scene {
 
   constructor() {
 
     super("Game"); 
+    this.playerId = playerId;
+
+  } 
+  
+  preload() { 
+    this.load.tilemapTiledJSON("map", "/map/battlefield.json");//loads the battlefield.json file
+    this.load.image("tiles", "/map/battlefield.png");//loads the battlefield.png file that the tile battlefiled.json file references
 
   }
 
-  // ? Assets from this scene are preloaded within the Main.js file's preload()
+
   
   create() {
+    this.socket = sock;
+    this.socket.on('playerUpdates', (playerUpdated) => {
+      // console.log(`Received player updates from ${playerUpdated.id}. Coordinates - X: ${playerUpdated.x} Y: ${playerUpdated.y} ${typeof playerUpdated.x}`);
+      // console.log(`Local player coordinates: ${this.player.x} ${this.player.y} and their types: ${typeof this.player.x}`)
+      this.renderPlayers(playerUpdated, this);
+  });
 
-    // TODO: since Phaser.Scale.Fit handles this within the main.js config, I'm speculating "scaleFactor" may not be needed now ?  
-        // Mario set the scale factor within main.js  //  I used Parcel's scale pre-configuration in main.js  
+    // Limits the amount of times that the game sends updates to the socket
+    this.rate_limit = 5;
+    this.rate_limit_count = 0;
+
+
    const backgroundImage = this.add.image(0,0, "tiles").setOrigin(0);  // creates a tilemap from the battlefield.json file
    const scaleFactor = Math.max(
     this.scale.width / backgroundImage.width,
@@ -23,58 +49,191 @@ export class Game extends Scene {
   backgroundImage.setScale(scaleFactor);
 
   //adding collision to floors
-  const map = this.make.tilemap({
+  this.map = this.make.tilemap({
     key: "map",
     tileWidth: 12,
     tileHeight: 12,
   });
 
-  const tileset = map.addTilesetImage("Tileset", "tiles");
-  const collisionLayer = map.createLayer("collision", tileset, 0, 0);
-  collisionLayer.setScale(scaleFactor);
-  collisionLayer.setCollisionByExclusion([-1]);
-  collisionLayer.setAlpha(0); // makes layer invisible
+  this.socket.on("validPositions", (positions) => {
+    console.log(positions);
+  });
+    //***END NEW CONTENT*** ----------------------------------------------------
 
-    // Initialize cursors
-    this.cursors = this.input.keyboard.createCursorKeys();
+ // CREATE PLAYER
+ this.player = new Player(this, 100, 100, this.playerId, this.playerId);
 
+ this.tileset = this.map.addTilesetImage("Tileset", "tiles");
+ this.map.setCollisionBetween();
+ this.collisionLayer = this.map.createLayer("collision", this.tileset, 0, 0);
+ console.log(this.collisionLayer);
+ this.collisionLayer.setScale(this.scaleFactor);
+ this.collisionLayer.setCollisionByExclusion([-1]);
+ this.collisionLayer.setCollisionByProperty({ collide: true });
+ this.collisionLayer.setAlpha(0.6); // makes layer invisible
 
-    // TODO - applies to all of the commented out lines below 
-    //*code was commented out so you can see the current game map while debugging
-    //*although the line below properly references teh sprite, 
-    //* when this code is integrated, the game breaks ? 
+  //***BEGIN NEW CONTENT*** ----------------------------------------------------------------
 
-    // this.player = new Player(this, 100, 100, this.cursors);
-    // this.player.setGravity(speedDown);
-    // this.player.setOrigin(1, 1);
-    // this.player.setScale(0.75);
+  this.tileIndices = [];
+  this.collisionLayer.forEachTile((tile) => {
+    this.tileIndices.push(tile.index);
+  });
 
+   // Extract other necessary information
+    const tileWidth = this.collisionLayer.tileWidth;
+    const tileHeight = this.collisionLayer.tileHeight;
+    const mapWidth = this.collisionLayer.width;
+    const mapHeight = this.collisionLayer.height;
+    const scale = {
+      x: this.collisionLayer.scaleX,
+      y: this.collisionLayer.scaleY,
+    };
+
+ // TODO - Debug
+    // for testing purpose 
+    // this.player.setOrigin(0.5, 0.5);
+    // this.player.setScale(this.scaleFactor * 2.5); // ! Error arose here: can't find player after adding this
     //resizing bouncing box
-    // const newBoundingBoxWidth = 16;
-    // const newBoundingBoxHeight = 48;
-    // const offsetX = (this.player.width - newBoundingBoxWidth) / 2;
-    // const offsetY = (this.player.height - newBoundingBoxHeight) / 1.5;
-    // // Set the new size of the bounding box
-    // this.player.body.setSize(newBoundingBoxWidth, newBoundingBoxHeight, true);
-    // this.player.body.setOffset(offsetX, offsetY);
+    // this.newBoundingBoxWidth = 16;
+    // this.newBoundingBoxHeight = 15;
+    // this.offsetX = (this.player.width - this.newBoundingBoxWidth) / 2;
+    // this.offsetY = (this.player.height - this.newBoundingBoxHeight) / 1.5;
 
-    // // Add collision between player and collision layer
-    // this.physics.add.collider(this.player, collisionLayer);
+    // Set the new size of the bounding box
+    // this.player.body.setSize(
+    //   this.newBoundingBoxWidth,
+    //   this.newBoundingBoxHeight,
+    //   true
+    // );
 
-   //archer player currently loaded on screen 
-   const player = this.physics.add.sprite(100, 100, "player");
-   this.physics.world.enable(player);
-   this.physics.add.collider(player, collisionLayer);
-   player.setCollideWorldBounds(true);
+    // Reposition the bounding box relative to the player's center // ! game stops loading here 
+    // this.player.body.setOffset(this.offsetX, this.offsetY);
+    // this.player.anims.play("idleLeft");
 
-    this.input.once("pointerdown", () => {
-      this.scene.start("GameOver"); // forward to the GameOver scene when the user's mouse is clicked
+    // Add collision between player and collision layer
+    // this.physics.add.existing(this.player);
+
+    // ***BEGIN NEW CONTENT*** ----------------------------------------------------
+    this.playerArr = [];
+    // Sets up the arrow keys as the input buttons
+    this.cursors = this.input.keyboard.createCursorKeys();
+    // this.playerArr.push(this.player);
+    // Sends the player to the server
+
+    this.socket.emit("playerConnect", this.player);
+
+    // Remove a player with a given ID from the local client instance
+    this.socket.on("removePlayer", (playerId) => {
+      let rmPlayer = this.playerArr.find((player) => player.id === playerId);
+      rmPlayer.destroy();
+      this.players = this.playerArr.filter((player) => player.id !== playerId);
     });
+
+    //END CREATE PLAYER
+
+    //***END NEW CONTENT*** ----------------------------------------------------
   }
+
+createCursorsFromActiveKeys(activeKeys) {
+  return {
+    up: this.input.keyboard.addKey(activeKeys.up),
+    down: this.input.keyboard.addKey(activeKeys.down),
+    left: this.input.keyboard.addKey(activeKeys.left),
+    right: this.input.keyboard.addKey(activeKeys.right),
+  };
+}
+
+
+//***BEGIN NEW CONTENT*** --------------------------------------------------
+  renderPlayers(playerData) {
+    // console.log(`Types of playerData members ${typeof playerData.x}`)
+    let updateCursors = this.createCursorsFromActiveKeys(playerData.activeKeys);
+    if (playerData.id !== this.playerId) {
+      let updatePlayer = this.playerArr.find(
+        (player) => player.id === playerData.id
+      );
+      if (!updatePlayer) {
+        updatePlayer = new Player(
+          this,
+          playerData.x,
+          playerData.y,
+          playerData.id,
+          playerData.id
+        );
+        updatePlayer.setOrigin(0.5, 0.5);
+        updatePlayer.setScale(this.scaleFactor * 2.5);
+        updatePlayer.setAlpha(1);
+        updatePlayer.body.setSize(
+          this.newBoundingBoxWidth,
+          this.newBoundingBoxHeight,
+          true
+        );
+        updatePlayer.body.setOffset(this.offsetX, this.offsetY);
+        // updatePlayer.anims.play("idle");
+        this.physics.add.collider(updatePlayer, this.collisionLayer);
+        this.physics.add.existing(updatePlayer);
+        this.playerArr.push(updatePlayer);
+        console.log(updatePlayer);
+      } else {
+        // console.log(`Updating player coords: ${updatePlayer.x} and ${updatePlayer.y}`);
+        updatePlayer.setDirection(playerData.direction);
+        updatePlayer.setPosition(playerData.x, playerData.y);
+        updatePlayer.update(updateCursors);
+        // console.log(this.playerArr);
+      }
+    }
+  }
+
 
   update() {
-    // console.log("Scene update loop running");
-    // this.player.update();
+    // console.log("isGrounded:" + this.player.isGrounded)
+    this.physics.world.collide(
+      this.player,
+      this.collisionLayer,
+      (player, tile) => {
+        // console.log("Collision detected at position:", tile.pixelX, tile.pixelY);
+        // console.log("Collision detected at player position:", player.x, player.y);
+
+        this.player.isGrounded = true;
+      }
+    );
+
+    this.player.update(this.cursors);
+    const activeKeys = {
+      up: this.cursors.up.isDown,
+      down: this.cursors.down.isDown,
+      left: this.cursors.left.isDown,
+      right: this.cursors.right.isDown,
+    };
+    this.socket.emit("clientPlayerUpdate", {
+      id: this.playerId,
+      playerX: this.player.x,
+      playerY: this.player.y,
+      activeKeys: activeKeys,
+      direction: this.player.direction,
+    });
   }
-  
-};
+}
+async function getPlayerIdFromSocket() {
+  return new Promise((resolve, reject) => {
+    // Listen for player ID response from the server
+    sock.once("playerIdRes", (pid) => {
+      resolve(pid); // Resolve the promise with the player ID
+    });
+
+    // Request player ID from the server
+    sock.emit("playerIdReq");
+  });
+}
+
+async function setClientPlayerId() {
+  try {
+    const hold = await getPlayerIdFromSocket();
+    playerId = hold;
+    console.log("Received player ID:", playerId);
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
+//***END NEW CONTENT*** ----------------------------------------------------
+
