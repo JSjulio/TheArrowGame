@@ -24,18 +24,20 @@ app.use(express.urlencoded({ extended: true }));
 // Verifies the user token and the private JWT_SECRET passcode to authorize users
 // req.user parameter- is required to access server/api private endpoints
 app.use((req, res, next) => {
-  const auth = req.headers.authorization;
-  const token = auth?.startsWith("Bearer ") ? auth.slice(7) : null;
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const token = authHeader.slice(7, authHeader.length); // Extract token
 
-req.user = {};
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded; 
-  } catch (error) {
-    console.error(error);
-    req.user = null;
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      req.user = decoded; // Set decoded user information on request
+    } catch (error) {
+      console.error(error);
+      // Optionally handle specific error cases here (e.g., token expired)
+      // For security reasons, you might not want to send specific error messages to the client
+    }
   }
+  // Proceed without setting req.user if no valid token was provided
   next();
 });
 

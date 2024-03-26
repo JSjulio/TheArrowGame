@@ -5,7 +5,6 @@ import { MainMenu } from "./scenes/MainMenu";
 import { Preloader } from "./scenes/Preloader";
 import { AuthScene } from "./scenes/Auth"; 
 import { LobbyScene } from "./scenes/Lobby";
-import UIPlugin from 'phaser3-rex-plugins/templates/ui/ui-plugin.js';
 
 //Main.js file functions like a REACT App.js file 
 
