@@ -67,7 +67,7 @@ export class AuthScene extends Scene {
 
 // ***ADDED*** this code sets the playerId to data.player.name  + passes LobbyScene the serverUrl.
     //data.player.id is autoincrementing and and does not repeat. 
-        this.scene.start('LobbyScene', { serverUrl: this.serverUrl, playerId: data.player.name});
+        this.scene.start('LobbyScene', { serverUrl: this.serverUrl, player: data.player});
       } else {
         // Handle authentication failure
         console.error(`${type} failed:`, data.error);

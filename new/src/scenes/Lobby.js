@@ -23,7 +23,7 @@ export class LobbyScene extends Scene {
         this.add.text(100, 150, 'Waiting for other players to join...', {fill: '#0f0'});
         
         this.input.once("pointerdown", () => {
-            this.scene.start("Game", { serverUrl: this.serverUrl, playerId: this.playerId}); // this line allows you to send the user to the following scene you define in quotations
+            this.scene.start("Game", { serverUrl: this.serverUrl, player: data.player}); // this line allows you to send the user to the following scene you define in quotations
           });
     
     }

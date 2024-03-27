@@ -3,9 +3,6 @@ import Phaser, { NONE } from "phaser";
 import Player from "../../js/Player"
 import io from "socket.io-client";
 
-// 
-//TODO : Add serverUrl and assign playerId through passed in data 
-
 export class Game extends Scene {
 
   constructor() {
@@ -36,10 +33,13 @@ export class Game extends Scene {
   
   create(data) {
     this.socket = data.serverUrl; 
-    this.playerId = data.playerId;
+    this.player = data.player
+    this.playerId = data.player.id;
+    this.sock = io(this.serverUrl);
+
 
     
-    this.socket.on('playerUpdates', (playerUpdated) => {
+    this.sock.on('playerUpdates', (playerUpdated) => {
       // console.log(`Received player updates from ${playerUpdated.id}. Coordinates - X: ${playerUpdated.x} Y: ${playerUpdated.y} ${typeof playerUpdated.x}`);
       // console.log(`Local player coordinates: ${this.player.x} ${this.player.y} and their types: ${typeof this.player.x}`)
       this.renderPlayers(playerUpdated, this);
@@ -70,7 +70,7 @@ export class Game extends Scene {
     // Receive the valid spawn positions from the server, deconflicted for each player
     // WIP
   this.socket.on("validPositions", (positions) => {
-    console.log(positions);
+    console.log('positions are:...', positions);
   });
     //***END NEW CONTENT*** ----------------------------------------------------
 
@@ -78,35 +78,62 @@ export class Game extends Scene {
  this.player = new Player(this, 100, 100, this.playerId, this.playerId);
 
  this.tileset = this.map.addTilesetImage("Tileset", "tiles");
+
  this.map.setCollisionBetween();
+//Floor collision layer ------------------------------------------------------
  this.collisionLayer = this.map.createLayer("collision", this.tileset, 0, 0);
- console.log(this.collisionLayer);
  this.collisionLayer.setScale(this.scaleFactor);
  this.collisionLayer.setCollisionByExclusion([-1]);
  this.collisionLayer.setCollisionByProperty({ collide: true });
  this.collisionLayer.setAlpha(0.6); // makes layer invisible
+ this.platformCollision = this.map.createLayer(
+  "platform_collision",
+  this.tileset,
+  0,
+  0
+);
+this.platformCollision.setScale(this.scaleFactor);
+this.platformCollision.setCollisionByExclusion([-1]);
+this.platformCollision.setCollisionByProperty({ collide: true });
+this.physics.add.collider(this.player, this.platformCollision);
+this.platformCollision.setAlpha(0.6);
+ //ladder collision layer -----------------------------------------------------
+ this.ladderCollision = this.map.createLayer(
+  "ladder_collision",
+  this.tileset,
+  0,
+  0
+);
+this.ladderCollision.setScale(this.scaleFactor);
+this.ladderCollision.setCollisionByExclusion([-1]);
+this.ladderCollision.setCollisionByProperty({ collide: true });
+this.physics.add.overlap(this.player, this.ladderCollision);
+this.ladderCollision.setAlpha(0.6);
 
-  //***BEGIN NEW CONTENT*** ----------------------------------------------------------------
+ //***BEGIN NEW CONTENT*** ----------------------------------------------------------------
+    // Process and send the map data to the server
+    // Extract tile indices from the collision layer
 
-  this.tileIndices = [];
-  this.collisionLayer.forEachTile((tile) => {
-    this.tileIndices.push(tile.index);
-  });
+    this.tileIndices = [];
+    this.collisionLayer.forEachTile((tile) => {
+      this.tileIndices.push(tile.index);
+    });
 
-   // Extract other necessary information
-    const tileWidth = this.collisionLayer.tileWidth;
-    const tileHeight = this.collisionLayer.tileHeight;
-    const mapWidth = this.collisionLayer.width;
-    const mapHeight = this.collisionLayer.height;
-    const scale = {
-      x: this.collisionLayer.scaleX,
-      y: this.collisionLayer.scaleY,
-    };
-
+ // Extract other necessary information
+  const tileWidth = this.collisionLayer.tileWidth;
+  const tileHeight = this.collisionLayer.tileHeight;
+  const mapWidth = this.collisionLayer.width;
+  const mapHeight = this.collisionLayer.height;
+  const scale = {
+    x: this.collisionLayer.scaleX,
+    y: this.collisionLayer.scaleY,
+  };
+  
  // TODO - Debug
     // for testing purpose 
     this.player.setOrigin(0.5, 0.5);
     // this.player.setScale(this.scaleFactor * 2.5); //!  can't find player after adding this code below
+  
     // resizing bouncing box
     this.newBoundingBoxWidth = 16;
     this.newBoundingBoxHeight = 15;
@@ -119,23 +146,21 @@ export class Game extends Scene {
       this.newBoundingBoxHeight,
       true
     );
-        
 
     // Reposition the bounding box relative to the player's center 
     this.player.body.setOffset(this.offsetX, this.offsetY);
-    this.player.anims.play("idleLeft");
 
-    // Add collision between player and collision layer
-    // this.physics.add.existing(this.player);
 
+    //resize arrow bounding box
+  
     // ***BEGIN NEW CONTENT*** ----------------------------------------------------
     this.playerArr = [];
     // Sets up the arrow keys as the input buttons
     this.cursors = this.input.keyboard.createCursorKeys();
-    this.playerArr.push(this.player);
+    // this.playerArr.push(this.player);
     // Sends the player to the server
 
-    this.socket.emit("playerConnect", this.player);
+    this.socket.emit("playerConnect", this.player); //player object is now being tracked by socket server
 
     // Remove a player with a given ID from the local client instance
     this.socket.on("removePlayer", (playerId) => {
@@ -157,7 +182,6 @@ createCursorsFromActiveKeys(activeKeys) {
     right: this.input.keyboard.addKey(activeKeys.right),
   };
 }
-
 
 //***BEGIN NEW CONTENT*** --------------------------------------------------
   renderPlayers(playerData) {
@@ -194,17 +218,18 @@ createCursorsFromActiveKeys(activeKeys) {
         updatePlayer.setDirection(playerData.direction);
         updatePlayer.setPosition(playerData.x, playerData.y);
         updatePlayer.update(updateCursors);
-        // console.log(this.playerArr);
+        console.log(this.playerArr);
       }
     }
   }
 
-
   update() {
     // console.log("isGrounded:" + this.player.isGrounded)
+
     this.physics.world.collide(
       this.player,
       this.collisionLayer,
+
       (player, tile) => {
         // console.log("Collision detected at position:", tile.pixelX, tile.pixelY);
         // console.log("Collision detected at player position:", player.x, player.y);
@@ -232,24 +257,26 @@ createCursorsFromActiveKeys(activeKeys) {
 async function getPlayerIdFromSocket() {
   return new Promise((resolve, reject) => {
     // Listen for player ID response from the server
-    sock.once("playerIdRes", (pid) => {
+    this.sock.once("playerIdRes", (pid) => {
       resolve(pid); // Resolve the promise with the player ID
     });
 
     // Request player ID from the server
-    sock.emit("playerIdReq");
+    this.sock.emit("playerIdReq");
   });
 }
 
 async function setClientPlayerId() {
   try {
     const hold = await getPlayerIdFromSocket();
-    playerId = hold;
-    console.log("Received player ID:", playerId);
+    this.playerId = hold;
+    console.log("Received player ID:", this.playerId);
   } catch (error) {
     console.error("Error:", error);
   }
 }
+
+
 //***END NEW CONTENT*** ----------------------------------------------------
 
 let sleepSetTimeout_ctrl;

@@ -5,9 +5,6 @@ import { MainMenu } from "./scenes/MainMenu";
 import { Preloader } from "./scenes/Preloader";
 import { AuthScene } from "./scenes/Auth"; 
 import { LobbyScene } from "./scenes/Lobby";
-import io from "socket.io-client"; 
-
-const serverUrl = "http://localhost:3000"; 
 
 const sizes = {
   width: 1000,
@@ -15,20 +12,6 @@ const sizes = {
 };
 
 const speedDown = 300;
-const sock = io(serverUrl);
-let playerId = -1;
-
-let sleepSetTimeout_ctrl;
-function sleep(ms) {
-  clearInterval(sleepSetTimeout_ctrl);
-  return new Promise(
-    (resolve) => (sleepSetTimeout_ctrl = setTimeout(resolve, ms))
-  );
-}
-(async () => {
-  await setClientPlayerId();
-  await sleep(5000);
-})
 
 const config = {
   type: Phaser.WEBGL, // The rendering context. Either AUTO, CANVAS, WEBGL, or HEADLESS 
