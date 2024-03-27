@@ -11,19 +11,13 @@ const cors = require('cors');
 
 const PORT = process.env.PORT || 3000;
 
-
-  // TODO Verify socket.io code was successfully refactored 
-    // install new game 
-    // proceed to creating lobby scene 
-
 // Enable CORS middleware
 app.use(cors({ 
   origin: 'http://localhost:1234'
 }));
 
 // Serve static files from the "client" directory
-// app.use(express.static(path.join(__dirname, "..", "dist/index")));
-    // debug build command once code is ready for deployment 
+app.use(express.static(path.join(__dirname, "..", "dist")));   // refactoring required. 
 
 // Create an HTTP server instance
 const server = http.createServer(app);

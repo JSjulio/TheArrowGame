@@ -3,7 +3,7 @@ const router = require("express").Router();
 const db = require("../db");
 const { PrismaClient } = require("@prisma/client");
 const Prisma = new PrismaClient();
-
+const io = require("socket.io"); 
 
 
 // Deny access if player is not logged in
@@ -15,14 +15,17 @@ router.use((req, res, next) => {
 });
 
 // Get all players currently not in a game 
-router.get('/', async (req, res) => {
+router.get('/lobby', async (req, res) => {
+  
+ const playersInLobby = {}; 
+  
   const players = await Prisma.player.findMany({
     where: {
       inGame: false,
     },
   });
   
-  res.send(players);
+  res.send(players, playersInLobby);
 });
 
 

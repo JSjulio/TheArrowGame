@@ -3,33 +3,42 @@ import Phaser, { NONE } from "phaser";
 import Player from "../../js/Player"
 import io from "socket.io-client";
 
-
-const serverUrl = "http://localhost:3000";
-
-const speedDown = 300;
-const sock = io(serverUrl);
-let playerId = -1;
-
+// 
+//TODO : Add serverUrl and assign playerId through passed in data 
 
 export class Game extends Scene {
 
   constructor() {
 
     super("Game"); 
-    this.playerId = playerId;
 
   } 
   
   preload() { 
-    this.load.tilemapTiledJSON("map", "/map/battlefield.json");//loads the battlefield.json file
-    this.load.image("tiles", "/map/battlefield.png");//loads the battlefield.png file that the tile battlefiled.json file references
+    this.load.setPath('assets');
 
+    this.load.tilemapTiledJSON("map", "map/battlefield.json");//loads the battlefield.json file
+    this.load.image("tiles", "map/battlefield.png");//loads the battlefield.png file that the tile battlefiled.json file references
+  
+    //Archer character preload
+  this.load.spritesheet(
+    "player", 
+  "/Archers-Character/Archers/Archer-1.png",
+      { frameWidth: 64, frameHeight: 64 }
+  );    
+  this.load.spritesheet(
+    "playerLeft", 
+  "/Archers-Character/Archers/Archer-1-left.png",
+      { frameWidth: 64, frameHeight: 64 }
+  );    
   }
 
-
   
-  create() {
-    this.socket = sock;
+  create(data) {
+    this.socket = data.serverUrl; 
+    this.playerId = data.playerId;
+
+    
     this.socket.on('playerUpdates', (playerUpdated) => {
       // console.log(`Received player updates from ${playerUpdated.id}. Coordinates - X: ${playerUpdated.x} Y: ${playerUpdated.y} ${typeof playerUpdated.x}`);
       // console.log(`Local player coordinates: ${this.player.x} ${this.player.y} and their types: ${typeof this.player.x}`)
@@ -55,6 +64,11 @@ export class Game extends Scene {
     tileHeight: 12,
   });
 
+  // Send the tile indices and other necessary information to the server
+    // this.socket.emit('mapData', { tileIndices, tileWidth, tileHeight, mapWidth, mapHeight, scale });
+
+    // Receive the valid spawn positions from the server, deconflicted for each player
+    // WIP
   this.socket.on("validPositions", (positions) => {
     console.log(positions);
   });
@@ -91,24 +105,25 @@ export class Game extends Scene {
 
  // TODO - Debug
     // for testing purpose 
-    // this.player.setOrigin(0.5, 0.5);
-    // this.player.setScale(this.scaleFactor * 2.5); // ! Error arose here: can't find player after adding this
-    //resizing bouncing box
-    // this.newBoundingBoxWidth = 16;
-    // this.newBoundingBoxHeight = 15;
-    // this.offsetX = (this.player.width - this.newBoundingBoxWidth) / 2;
-    // this.offsetY = (this.player.height - this.newBoundingBoxHeight) / 1.5;
+    this.player.setOrigin(0.5, 0.5);
+    // this.player.setScale(this.scaleFactor * 2.5); //!  can't find player after adding this code below
+    // resizing bouncing box
+    this.newBoundingBoxWidth = 16;
+    this.newBoundingBoxHeight = 15;
+    this.offsetX = (this.player.width - this.newBoundingBoxWidth) / 2;
+    this.offsetY = (this.player.height - this.newBoundingBoxHeight) / 1.5;
 
     // Set the new size of the bounding box
-    // this.player.body.setSize(
-    //   this.newBoundingBoxWidth,
-    //   this.newBoundingBoxHeight,
-    //   true
-    // );
+    this.player.body.setSize(
+      this.newBoundingBoxWidth,
+      this.newBoundingBoxHeight,
+      true
+    );
+        
 
-    // Reposition the bounding box relative to the player's center // ! game stops loading here 
-    // this.player.body.setOffset(this.offsetX, this.offsetY);
-    // this.player.anims.play("idleLeft");
+    // Reposition the bounding box relative to the player's center 
+    this.player.body.setOffset(this.offsetX, this.offsetY);
+    this.player.anims.play("idleLeft");
 
     // Add collision between player and collision layer
     // this.physics.add.existing(this.player);
@@ -117,7 +132,7 @@ export class Game extends Scene {
     this.playerArr = [];
     // Sets up the arrow keys as the input buttons
     this.cursors = this.input.keyboard.createCursorKeys();
-    // this.playerArr.push(this.player);
+    this.playerArr.push(this.player);
     // Sends the player to the server
 
     this.socket.emit("playerConnect", this.player);
@@ -237,3 +252,14 @@ async function setClientPlayerId() {
 }
 //***END NEW CONTENT*** ----------------------------------------------------
 
+let sleepSetTimeout_ctrl;
+function sleep(ms) {
+  clearInterval(sleepSetTimeout_ctrl);
+  return new Promise(
+    (resolve) => (sleepSetTimeout_ctrl = setTimeout(resolve, ms))
+  );
+}
+(async () => {
+  await setClientPlayerId();
+  await sleep(5000);
+})

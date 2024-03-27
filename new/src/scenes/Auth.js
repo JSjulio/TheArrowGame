@@ -5,7 +5,12 @@ export class AuthScene extends Scene {
     super({ key: "AuthScene" });
   }
 
-  create() {
+  create(data) {
+
+    this.serverUrl = data.serverUrl; // recieved from MainMenu
+
+    // this.socket.emit('need playersInLobby', this.socket.playersInLobby)
+
     const bImage = this.add.image(512, 384, 'loginImage');
     bImage.setAlpha(.6);
     this.createLoginForm();
@@ -53,11 +58,16 @@ export class AuthScene extends Scene {
       body: JSON.stringify({ name: username, password: password }),
     })
     .then(response => response.json())
-    .then(data => {
+    .then(data => { 
       if (data.token) {
         // Handle successful authentication
         console.log(`${type} successful, token:`, data.token);
-        this.scene.start('LobbyScene');
+        console.log('player: ', data.player.name + ' has logged in !');
+
+
+// ***ADDED*** this code sets the playerId to data.player.name  + passes LobbyScene the serverUrl.
+    //data.player.id is autoincrementing and and does not repeat. 
+        this.scene.start('LobbyScene', { serverUrl: this.serverUrl, playerId: data.player.name});
       } else {
         // Handle authentication failure
         console.error(`${type} failed:`, data.error);

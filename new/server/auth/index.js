@@ -67,7 +67,7 @@ router.post("/login", async (req, res, next) => {
     }
 
     const token = jwt.sign({ id: player.id }, JWT_SECRET);
-    res.status(200).send({ token });
+    res.status(200).send({ player, token });
     } catch (error) {
     next(error);
     }

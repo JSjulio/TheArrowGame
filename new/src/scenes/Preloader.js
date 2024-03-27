@@ -1,10 +1,16 @@
 import { Scene } from "phaser";
+import io from "socket.io-client";
 
 export class Preloader extends Scene {
   constructor() {
-    super("Preloader");
+   super("Preloader");
+    this.serverUrl = io("http://localhost:3000"); // Initialize socket.io listening on same port backend socket.io is tuning into
+  
+    this.serverUrl.on('connect', () => { 
+      console.log('socket.io Connected!')
+    })
+  
   }
-
   preload() {
     this.load.setPath("assets"); //when loading assests, the baseURL or initial path can be given first
 
@@ -15,7 +21,7 @@ export class Preloader extends Scene {
 
   create() {
 
-    this.scene.start("MainMenu"); // defines the next scene that the user will see. Notice that this scene also does not get observed by the user 
+    this.scene.start("MainMenu", { serverUrl: this.serverUrl }); // Pass server.Url to the next scene 
 
   }
 }
