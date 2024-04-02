@@ -1,5 +1,6 @@
 import { Scene } from "phaser";
 import io from "socket.io-client";
+import jwt from "jsonwebtoken";
 
 export class LobbyScene extends Scene {
   constructor() {
@@ -10,9 +11,15 @@ export class LobbyScene extends Scene {
     // this.playerInLobby = data.playersInLobby;
     this.socket = io("http://localhost:3000/lobby") // Initialize socket.io listening on same port backend socket.io is tuning into
     // console.log(this.socket);
-    this.player = data.player;
+
+    this.player = data.player; 
+    // console.log(this.player);
+
     this.playerId = data.player.id;
-    this.token = data.token;
+    // console.log(this.playerId);
+
+    this.token = data.token; // TODO -  Not sure if token is required here? for functionality, if it is not required, remove it.
+    console.log(this.token);
     
     
 
@@ -20,7 +27,7 @@ export class LobbyScene extends Scene {
 // logic for player joining the lobby socket.io connection 
     
    //sends a request for player to join the lobby nameSpace socket.io server once player enters the lobby scene
-   this.socket.emit("joinLobby", this.playerId );
+   this.socket.emit("joinLobby", this.player);
 
        // Listen for the server to respond confirming player joined the lobby
        this.socket.on('joinedLobby', (response) => {
@@ -54,8 +61,8 @@ export class LobbyScene extends Scene {
       })
       .setInteractive()
       .on("pointerdown", () => {
-         this.gameId = gameIdInput.node.value;
-        this.handleJoinRoom(this.gameId);
+        const gameId = gameIdInput.node.value;
+        this.handleJoinRoom(gameId);
       });
 
     return { gameIdInput, actionButton };
@@ -64,8 +71,8 @@ export class LobbyScene extends Scene {
 // Handle game room creation/joining
 handleJoinRoom() {
     // Emit event to create or join a game room
-    this.socket.emit('createGameRoom', this.gameId, this.playerId);
-    
+    this.socket.emit('createGameRoom', this.gameId, this.playerId, this.socket);
+        console.log(this.gameId, this.playerId, this.socket);
     // Listen for confirmation of room creation/joining
     this.socket.on('gameRoomCreated', (response) => {
       console.log(`${response.message}`);
@@ -82,6 +89,11 @@ handleJoinRoom() {
     this.socket.on('gameStarted', (data) => {
         console.log(`Game in room ${data.room} is starting.`);
         // Transition to the game scene or perform other setup as needed
+    });
+
+    // Listen for the event when the game room is at capacity
+    this.socket.on('gameAtPlayerCapacity', (response) => {
+        console.log(`${response.message}`);
     });
 
   }

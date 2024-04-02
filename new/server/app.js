@@ -124,7 +124,7 @@ io.on('connection', (socket) => {
       });
 
     socket.on('playerIdReq', () => {
-      const pid = socket.id;
+      const pid = socket.id; // Player ID
       if(!players.has(pid)){
         socket.emit('playerIdRes', (pid));
       }
@@ -150,28 +150,22 @@ io.on('connection', (socket) => {
   });
   socket.on('clientPlayerUpdate', (playerData) => {
 
-    players.set(playerData.id, playerData);
+    players.set(playerData.id, playerData); 
     // console.log(playerData.activeKeys)
     socket.broadcast.emit('playerUpdates', {'id': playerData.id, 'x': playerData.playerX, 'y': playerData.playerY, 'activeKeys': playerData.activeKeys, 'direction': playerData.direction});
   });
 
   // Handle disconnection
   socket.on('disconnect', () => {
-      console.log('A user disconnected: ' + socket.id);
+      console.log(`A user disconnected from TheArrowGame - SocketId deteled from players map`);
       socket.broadcast.emit("removePlayer", (socket.id))
       // Remove player data from players map
-      players.delete(socket.id);
-
+      players.delete(socket.id); // deletes the player from the game room - // TODO Not sure which to use here.
   });
 });
 
 
 // ***ADDED*** -----------------------------------------------------------------------
-
-//TODO Create gameState object to store the state of all rooms created 
-const gameStates = {}; // Map to store game state information
-
-
 
 // ***BEGIN NEW CONTENT*** -----------------------------------------------------------------------
 //* created a dedicated socket.io for the lobby scene and game rooms created by players or automatically. 
@@ -182,49 +176,59 @@ const gameStates = {}; // Map to store game state information
 // Initialize lobby socket.io connection
 const lobbySocket = io.of("/lobby");
 
-  // Listen for connections on the lobby socket 
-  lobbySocket.on("connection", (socket, playerId) => {
+  // Listen for connection to the lobby socket.io connection
+  lobbySocket.on("connection", (socket) => {
   
     // Listen for joinLobby event
-    socket.on("joinLobby", () => {
+    socket.on("joinLobby", (player) => {
 
         // Joins player into the Lobby socket.io connection
         socket.join('gameLobby'); 
-        console.log(`User ${playerId} connected to the lobby`);
+        console.log(`Player "${player.name}" connected to the lobby 🎯 !`);
         
         // Emit a message to the client that they have joined the lobby socket.io connection
-        socket.emit('joinedLobby', { message: 'you have joined the lobby', playerId: playerId }); 
+        socket.emit('joinedLobby', { message: `${player.name} You are now in TheArrowGame lobby!`}); 
 
         // Broadcast to all clients in the gameLobby room that a new player has joined
-        lobbySocket.to('/lobby').emit('newPlayerInLobby', { playerId: playerId, socketId: socket.id});
+        lobbySocket.to('/lobby').emit('newPlayerInLobby', { player: player.name, socketId: socket.id} + 'has joined the lobby!');
     })
     
 // ***BEGIN NEW CONTENT*** -----------------------------------------------------------------------
 // logic for player joining a game room socket.io connection through form input
 
+//***ADDED*** gameState object to store the state of all socket game rooms created 
+const gameStates = {}; // Map to store game state information
+
+
     // Method 1: Create a room with a specific game ID
     //TODO: Add a timer which denies access to the room after a certain amount of time. Once room no longer has people in it, it will be destroyed. 
-    //TODO: Set a limit to the number of players that can join the room.
-
+    ////: Set a limit to the number of players that can join the room.
+    // ! Not sure what the bug is here? 
     socket.on('createGameRoom', (gameId, playerId) => {
-    socket.join(gameId);
+
+      if (gameStates[gameId] && gameStates[gameId].players.length >= 10) {
+        // If the game room exist && is at capacity (10 players), deny player entry and inform client 
+        socket.emit('gameAtPlayerCapacity', { message: 'Game room is at 10 player limit', gameId: gameId });
+      } 
+      // If the game room does not exist, create the game room and add the player to the room
       if (!gameStates[gameId]) { 
-        gameStates[gameId] = { 
-          players: [],
-         };
-      }
-
+        gameStates[gameId] = { players: [],}; // Initialize the game state 
+        socket.join(gameId);
+        gameStates[gameId].players.push(socket.id);
+      } 
+       else { 
       // Add the player to room's game state
+      socket.join(gameId);
       gameStates[gameId].players.push(socket.id); 
+        console.log(gameStates[gameId].players);
 
-      //Confirm to the player they have joined the room
-    socket.emit('gameRoomCreated', {gameId: `${gameId}` + 'has been created!' });    
+        socket.emit('gameRoomCreated', {playerId: ` ${playerId} you've created game: ${gameId}!` });    
 
     // Notify all players in the room that a new player has joined
     lobbySocket.to(gameId).emit('playerJoinedRoom', {socketId: socket.id, gameId: gameId, playerId: playerId + 'has joined the room!' +`${gameId}`});
-    }); 
-
-     
+    
+    }
+  }); 
 
      //Method 2: Initialize a random room and have players be able to join until the room is full with 10 players 
      // TODO: Add a timer which denies access to the room after a certain amount of time has lapsed. 
@@ -241,7 +245,7 @@ const lobbySocket = io.of("/lobby");
     // Remove the player from any game rooms and update game state
     const rooms = Object.keys(socket.rooms);
     rooms.forEach((gameId) => {
-      if (gameId !== socket.id) { // Skip the socket's own ID
+      if (gameId !== socket.id) { 
         // Remove the player from the game state
         gameStates[gameId].players = gameStates[gameId].players.filter(id => id !== socket.id);
 
@@ -249,28 +253,16 @@ const lobbySocket = io.of("/lobby");
         lobbySocket.to(gameId).emit('playerLeft', { userId: socket.id, room: gameId });
 
         // If the room is empty, delete the game state
-        if (gameStates[roomName].players.length === 0) {
-        delete gameStates[roomName];
+        if (gameStates[gameId].players.length === 0) {
+        delete gameStates[gameId];
       }
       }}
     );  
   });        
 
-   
-
-    //Handle disconnection 
-    socket.on('disconnect', () => {
-      console.log('A user disconnected from lobby: ' + socket.id);
-      socket.broadcast.emit("removePlayer", (socket.id))
-      // Remove player data from players map
-      players.delete(socket.id);
-    }
-  );
 });
+
 // ***END NEW CONTENT*** -------------------------------------------------------------------------
-
-
-
 
 
 // Start listening on the specified port

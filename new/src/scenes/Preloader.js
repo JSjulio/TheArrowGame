@@ -7,7 +7,7 @@ export class Preloader extends Scene {
     this.serverUrl = io("http://localhost:3000"); // Initialize socket.io listening on same port backend socket.io is tuning into
   
     this.serverUrl.on('connect', () => { 
-      console.log('socket.io Connected - Login!')
+      console.log('init socket.io connection');  
     })
   
   }

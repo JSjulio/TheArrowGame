@@ -59,8 +59,7 @@ export class AuthScene extends Scene {
     .then(data => { 
       if (data.token) {
         // Handle successful authentication
-        console.log(`${type} successful, token:`, data.token);
-        console.log('player: ', data.player.name + ' has logged in !');
+        console.log(`${data.player.name} ${type} successful, your token is:`, data.token);
 
         // if auth is successful, proceed to next scene and pass serverUrl, player data, and token to next scene 
         this.scene.start('LobbyScene', { serverUrl: this.serverUrl, player: data.player, token: data.token });

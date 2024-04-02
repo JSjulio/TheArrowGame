@@ -5,7 +5,6 @@ const { PrismaClient } = require("@prisma/client");
 const Prisma = new PrismaClient();
 
 
-
 // Deny access if player is not logged in
 router.use((req, res, next) => {
   if (!req.user) {
