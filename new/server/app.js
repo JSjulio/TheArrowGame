@@ -75,7 +75,7 @@ const io = socketIO(server, {
 const players = new Map(); // Map to store player information
 
 // Once the game Scene socket is created, server will listen for the following events
-io.on('startGame', (socket) => {
+io.on('connection', (socket) => {
 
     // Get the map data and determine valid positions for player spawns
       socket.on('mapData', ({ tileIndices, tileWidth, tileHeight, mapWidth, mapHeight, scale }) => {

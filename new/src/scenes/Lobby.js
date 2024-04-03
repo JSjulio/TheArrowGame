@@ -27,9 +27,9 @@ export class LobbyScene extends Scene {
     this.gameId = ''; 
 
     
-    // this.input.once('pointerdown', () => {
-        //     this.scene.start("Game", { player: this.player }); 
-    // });
+    this.input.once('pointerdown', () => {
+            this.scene.start("Game", { player: this.player }); 
+    });
 // TODO  ^^^^^ For Dev purposes, uncomment to access the game scene once complete*** -----------------------------------------------------------------------
  
 // ***BEGIN NEW CONTENT*** -----------------------------------------------------------------------

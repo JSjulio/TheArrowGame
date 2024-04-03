@@ -40,8 +40,8 @@ export class Game extends Scene {
     this.serverUrl = io("http://localhost:3000"); // initializes the socket.io connection
         
     this.socket = this.serverUrl;   
-      this.socket.emit("startGame", { socket: this.socket, player: data.player }); // sends the player data to the server
-    // this.player = data.player // code refactored
+      // this.socket.emit("startGame", { socket: this.socket, player: data.player }); // sends the player data to the server
+    this.player = data.player // code refactored
     this.playerId = data.player.id; // code refactored
     this.sock = io(this.serverUrl);
 
