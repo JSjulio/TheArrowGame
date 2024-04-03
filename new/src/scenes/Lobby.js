@@ -70,21 +70,22 @@ export class LobbyScene extends Scene {
       })
       .setInteractive()
       .on("pointerdown", () => {
-        const gameId = gameIdInput.node.value;
-        this.handleJoinRoom(gameId);
+        let gameId = gameIdInput.node.value;
+        this.handleJoinRoom(gameId); 
+        console.log('entered gameId is : ', gameId);
       });
 
     return { gameIdInput, actionButton };
   }
 
 // Handle game room creation/joining
-handleJoinRoom() {
+handleJoinRoom(gameId) {
     // Emit event to create or join a game room
-    this.socket.emit('createGameRoom', this.gameId, this.playerId, this.socket);
+    this.socket.emit('createGameRoom', this.gameId, this.player, this.socket);
         console.log(this.gameId, this.playerId, this.socket);
     // Listen for confirmation of room creation/joining
     this.socket.on('gameRoomCreated', (response) => {
-      console.log(`${response.message}`);
+      console.log(`${response.message} ${response.gameId}`);
       // Transition to the game scene or perform other logic as needed
     });
 

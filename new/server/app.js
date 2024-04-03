@@ -197,39 +197,42 @@ const lobbySocket = io.of("/lobby");
 // logic for player joining a game room socket.io connection through form input
 
 //***ADDED*** gameState object to store the state of all socket game rooms created 
-const gameStates = {}; // Map to store game state information
 
 
-    // Method 1: Create a room with a specific game ID
-    //TODO: Add a timer which denies access to the room after a certain amount of time. Once room no longer has people in it, it will be destroyed. 
+// ! First major bug - A recursive loop is created when a player creates a game room.
 
-    // ! Not sure what the bug is here? 
-    socket.on('createGameRoom', (gameId, playerId) => {
+const gameStates = {};
 
+    // Method 1: Create a room with a specific game ID through lobby form. 
+    lobbySocket.on('createGameRoom', (gameId, player) => {
+          
+      // If the game room does not exist, create the game room by initializing the room state
+      if (!gameStates[gameId]) { 
+        
+        socket.join(gameId); // Joins user  into the room socket connection
+        lobbySocket.delete(socket.id); // Deletes user from the lobby socket connection
+        gameStates[gameId] = { players: new Map() };
+        console.log(gameStates[gameId]);
+      }
+      
       // If the game room exist && is at capacity (10 players), deny player entry and inform client 
       if (gameStates[gameId] && gameStates[gameId].players.length >= 10) {
         socket.emit('gameAtPlayerCapacity', { message: 'Game room is at 10 player limit', gameId: gameId });
-      } 
-      // If the game room does not exist, create the game room and add the player to the room
-      if (!gameStates[gameId]) { 
-        gameStates[gameId] = { players: [],}; // Initialize the game state 
-        console.log(gameStates);
-        // socket.join(gameId);
-        gameStates[gameId].players.push(socket.id);
-      } 
-       else { 
-      // Add the player to room's game state
-      // socket.join(gameId);
-      gameStates[gameId].players.push(socket.id); 
-        console.log(gameStates[gameId].players);
+      } else {
+      
+      // Add the player to the game state
+      gameStates[gameId].players.push(socket.id && player);
+     
+      // Add the player to the game room
+      console.log(gameStates[gameId]);
 
-        socket.emit('gameRoomCreated', {playerId: ` ${playerId} you've created game: ${gameId}!` });    
+      lobbySocket.to('/lobby').emit('gameRoomCreated', {message: ` ${player.id} you've created game: ${gameId}!` });    
 
     // Notify all players in the room that a new player has joined
     lobbySocket.to(gameId).emit('playerJoinedRoom', {message: socket.id, gameId: gameId, playerId: playerId + 'has joined the room!' +`${gameId}`});
-    
     }
-  }); 
+
+}); 
 
      //Method 2: Initialize a random room and have players be able to join until the room is full with 10 players 
      // TODO: Add a timer which denies access to the room after a certain amount of time has lapsed. 
