@@ -233,7 +233,6 @@ export class Game extends Scene {
   }
 
   //***BEGIN NEW CONTENT*** --------------------------------------------------
-  // ! Here is the error ?
   // Renders the players based on the data from the server
   renderPlayers(playerData) {
     // console.log(`Types of playerData members ${typeof playerData.x}`)

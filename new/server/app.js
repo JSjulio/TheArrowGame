@@ -29,9 +29,7 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-//* Authorization middleware 
-// Verifies the user token and the private JWT_SECRET passcode to authorize users
-// req.user parameter- is required to access server/api private endpoints
+//Authorization middleware 
 app.use((req, res, next) => {
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith("Bearer")) {
@@ -50,7 +48,6 @@ app.use((req, res, next) => {
   next();
 });
 
-
 // Backend routes 
 app.use("/auth", require("./auth"));
 app.use("/api", require("./api"));
@@ -66,11 +63,7 @@ app.use((req, res) => {
   res.status(404).send("Not found.");
 });
 
-
-
-// This code sets up the connection events that will be used to monitor
-// player information
-// Create a Socket.IO instance and attach it to the HTTP server
+// Socket.io connection
 const io = socketIO(server, {
   cors: {
     origin: "*",
@@ -133,7 +126,7 @@ io.on('startGame', (socket) => {
     // Listen for player connection from client
     socket.on('playerConnect', (player) => {
 
-        players.set(player.id, player.id);
+        // players.set(player.id, player.id);
 
         // Broadcast to all the clients that a new player has joined, along with the information of that player
         socket.broadcast.emit('newPlayer', player);
@@ -165,13 +158,8 @@ io.on('startGame', (socket) => {
 });
 
 
-// ***ADDED*** -----------------------------------------------------------------------
-
 // ***BEGIN NEW CONTENT*** -----------------------------------------------------------------------
-//* created a dedicated socket.io for the lobby scene and game rooms created by players or automatically. 
-//* Previous socket io connection is now active up until players sign in. Once they do sign in , they enter the lobby socket.io connection. 
-
-// the code below listens for when a client enters the lobby scene / emits a message to all clients in the lobby
+// lobby scoket connection that creates serveral game sockets allowsing for various rooms 
 
 // Initialize lobby socket.io connection
 const lobbySocket = io.of("/lobby");
@@ -184,34 +172,37 @@ const lobbySocket = io.of("/lobby");
 
         // Joins player into the Lobby socket.io connection
         socket.join('gameLobby'); 
-        console.log(`Player "${player.name}" connected to the lobby 🎯 !`);
+        console.log(`Player "${player.name}" connected to the lobby 🎯 !`); // TODO Change this line of code to a broadcast
         
         // Emit a message to the client that they have joined the lobby socket.io connection
         socket.emit('joinedLobby', { message: `${player.name} You are now in TheArrowGame lobby!`}); 
 
         // Broadcast to all clients in the gameLobby room that a new player has joined
-        lobbySocket.to('/lobby').emit('newPlayerInLobby', { player: player.name, socketId: socket.id} + 'has joined the lobby!');
+        
+        //TODO fix this line of code 
+        // lobbySocket.to('/lobby').emit('newPlayerInLobby', { player: player.name, socketId: socket.id} + 'has joined the lobby!');
     })
     
 // ***BEGIN NEW CONTENT*** -----------------------------------------------------------------------
-// logic for player joining a game room socket.io connection through form input
-
-//***ADDED*** gameState object to store the state of all socket game rooms created 
+// gameState object to store the state of all socket game rooms created 
 
 
-// ! First major bug - A recursive loop is created when a player creates a game room.
+    //TODO Find out why bug is occuring when player creates a game room.
+      // gameId not being passed to the server? 
+      // gameStates[gameId] is not being created.
+      // recursve loop created when player creates a game room.
 
-const gameStates = {};
+const gameStates = {}; // Object to store the state of all game rooms
 
     // Method 1: Create a room with a specific game ID through lobby form. 
-    lobbySocket.on('createGameRoom', (gameId, player) => {
+    lobbySocket.on('createGameRoom', (socket, gameId, player) => {
           
       // If the game room does not exist, create the game room by initializing the room state
       if (!gameStates[gameId]) { 
         
         socket.join(gameId); // Joins user  into the room socket connection
-        lobbySocket.delete(socket.id); // Deletes user from the lobby socket connection
-        gameStates[gameId] = { players: new Map() };
+        lobbySocket.delete(this.socket.id); // Deletes user from the lobby socket connection
+        gameStates[gameId.players] = new Map() 
         console.log(gameStates[gameId]);
       }
       

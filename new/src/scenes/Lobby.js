@@ -24,7 +24,7 @@ export class LobbyScene extends Scene {
 
     this.token = data.token; 
     // console.log(this.token);
-    
+    this.gameId = ''; 
 
     
     // this.input.once('pointerdown', () => {
@@ -43,10 +43,11 @@ export class LobbyScene extends Scene {
        console.log(`${response.message}`);
        });  
 
-    // Listen for new players joining the lobby
-    this.socket.on("newplayerInLobby"), (response) => {
-      console.log(`${response.message}`);
-    }
+    // TODO Fix this line of code 
+    //Listen for new players joining the lobby
+    // this.socket.on("newplayerInLobby", (response) => {
+    //   console.log(`${response.message}`);
+    // });
 
 // Form for creating a game room
   this.createGameIdForm();
@@ -66,23 +67,23 @@ export class LobbyScene extends Scene {
       .text(100, 300, "START GAME!", {
         fill: "#D1ED9E",
         backgroundColor: "#111",
-        padding: 10,
+        padding: 10, 
       })
       .setInteractive()
       .on("pointerdown", () => {
-        let gameId = gameIdInput.node.value;
-        this.handleJoinRoom(gameId); 
-        console.log('entered gameId is : ', gameId);
+        this.gameId.push(gameIdInput.node.value);
+        this.handleJoinRoom(); 
+        console.log('entered gameId is : ', this.gameId);
       });
 
     return { gameIdInput, actionButton };
   }
 
 // Handle game room creation/joining
-handleJoinRoom(gameId) {
+handleJoinRoom(gameId, player, socket) {
     // Emit event to create or join a game room
-    this.socket.emit('createGameRoom', this.gameId, this.player, this.socket);
-        console.log(this.gameId, this.playerId, this.socket);
+    this.socket.emit('createGameRoom', {message: gameId, player, socket});
+        console.log(this.gameId, this.player.name, this.socket);
     // Listen for confirmation of room creation/joining
     this.socket.on('gameRoomCreated', (response) => {
       console.log(`${response.message} ${response.gameId}`);
