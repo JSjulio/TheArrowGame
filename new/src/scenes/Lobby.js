@@ -26,12 +26,12 @@ export class LobbyScene extends Scene {
     // console.log(this.token);
     
 
-    // TODO For Dev purposes, delete once complete*** -----------------------------------------------------------------------
     
-    this.input.once('pointerdown', () => {
-        this.scene.start("Game", { player: this.player }); 
-    });
-
+    // this.input.once('pointerdown', () => {
+        //     this.scene.start("Game", { player: this.player }); 
+    // });
+// TODO  ^^^^^ For Dev purposes, uncomment to access the game scene once complete*** -----------------------------------------------------------------------
+ 
 // ***BEGIN NEW CONTENT*** -----------------------------------------------------------------------
 // logic for player joining the lobby socket.io connection 
     
