@@ -11,17 +11,10 @@ export class LobbyScene extends Scene {
 
 // Initializes lobby client socket.io connection.  
     this.socket = io("http://localhost:3000/lobby") 
+      
         this.socket.on('connect', () => {
             console.log('lobby socket.io initialized.');
         }); 
-
-
-// Initializes the game client socket.io connection for game.
-//Having it begin here is a good idea because it will be ready to go when the game scene starts. 
-    this.gameSocketPreload = io("http://localhost:3000") 
-        this.gameSocketPreload.on('connect', () => { 
-                console.log('game socket.io initialized.');  
-            }) 
 
     this.player = data.player; 
     // console.log(this.player);
@@ -29,14 +22,14 @@ export class LobbyScene extends Scene {
     this.playerId = data.player.id;
     // console.log(this.playerId);
 
-    this.token = data.token; // TODO -  Not sure if token is required here? for functionality, if it is not required, remove it.
-    console.log(this.token);
+    this.token = data.token; 
+    // console.log(this.token);
     
 
     // TODO For Dev purposes, delete once complete*** -----------------------------------------------------------------------
     
     this.input.once('pointerdown', () => {
-        this.scene.start("Game", { serverUrl: this.gameSocketPreload, player: this.player }); 
+        this.scene.start("Game", { player: this.player }); 
     });
 
 // ***BEGIN NEW CONTENT*** -----------------------------------------------------------------------

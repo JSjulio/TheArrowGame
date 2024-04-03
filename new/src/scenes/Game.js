@@ -7,12 +7,7 @@ import "../../src/style.css";
 export class Game extends Scene {
   constructor() {
     super("Game");
-       
-    this.serverUrl = io("http://localhost:3000"); // Initialize socket.io listening on same port backend socket.io is tuning into
-  
-    this.serverUrl.on('connect', () => { 
-      console.log('init socket.io connection');  
-    }) 
+      
   }
 
   preload() {
@@ -41,15 +36,19 @@ export class Game extends Scene {
   }
 
   create(data) {
-    this.socket = this.serverUrl; // code refactored. socket is passed in through all scenes as 'data' and initialized in preload scene.
-
+    
+    this.serverUrl = io("http://localhost:3000"); // initializes the socket.io connection
+        
+    this.socket = this.serverUrl;   
+      this.socket.emit("startGame", { socket: this.socket, player: data.player }); // sends the player data to the server
     // this.player = data.player // code refactored
     this.playerId = data.player.id; // code refactored
     this.sock = io(this.serverUrl);
 
-    // Create the projectile group for pooling assets
-    // this.arrowGroup = new ArrowGroup(this); // !need to refactor this in following making seperate rooms for each player
 
+    // TODO need to refactor this in following making seperate rooms for each player
+    // Create the projectile group for pooling assets
+    // this.arrowGroup = new ArrowGroup(this); 
     //Creates the listener that waits for other player updates from
     // the server
     this.socket.on("playerUpdates", (playerUpdated) => {
