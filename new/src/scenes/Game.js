@@ -7,6 +7,12 @@ import "../../src/style.css";
 export class Game extends Scene {
   constructor() {
     super("Game");
+       
+    this.serverUrl = io("http://localhost:3000"); // Initialize socket.io listening on same port backend socket.io is tuning into
+  
+    this.serverUrl.on('connect', () => { 
+      console.log('init socket.io connection');  
+    }) 
   }
 
   preload() {
@@ -35,15 +41,14 @@ export class Game extends Scene {
   }
 
   create(data) {
-    //* Makes the socket accessible in the main game
-    this.socket = data.serverUrl; // code refactored. socket is passed in through all scenes as 'data' and initialized in preload scene.
+    this.socket = this.serverUrl; // code refactored. socket is passed in through all scenes as 'data' and initialized in preload scene.
 
     // this.player = data.player // code refactored
     this.playerId = data.player.id; // code refactored
     this.sock = io(this.serverUrl);
 
     // Create the projectile group for pooling assets
-    // this.arrowGroup = new ArrowGroup(this); // !paused refactoring with this error herror here
+    // this.arrowGroup = new ArrowGroup(this); // !need to refactor this in following making seperate rooms for each player
 
     //Creates the listener that waits for other player updates from
     // the server
@@ -114,15 +119,8 @@ export class Game extends Scene {
       y: this.collisionLayer.scaleY,
     };
 
-    //TODO: Send the tile indices and other necessary information to the server
-    // this.socket.emit('mapData', { tileIndices, tileWidth, tileHeight, mapWidth, mapHeight, scale });
-    // Receive the valid spawn positions from the server, deconflicted for each player
-    // // WIP
-    // this.socket.on('validPositions', (positions) => {
-    //   console.log(positions);
-    // });
 
-    // TODO - Debug
+    // TODO - Fix the scaling. The scaling is not working as expected
     // for testing purpose
     this.player.setOrigin(0.5, 0.5);
     // this.player.setScale(this.scaleFactor * 2.5); //!  can't find player after adding this code below
@@ -192,7 +190,7 @@ export class Game extends Scene {
       0
     );
 
-    // TODO sync the ladder
+    // TODO - sync the ladder
     // this.ladderCollision.setScale(this.scaleFactor);
     // this.ladderCollision.setCollisionByExclusion([-1]);
     // this.ladderCollision.setCollisionByProperty({ collide: true });

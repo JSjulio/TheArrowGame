@@ -133,7 +133,7 @@ io.on('connection', (socket) => {
     // Listen for player connection from client
     socket.on('playerConnect', (player) => {
 
-        players.set(player.id, player);
+        players.set(player.id, player.id);
 
         // Broadcast to all the clients that a new player has joined, along with the information of that player
         socket.broadcast.emit('newPlayer', player);
@@ -157,10 +157,10 @@ io.on('connection', (socket) => {
 
   // Handle disconnection
   socket.on('disconnect', () => {
-      console.log(`A user disconnected from TheArrowGame - SocketId deteled from players map`);
+      console.log(`A user disconnected from TheArrowGame - SocketId deteled from players map: ${socket.id}`);
       socket.broadcast.emit("removePlayer", (socket.id))
       // Remove player data from players map
-      players.delete(socket.id); // deletes the player from the game room - // TODO Not sure which to use here.
+      players.delete(socket.id);
   });
 });
 
@@ -202,30 +202,31 @@ const gameStates = {}; // Map to store game state information
 
     // Method 1: Create a room with a specific game ID
     //TODO: Add a timer which denies access to the room after a certain amount of time. Once room no longer has people in it, it will be destroyed. 
-    ////: Set a limit to the number of players that can join the room.
+
     // ! Not sure what the bug is here? 
     socket.on('createGameRoom', (gameId, playerId) => {
 
+      // If the game room exist && is at capacity (10 players), deny player entry and inform client 
       if (gameStates[gameId] && gameStates[gameId].players.length >= 10) {
-        // If the game room exist && is at capacity (10 players), deny player entry and inform client 
         socket.emit('gameAtPlayerCapacity', { message: 'Game room is at 10 player limit', gameId: gameId });
       } 
       // If the game room does not exist, create the game room and add the player to the room
       if (!gameStates[gameId]) { 
         gameStates[gameId] = { players: [],}; // Initialize the game state 
-        socket.join(gameId);
+        console.log(gameStates);
+        // socket.join(gameId);
         gameStates[gameId].players.push(socket.id);
       } 
        else { 
       // Add the player to room's game state
-      socket.join(gameId);
+      // socket.join(gameId);
       gameStates[gameId].players.push(socket.id); 
         console.log(gameStates[gameId].players);
 
         socket.emit('gameRoomCreated', {playerId: ` ${playerId} you've created game: ${gameId}!` });    
 
     // Notify all players in the room that a new player has joined
-    lobbySocket.to(gameId).emit('playerJoinedRoom', {socketId: socket.id, gameId: gameId, playerId: playerId + 'has joined the room!' +`${gameId}`});
+    lobbySocket.to(gameId).emit('playerJoinedRoom', {message: socket.id, gameId: gameId, playerId: playerId + 'has joined the room!' +`${gameId}`});
     
     }
   }); 

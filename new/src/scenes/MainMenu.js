@@ -26,7 +26,6 @@ export class MainMenu extends Scene
     {
        
 // ***ADDED*** this code extracts socket.io url from Preload then passes it to the following scene. 
-        this.serverUrl = data.serverUrl; // Recieved from MainMenu 
 
         this.add.image(512, 310, 'theArrowGame'); // renders theArrowGame image on the landing page. 
         //'START GAME' wording on landing page
@@ -39,7 +38,7 @@ export class MainMenu extends Scene
 
 // ***ADDED code below*** passes AuthScene the serverUrl--------------------------------------------
         this.input.once('pointerdown', () => {
-            this.scene.start('AuthScene', { serverUrl: this.serverUrl });// Pass server.Url to the next scene 
+            this.scene.start('AuthScene');
         });
     }
 }

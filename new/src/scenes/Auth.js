@@ -3,6 +3,8 @@ import { Scene } from "phaser";
 export class AuthScene extends Scene {
   constructor() {
     super({ key: "AuthScene" });
+    
+
   }
 
   create(data) {
