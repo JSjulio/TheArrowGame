@@ -26,12 +26,7 @@ export class LobbyScene extends Scene {
     // console.log(this.token);
     
 
-    
-    // this.input.once('pointerdown', () => {
-    //         this.scene.start("Game", { player: this.player }); 
-    // });
-// TODO  ^^^^^ For Dev purposes, uncomment to access the game scene once complete*** -----------------------------------------------------------------------
- 
+  
 // ***BEGIN NEW CONTENT*** -----------------------------------------------------------------------
 // logic for player joining the lobby socket.io connection 
     
@@ -88,7 +83,8 @@ handleJoinRoom(gameId, player, socket) {
   console.log(gameId, this); 
   
   // Emit event to create or join a game room
-    this.socket.emit('createGameRoom', this.player, gameId); 
+    this.socket.emit('createGameRoom', this.player, {gameId}); 
+    // console.log('gameId:', gameId, 'player:', this.player);
 
     // Listen for confirmation of room creation/joining
     this.socket.on('gameRoomCreated', (response) => {

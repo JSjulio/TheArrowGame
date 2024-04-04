@@ -158,25 +158,24 @@ io.on('connection', (socket) => {
 });
 
 
-// ***BEGIN NEW CONTENT*** -----------------------------------------------------------------------
-// lobby scoket connection that creates serveral game sockets allowsing for various rooms 
-    //TODO Find out why bug is occuring when player creates a game room.
-      // // gameId not being passed to the server? 
-      // gameStates[gameId] is not being created.
-      // recursve loop created when player creates a game room.
-          // TODO : create a button that allows player to join an existing game room if it isn't full.  
+// ***TASK LIST*** -----------------------------------------------------------------------
+    //TODO 
+    // Analyze the createGameRoom code below.
+    // Implement a gameStarted that starts the game 
+      // If start game button clicked players can no longer join the room.
+    // implement Method 2 below 
+    
+      // TODO: Method 2: Join a random room 
+      // Ability to join room will be based on the room being full or a timer expiring.
+      // If room cannot be joined client will added to another random room with the same conditions.
 
-// TODO: Method 2
-//Method 2: Initialize a random room and have players be able to join until the room is full with 10 players 
-//Add a timer which denies access to the room after a certain amount of time has lapsed. 
-        // if within the set period of time and the room is not full , player that clicks this selection will be added to the room.
-        // : if the room is full, player will be added to a queue to wait for the next available room. Once room no longer has people in it, it will be destroyed.
-      
-          // socket.on('initRandomRoom', () => { 
-      //   let randomRoom = 'room-' + Math.floor(Math.random() * 10000);
-      //   socket.join(randomRoom); 
-      //   socket.emit('randomRoomInitialized', { message: 'random room created', room: randomRoom });
-      // }); 
+            // socket.on('initRandomRoom', () => { 
+              //   let randomRoom = 'room-' + Math.floor(Math.random() * 10000);
+              //   socket.join(randomRoom); 
+              //   socket.emit('randomRoomInitialized', { message: 'random room created', room: randomRoom });
+              // }); 
+
+
 
 
 /// ***BEGIN NEW CONTENT*** -----------------------------------------------------------------------
@@ -187,15 +186,18 @@ const gameStates = {}; // Map to store game state information
 
 // Listen for connection to the lobby socket.io connection
   lobbySocket.on("connection", (socket) => {
+
+    // Handle player joining the lobby
     socket.on("joinLobby", (player) => {
         socket.join('gameLobby'); // Joins player into the Lobby socket.io connection
         console.log(`Player "${player.name}" connected to the lobby 🎯 !`);
         socket.emit('joinedLobby', { message: `${player.name}, welcome to the TheArrowGame lobby!`});   // Emit a message to the client that they have joined the lobby socket.io connection
     });
 
-// Method 1: Create a room with a specific gameID through lobby form. 
-    socket.on('createGameRoom', ({gameId, player}) => {
-          // console.log('gameId:', gameId, 'player:', player);
+    //TODO - Analyze this code 
+//Create a room with a specific gameID through lobby form. 
+    socket.on('createGameRoom', (gameId, player) => {
+          console.log('gameId:', gameId, 'player:', player);
       if (!gameStates[gameId]) { 
         gameStates[gameId] = {
           players: new Map() 
