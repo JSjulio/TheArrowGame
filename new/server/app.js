@@ -158,14 +158,16 @@ io.on('connection', (socket) => {
 });
 
 
-// ***TASK LIST*** -----------------------------------------------------------------------
-    //TODO 
-    // Analyze the createGameRoom code below.
-    // Implement a gameStarted that starts the game 
-      // If start game button clicked players can no longer join the room.
-    // implement Method 2 below 
-    
-      // TODO: Method 2: Join a random room 
+// ***LOBBY / GAME Join and Start TASK LIST*** -----------------------------------------------------------------------
+
+    //TODO - createGameRoom method 1: Create a room with a specific gameID through lobby form.
+      // *Analyze the createGameRoom code below -
+          //  ensure map goes within gameId 
+          //  distinguish between two gameId values 
+      // *Implement a gameStarted feature that ...starts the game and denies players from joining the room 
+      // implement Method 2 below 
+      
+      // TODO: createGameRoom Method 2: Join a random room 
       // Ability to join room will be based on the room being full or a timer expiring.
       // If room cannot be joined client will added to another random room with the same conditions.
 
@@ -185,18 +187,17 @@ const gameStates = {}; // Map to store game state information
 
 
 // Listen for connection to the lobby socket.io connection
-  lobbySocket.on("connection", (socket) => {
+lobbySocket.on("connection", (socket) => {
 
-    // Handle player joining the lobby
-    socket.on("joinLobby", (player) => {
-        socket.join('gameLobby'); // Joins player into the Lobby socket.io connection
-        console.log(`Player "${player.name}" connected to the lobby 🎯 !`);
-        socket.emit('joinedLobby', { message: `${player.name}, welcome to the TheArrowGame lobby!`});   // Emit a message to the client that they have joined the lobby socket.io connection
-    });
+  // Handle player joining the lobby
+  socket.on("joinLobby", (player) => {
+      socket.join('gameLobby'); // Joins player into the Lobby socket.io connection
+      console.log(`Player "${player.name}" connected to the lobby 🎯 !`);
+      socket.emit('joinedLobby', { message: `${player.name}, welcome to the TheArrowGame lobby!`});   // Emit a message to the client that they have joined the lobby socket.io connection
+  });
 
-    //TODO - Analyze this code 
-//Create a room with a specific gameID through lobby form. 
-    socket.on('createGameRoom', (gameId, player) => {
+//createGameRoom method 1
+  socket.on('createGameRoom', (gameId, player) => {
           console.log('gameId:', gameId, 'player:', player);
       if (!gameStates[gameId]) { 
         gameStates[gameId] = {
