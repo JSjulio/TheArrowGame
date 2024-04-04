@@ -160,97 +160,76 @@ io.on('connection', (socket) => {
 
 // ***BEGIN NEW CONTENT*** -----------------------------------------------------------------------
 // lobby scoket connection that creates serveral game sockets allowsing for various rooms 
-
-// Initialize lobby socket.io connection
-const lobbySocket = io.of("/lobby");
-
-  // Listen for connection to the lobby socket.io connection
-  lobbySocket.on("connection", (socket) => {
-  
-    // Listen for joinLobby event
-    socket.on("joinLobby", (player) => {
-
-        // Joins player into the Lobby socket.io connection
-        socket.join('gameLobby'); 
-        console.log(`Player "${player.name}" connected to the lobby 🎯 !`); // TODO Change this line of code to a broadcast
-        
-        // Emit a message to the client that they have joined the lobby socket.io connection
-        socket.emit('joinedLobby', { message: `${player.name} You are now in TheArrowGame lobby!`}); 
-
-        // Broadcast to all clients in the gameLobby room that a new player has joined
-        
-        //TODO fix this line of code 
-        // lobbySocket.to('/lobby').emit('newPlayerInLobby', { player: player.name, socketId: socket.id} + 'has joined the lobby!');
-    })
-    
-// ***BEGIN NEW CONTENT*** -----------------------------------------------------------------------
-// gameState object to store the state of all socket game rooms created 
-
-
     //TODO Find out why bug is occuring when player creates a game room.
-      // gameId not being passed to the server? 
+      // // gameId not being passed to the server? 
       // gameStates[gameId] is not being created.
       // recursve loop created when player creates a game room.
+          // TODO : create a button that allows player to join an existing game room if it isn't full.  
 
-const gameStates = {}; // Object to store the state of all game rooms
+// TODO: Method 2
+//Method 2: Initialize a random room and have players be able to join until the room is full with 10 players 
+//Add a timer which denies access to the room after a certain amount of time has lapsed. 
+        // if within the set period of time and the room is not full , player that clicks this selection will be added to the room.
+        // : if the room is full, player will be added to a queue to wait for the next available room. Once room no longer has people in it, it will be destroyed.
+      
+          // socket.on('initRandomRoom', () => { 
+      //   let randomRoom = 'room-' + Math.floor(Math.random() * 10000);
+      //   socket.join(randomRoom); 
+      //   socket.emit('randomRoomInitialized', { message: 'random room created', room: randomRoom });
+      // }); 
 
-    // Method 1: Create a room with a specific game ID through lobby form. 
-    lobbySocket.on('createGameRoom', (socket, gameId, player) => {
-          
-      // If the game room does not exist, create the game room by initializing the room state
+
+/// ***BEGIN NEW CONTENT*** -----------------------------------------------------------------------
+
+const lobbySocket = io.of("/lobby"); // Initialize lobby socket.io connection
+const gameStates = {}; // Map to store game state information
+
+
+// Listen for connection to the lobby socket.io connection
+  lobbySocket.on("connection", (socket) => {
+    socket.on("joinLobby", (player) => {
+        socket.join('gameLobby'); // Joins player into the Lobby socket.io connection
+        console.log(`Player "${player.name}" connected to the lobby 🎯 !`);
+        socket.emit('joinedLobby', { message: `${player.name}, welcome to the TheArrowGame lobby!`});   // Emit a message to the client that they have joined the lobby socket.io connection
+    });
+
+// Method 1: Create a room with a specific gameID through lobby form. 
+    socket.on('createGameRoom', ({gameId, player}) => {
+          // console.log('gameId:', gameId, 'player:', player);
       if (!gameStates[gameId]) { 
-        
-        socket.join(gameId); // Joins user  into the room socket connection
-        lobbySocket.delete(this.socket.id); // Deletes user from the lobby socket connection
-        gameStates[gameId.players] = new Map() 
-        console.log(gameStates[gameId]);
+        gameStates[gameId] = {
+          players: new Map() 
+        };
+        console.log(`Game room ${gameId} created`); 
       }
-      
-      // If the game room exist && is at capacity (10 players), deny player entry and inform client 
-      if (gameStates[gameId] && gameStates[gameId].players.length >= 10) {
-        socket.emit('gameAtPlayerCapacity', { message: 'Game room is at 10 player limit', gameId: gameId });
+
+      // If the game is at capacity (10 players), deny player entry and inform client 
+      if (gameStates[gameId].players.size >= 10) {
+        socket.emit('gameAtPlayerCapacity', { message: 'Game room is at capacity', gameId });
       } else {
-      
-      // Add the player to the game state
-      gameStates[gameId].players.push(socket.id && player);
-     
-      // Add the player to the game room
-      console.log(gameStates[gameId]);
+        // Add the player to the game state
+        gameStates[gameId].players.set(socket.id, player);
+        // Add the player to the game room
+        console.log(gameStates[gameId]); 
+        socket.emit('gameRoomCreated', { gameId, message: `you've created game room: ${gameId}!` });
+        lobbySocket.to('/lobby').emit('gameRoomCreated', {message: ` ${player.id} you've created game: ${gameId}!` });    
 
-      lobbySocket.to('/lobby').emit('gameRoomCreated', {message: ` ${player.id} you've created game: ${gameId}!` });    
-
-    // Notify all players in the room that a new player has joined
-    lobbySocket.to(gameId).emit('playerJoinedRoom', {message: socket.id, gameId: gameId, playerId: playerId + 'has joined the room!' +`${gameId}`});
+        // Notify all players in the room that a new player has joined
+        lobbySocket.to(gameId).emit('playerJoinedRoom', {message: player.name, gameId});
     }
-
 }); 
 
-     //Method 2: Initialize a random room and have players be able to join until the room is full with 10 players 
-     // TODO: Add a timer which denies access to the room after a certain amount of time has lapsed. 
-     // TODO: if within the set period of time and the room is not full , player that clicks this selection will be added to the room.
-    // TODO: if the room is full, player will be added to a queue to wait for the next available room. Once room no longer has people in it, it will be destroyed.
-    // socket.on('initRandomRoom', () => { 
-    //   let randomRoom = 'room-' + Math.floor(Math.random() * 10000);
-    //   socket.join(randomRoom); 
-    //   socket.emit('randomRoomInitialized', { message: 'random room created', room: randomRoom });
-    // }); 
+     
 
     // Handle player disconnecting
-  socket.on('disconnect', () => {
-    // Remove the player from any game rooms and update game state
-    const rooms = Object.keys(socket.rooms);
-    rooms.forEach((gameId) => {
-      if (gameId !== socket.id) { 
-        // Remove the player from the game state
-        gameStates[gameId].players = gameStates[gameId].players.filter(id => id !== socket.id);
-
-        // Notify others in the room
-        lobbySocket.to(gameId).emit('playerLeft', { userId: socket.id, room: gameId });
-
-        // If the room is empty, delete the game state
-        if (gameStates[gameId].players.length === 0) {
-        delete gameStates[gameId];
-      }
+    socket.on('disconnect', () => {
+      Object.keys(gameStates).forEach(gameId => {
+        if (gameStates[gameId].players.has(socket.id)) {
+          gameStates[gameId].players.delete(socket.id);
+          lobbySocket.to(gameId).emit('playerLeft', { player: socket.id, gameId });
+          if (gameStates[gameId].players.size === 0) {
+            delete gameStates[gameId];
+          }
       }}
     );  
   });        
@@ -268,3 +247,7 @@ server.listen(PORT, "localhost", () => {
 
 
 module.exports = app;
+
+
+
+// Before this note is the old version of the server file.

@@ -24,12 +24,12 @@ export class LobbyScene extends Scene {
 
     this.token = data.token; 
     // console.log(this.token);
-    this.gameId = ''; 
+    
 
     
-    this.input.once('pointerdown', () => {
-            this.scene.start("Game", { player: this.player }); 
-    });
+    // this.input.once('pointerdown', () => {
+    //         this.scene.start("Game", { player: this.player }); 
+    // });
 // TODO  ^^^^^ For Dev purposes, uncomment to access the game scene once complete*** -----------------------------------------------------------------------
  
 // ***BEGIN NEW CONTENT*** -----------------------------------------------------------------------
@@ -71,9 +71,13 @@ export class LobbyScene extends Scene {
       })
       .setInteractive()
       .on("pointerdown", () => {
-        this.gameId.push(gameIdInput.node.value);
-        this.handleJoinRoom(); 
-        console.log('entered gameId is : ', this.gameId);
+       let gameId = gameIdInput.node.value;
+       if(gameId) { 
+        this.handleJoinRoom(gameId);
+        // console.log('gameId:', gameId);
+       } else { 
+        console.log('gameId is required to Start Game!')  
+       }
       });
 
     return { gameIdInput, actionButton };
@@ -81,14 +85,17 @@ export class LobbyScene extends Scene {
 
 // Handle game room creation/joining
 handleJoinRoom(gameId, player, socket) {
-    // Emit event to create or join a game room
-    this.socket.emit('createGameRoom', {message: gameId, player, socket});
-        console.log(this.gameId, this.player.name, this.socket);
+  console.log(gameId, this); 
+  
+  // Emit event to create or join a game room
+    this.socket.emit('createGameRoom', this.player, gameId); 
+
     // Listen for confirmation of room creation/joining
     this.socket.on('gameRoomCreated', (response) => {
-      console.log(`${response.message} ${response.gameId}`);
-      // Transition to the game scene or perform other logic as needed
-    });
+      console.log(`${response.message}`);
+      this.scene.start("Game", { player: this.player, gameId: response.gameId }); // Pass player and gameId to the game scene and move to the game scene
+      console.log('gameId:', response.gameId);
+    }); 
 
     // Listen for the event when another player joins the same room
     this.socket.on('playerJoinedRoom', (response) => {
