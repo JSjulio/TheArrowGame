@@ -80,10 +80,10 @@ export class LobbyScene extends Scene {
 
 // Handle game room creation/joining
 handleJoinRoom(gameId, player, socket) {
-  console.log(gameId, this); 
+  // console.log(gameId, this); 
   
   // Emit event to create or join a game room
-    this.socket.emit('createGameRoom', this.player, {gameId}); 
+    this.socket.emit('createGameRoom', gameId); 
     // console.log('gameId:', gameId, 'player:', this.player);
 
     // Listen for confirmation of room creation/joining

@@ -192,11 +192,11 @@ lobbySocket.on("connection", (socket) => {
       socket.join('gameLobby'); // Joins player into the Lobby socket.io connection
       console.log(`Player "${player.name}" connected to the lobby 🎯 !`);
       socket.emit('joinedLobby', { message: `${player.name}, welcome to the TheArrowGame lobby!`});   // Emit a message to the client that they have joined the lobby socket.io connection
-  });
+ 
 
 //* createGameRoom method 1
-  socket.on('createGameRoom', (gameId, player) => {
-          console.log('gameId:', gameId, 'thiscurrentplayer:', player); // ! TODO - code is cocatenating gameId and player and swtiching the values.
+  socket.on('createGameRoom', (gameId) => {
+          console.log('gameId:', gameId, 'thiscurrentplayer:', player.name); // ! TODO - code is cocatenating gameId and player and swtiching the values.
       if (!gameStates[gameId]) { 
         gameStates[gameId] = { players: new Set() };
         console.log(`Game room ${gameId} created`); 
@@ -215,6 +215,7 @@ lobbySocket.on("connection", (socket) => {
         // Notify all players in the room that a new player has joined
         lobbySocket.to(gameId).emit('playerJoinedRoom', {message: player.name, gameId});
     }
+  });
 }); 
 
      
