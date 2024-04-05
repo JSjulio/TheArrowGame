@@ -196,7 +196,7 @@ lobbySocket.on("connection", (socket) => {
 
 //* createGameRoom method 1
   socket.on('createGameRoom', (gameId) => {
-          console.log('gameId:', gameId, 'thiscurrentplayer:', player.name); // ! TODO - code is cocatenating gameId and player and swtiching the values.
+          // console.log('gameId:', gameId, 'thiscurrentplayer:', player.name); // values passed in properly 
       if (!gameStates[gameId]) { 
         gameStates[gameId] = { players: new Set() };
         console.log(`Game room ${gameId} created`); 
@@ -208,7 +208,10 @@ lobbySocket.on("connection", (socket) => {
       } else {
         // Add the player to the game state 
         gameStates[gameId].players.add(socket.id);
-        console.log(gameStates[gameId]); 
+        socket.join(gameId); // joins player's socket to a specific game room based on gameId
+        console.log(`Player ${player.name} joined game room ${gameId}`);
+ 
+
         socket.emit('gameRoomCreated', { gameId, message: `you've created game room: ${gameId}!` });
         lobbySocket.to('/lobby').emit('gameRoomCreated', {message: ` ${player.id} you've created game: ${gameId}!` });    
 
@@ -225,6 +228,7 @@ lobbySocket.on("connection", (socket) => {
       Object.keys(gameStates).forEach(gameId => {
         if (gameStates[gameId].players.has(socket.id)) {
           gameStates[gameId].players.delete(socket.id);
+          // Emit to specific game players that a player has left
           lobbySocket.to(gameId).emit('playerLeft', { player: socket.id, gameId });
           if (gameStates[gameId].players.size === 0) {
             delete gameStates[gameId];
