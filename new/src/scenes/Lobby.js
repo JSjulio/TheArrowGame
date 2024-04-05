@@ -44,7 +44,7 @@ export class LobbyScene extends Scene {
     //   console.log(`${response.message}`);
     // });
 
-// Form for creating a game room
+// Form for creating a game room.
   this.createGameIdForm();
 
   }

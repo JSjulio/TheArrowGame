@@ -196,19 +196,18 @@ lobbySocket.on("connection", (socket) => {
 
 //* createGameRoom method 1
   socket.on('createGameRoom', (gameId, player) => {
-          // console.log('gameId:', gameId, 'player:', player);
+          console.log('gameId:', gameId, 'thiscurrentplayer:', player); // ! TODO - code is cocatenating gameId and player and swtiching the values.
       if (!gameStates[gameId]) { 
-        gameStates[gameId] = { players: new Map() };
-        console.log(`Game room ${gameStates[gameId]} created`); // TODO Test this line of code
+        gameStates[gameId] = { players: new Set() };
+        console.log(`Game room ${gameId} created`); 
       }
 
       // If the game is at capacity (10 players), deny player entry and inform client 
       if (gameStates[gameId].players.size >= 10) {
         socket.emit('gameAtPlayerCapacity', { message: 'Game room is at capacity', gameId });
       } else {
-        // Add the player to the game state
-        gameStates[gameId].players.set(socket.id, player);
-        // Add the player to the game room
+        // Add the player to the game state 
+        gameStates[gameId].players.add(socket.id);
         console.log(gameStates[gameId]); 
         socket.emit('gameRoomCreated', { gameId, message: `you've created game room: ${gameId}!` });
         lobbySocket.to('/lobby').emit('gameRoomCreated', {message: ` ${player.id} you've created game: ${gameId}!` });    
