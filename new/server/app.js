@@ -161,7 +161,8 @@ io.on('connection', (socket) => {
 // ***LOBBY / GAME Join and Start TASK LIST*** -----------------------------------------------------------------------
 
     //TODO - createGameRoom method 1: Create a room with a specific gameID through lobby form.
-      // *Analyze the createGameRoom code below -
+      // *Analyze the createGameRoom code below 
+          // integrate createGameRoom with mapData 
           //  ensure map goes within gameId 
           //  distinguish between two gameId values 
       // *Implement a gameStarted feature that ...starts the game and denies players from joining the room 
@@ -176,9 +177,6 @@ io.on('connection', (socket) => {
               //   socket.join(randomRoom); 
               //   socket.emit('randomRoomInitialized', { message: 'random room created', room: randomRoom });
               // }); 
-
-
-
 
 /// ***BEGIN NEW CONTENT*** -----------------------------------------------------------------------
 
@@ -196,14 +194,12 @@ lobbySocket.on("connection", (socket) => {
       socket.emit('joinedLobby', { message: `${player.name}, welcome to the TheArrowGame lobby!`});   // Emit a message to the client that they have joined the lobby socket.io connection
   });
 
-//createGameRoom method 1
+//* createGameRoom method 1
   socket.on('createGameRoom', (gameId, player) => {
-          console.log('gameId:', gameId, 'player:', player);
+          // console.log('gameId:', gameId, 'player:', player);
       if (!gameStates[gameId]) { 
-        gameStates[gameId] = {
-          players: new Map() 
-        };
-        console.log(`Game room ${gameId} created`); 
+        gameStates[gameId] = { players: new Map() };
+        console.log(`Game room ${gameStates[gameId]} created`); // TODO Test this line of code
       }
 
       // If the game is at capacity (10 players), deny player entry and inform client 

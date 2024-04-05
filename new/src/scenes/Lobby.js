@@ -10,7 +10,7 @@ export class LobbyScene extends Scene {
   create(data) {
 
 // Initializes lobby client socket.io connection.  
-    this.socket = io("http://localhost:3000/lobby") 
+    this.socket = io("http://localhost:3000/lobby")  // TODO : place socket init in constructor 
       
         this.socket.on('connect', () => {
             console.log('lobby socket.io initialized.');
