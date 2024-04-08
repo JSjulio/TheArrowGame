@@ -7,7 +7,6 @@ import "../../src/style.css";
 export class Game extends Scene {
   constructor() {
     super("Game");
-      
   }
 
   preload() {
@@ -20,35 +19,32 @@ export class Game extends Scene {
       frameWidth: 64,
       frameHeight: 64,
     });
-    this.load.spritesheet(
-      "playerLeft",
-      "Archers-Character/Archers/Archer-1-left.png",
-      { frameWidth: 64, frameHeight: 64 }
-    );
+
     this.load.image("arrow", "Archers-Character/Archers/arrow.png", {
       frameWidth: 32,
       frameHeight: 32,
     });
-    this.load.image("arrowLeft", " Archers-Character/Archers/arrowLeft.png", {
-      frameWidth: 64,
-      frameHeight: 64,
-    });
   }
 
   create(data) {
-    
     this.serverUrl = io("http://localhost:3000"); // initializes the socket.io connection
-        
-    this.socket = this.serverUrl;   
-      // this.socket.emit("startGame", { socket: this.socket, player: data.player }); // sends the player data to the server
-    this.player = data.player // code refactored
+
+    this.socket = this.serverUrl;
+    // this.socket.emit("startGame", { socket: this.socket, player: data.player }); // sends the player data to the server
+    this.player = data.player; // code refactored
     this.playerId = data.player.id; // code refactored
     this.sock = io(this.serverUrl);
 
+    //adding collision to floors
+    this.map = this.make.tilemap({
+      key: "map",
+      tileWidth: 12,
+      tileHeight: 12,
+    });
 
     // TODO need to refactor this in following making seperate rooms for each player
     // Create the projectile group for pooling assets
-    // this.arrowGroup = new ArrowGroup(this); 
+    // this.arrowGroup = new ArrowGroup(this);
     //Creates the listener that waits for other player updates from
     // the server
     this.socket.on("playerUpdates", (playerUpdated) => {
@@ -61,19 +57,13 @@ export class Game extends Scene {
     this.rate_limit = 5;
     this.rate_limit_count = 0;
 
-    const backgroundImage = this.add.image(0, 0, "tiles").setOrigin(0); // creates a tilemap from the battlefield.json file
-    const scaleFactor = Math.max(
-      this.scale.width / backgroundImage.width,
-      this.scale.height / backgroundImage.height
-    );
-    backgroundImage.setScale(scaleFactor);
+    const screenWidth = this.cameras.main.width;
+    const screenHeight = this.cameras.main.height;
+    const scaleFactorX = screenWidth / this.map.widthInPixels;
+    const scaleFactorY = screenHeight / this.map.heightInPixels;
 
-    //adding collision to floors
-    this.map = this.make.tilemap({
-      key: "map",
-      tileWidth: 12,
-      tileHeight: 12,
-    });
+    const backgroundImage = this.add.image(0, 0, "tiles").setOrigin(0); // creates a tilemap from the battlefield.json file
+    backgroundImage.setScale(scaleFactorX, scaleFactorY);
 
     // Send the tile indices and other necessary information to the server
     // this.socket.emit('mapData', { tileIndices, tileWidth, tileHeight, mapWidth, mapHeight, scale });
@@ -94,10 +84,36 @@ export class Game extends Scene {
     this.map.setCollisionBetween();
     this.collisionLayer = this.map.createLayer("collision", this.tileset, 0, 0);
     // console.log(this.collisionLayer)
-    this.collisionLayer.setScale(this.scaleFactor);
+    this.collisionLayer.setScale(scaleFactorX, scaleFactorY);
     this.collisionLayer.setCollisionByExclusion([-1]);
     this.collisionLayer.setCollisionByProperty({ collide: true });
-    this.collisionLayer.setAlpha(0.6); // makes layer invisible
+    this.collisionLayer.setAlpha(0.6);
+
+    //platform collision layer -----------------------------------------------------
+    this.platformCollision = this.map.createLayer(
+      "platform_collision",
+      this.tileset,
+      0,
+      0
+    );
+    this.platformCollision.setScale(scaleFactorX, scaleFactorY);
+    this.platformCollision.setCollisionByExclusion([-1]);
+    this.platformCollision.setCollisionByProperty({ collide: true });
+    this.physics.add.collider(this.player, this.platformCollision);
+    this.platformCollision.setAlpha(0.6);
+
+    //ladder collision layer -----------------------------------------------------
+    this.ladderCollision = this.map.createLayer(
+      "ladder_collision",
+      this.tileset,
+      0,
+      0
+    );
+
+    this.ladderCollision.setScale(scaleFactorX, scaleFactorY);
+    this.ladderCollision.setCollisionByProperty({ overlap: true });
+    this.physics.add.collider(this.player, this.ladderCollision);
+    this.ladderCollision.setAlpha(0.6);
 
     //***BEGIN NEW CONTENT*** ----------------------------------------------------------------
     // Process and send the map data to the server
@@ -117,7 +133,6 @@ export class Game extends Scene {
       x: this.collisionLayer.scaleX,
       y: this.collisionLayer.scaleY,
     };
-
 
     // TODO - Fix the scaling. The scaling is not working as expected
     // for testing purpose
@@ -168,33 +183,6 @@ export class Game extends Scene {
     });
 
     //END CREATE PLAYER
-
-    // ? code in question : ----------------------------------------------
-    this.platformCollision = this.map.createLayer(
-      "platform_collision",
-      this.tileset,
-      0,
-      0
-    );
-    this.platformCollision.setScale(this.scaleFactor);
-    this.platformCollision.setCollisionByExclusion([-1]);
-    this.platformCollision.setCollisionByProperty({ collide: true });
-    this.physics.add.collider(this.player, this.platformCollision);
-    this.platformCollision.setAlpha(0.6);
-    //ladder collision layer -----------------------------------------------------
-    this.ladderCollision = this.map.createLayer(
-      "ladder_collision",
-      this.tileset,
-      0,
-      0
-    );
-
-    // TODO - sync the ladder
-    // this.ladderCollision.setScale(this.scaleFactor);
-    // this.ladderCollision.setCollisionByExclusion([-1]);
-    // this.ladderCollision.setCollisionByProperty({ collide: true });
-    // this.physics.add.overlap(this.player, this.ladderCollision);
-    // this.ladderCollision.setAlpha(0.6);
 
     // Reposition the bounding box relative to the player's center
     this.player.body.setOffset(this.offsetX, this.offsetY);

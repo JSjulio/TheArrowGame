@@ -95,7 +95,7 @@ handleJoinRoom(gameId, player, socket) {
 
     // Listen for the event when another player joins the same room
     this.socket.on('playerJoinedRoom', (response) => {
-        console.log(`Another player joined the room: ${response.socketId}`);
+        console.log(`Another player joined the room: ${response.message}`);
         // Update the lobby UI or game state as needed
     });
 
