@@ -45,7 +45,8 @@ export class Game extends Scene {
     // TODO need to refactor this in following making seperate rooms for each player
     // Create the projectile group for pooling assets
     // this.arrowGroup = new ArrowGroup(this);
-    //Creates the listener that waits for other player updates from
+
+    //*Creates the listener that waits for other player updates from
     // the server
     this.socket.on("playerUpdates", (playerUpdated) => {
       //Creates the listener that waits for other player updates from
@@ -77,6 +78,7 @@ export class Game extends Scene {
 
     // CREATE PLAYER
     this.player = new Player(this, 100, 100, this.playerId, this.playerId);
+    console.log('At this point This.playerId means:', this.playerId); 
 
     // Establishes the collision layer within the game. Had to be layered
     // on top of everything to ensure proper collision detection
@@ -165,7 +167,7 @@ export class Game extends Scene {
     // ***BEGIN NEW CONTENT*** ----------------------------------------------------
     this.playerArr = [];
     // Sets up the arrow keys as the input buttons
-    this.cursors = this.input.keyboard.createCursorKeys();
+    // this.cursors = this.input.keyboard.createCursorKeys(); // This code is alreay created below 
 
     // Sends the player to the server for storage/broadcast
     // to other clients
@@ -193,7 +195,7 @@ export class Game extends Scene {
     this.playerArr = [];
     // Sets up the arrow keys as the input buttons
     this.cursors = this.input.keyboard.createCursorKeys();
-
+    this.cursors.space = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
     // Sends the player to the server for storage/broadcast
     // to other clients
     this.socket.emit("playerConnect", this.player);
@@ -217,6 +219,8 @@ export class Game extends Scene {
       down: this.input.keyboard.addKey(activeKeys.down),
       left: this.input.keyboard.addKey(activeKeys.left),
       right: this.input.keyboard.addKey(activeKeys.right),
+      spacebar: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
+      // What is the correct way to create a spacebar here?
     };
   }
 
@@ -242,7 +246,6 @@ export class Game extends Scene {
           playerData.id
         );
         updatePlayer.setOrigin(0.5, 0.5);
-        // updatePlayer.setScale(this.scaleFactor * 2.5); // ! not sure why this code is not working but it was the death of me.
         updatePlayer.setAlpha(1);
         updatePlayer.body.setSize(
           this.newBoundingBoxWidth,
@@ -264,6 +267,8 @@ export class Game extends Scene {
     }
   }
 
+
+  
   update() {
     this.physics.world.collide(
       this.player,
@@ -284,6 +289,8 @@ export class Game extends Scene {
       down: this.cursors.down.isDown,
       left: this.cursors.left.isDown,
       right: this.cursors.right.isDown,
+      space: this.cursors.space.isDown // Include the spacebar status
+
     };
     // Sends pertinent information to the server
     this.socket.emit("clientPlayerUpdate", {

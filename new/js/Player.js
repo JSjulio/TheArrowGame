@@ -155,9 +155,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     } else {
       this.isGrounded = false;
     }
-
-    // Shooting
-    if (Phaser.Input.Keyboard.JustDown(cursors.space)) {
+  
+    // Shooting - Check if 'space' key exists in cursors before using it
+    if (cursors.space && Phaser.Input.Keyboard.JustDown(cursors.space)) { // <-- Change made here
       // Trigger shoot animation
       if (this.direction === "left") {
         this.flipX = false;
@@ -165,7 +165,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       } else {
         this.anims.play("attack", true);
       }
-
+  
       // Perform shooting action
       this.shoot();
     }

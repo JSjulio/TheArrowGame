@@ -221,8 +221,6 @@ lobbySocket.on("connection", (socket) => {
   });
 }); 
 
-     
-
     // Handle player disconnecting
     socket.on('disconnect', () => {
       Object.keys(gameStates).forEach(gameId => {
