@@ -13,7 +13,7 @@ export class LobbyScene extends Scene {
     this.socket = io("http://localhost:3000")  // TODO : place socket init in constructor 
       
         this.socket.on('connect', () => {
-            console.log('lobby socket.io initialized.');
+            console.log('player connected to lobby, awaiting create/join game:.');
         }); 
 
     this.player = data.player; 
@@ -91,12 +91,11 @@ handleJoinRoom(gameId, player, socket) {
     this.socket.on('gameRoomCreated', (response) => {
       console.log(`${response.message}`);
       this.scene.start("Game", { player: this.player, gameId: response.gameId }); // Pass player and gameId to the game scene and move to the game scene
-      console.log('gameId:', response.gameId);
     }); 
 
     // Listen for the event when another player joins the same room
     this.socket.on('playerJoinedRoom', (response) => {
-        console.log(`Another player joined the room: ${response.socketId}`);
+        console.log(`${response.message}`);
         // Update the lobby UI or game state as needed
     });
 

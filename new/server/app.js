@@ -84,32 +84,34 @@ io.on('connection', (socket) => {
     // omitted for brevity
   });
 
-  // omitted other event listeners for brevity
-
   // Listen for game room creation requests
   socket.on('createGameRoom', (gameId) => {
-    // Check if the game room already exists
+    
+    // Check if the game room already exists and if there are less than 10 players
+    
+    //create a new gameID
     if (!gameStates[gameId]) {
       gameStates[gameId] = { players: new Set() };
-      console.log(`Game room ${gameId} created`);
+      console.log(`New Game room '${gameId}' created`);
     }
 
     // Check if the game room is at capacity
     if (gameStates[gameId].players.size >= 10) {
-      socket.emit('gameAtPlayerCapacity', { message: 'Game room is at capacity', gameId });
-    } else {
-      // Add the player to the game state and join the game room
-      gameStates[gameId].players.add(socket.id);
-      socket.join(gameId);
-      console.log(`Player with ID ${socket.id} joined game room ${gameId}`);
-      socket.emit('gameRoomCreated', { gameId, message: `you've created game room: ${gameId}!` });
-      socket.broadcast.emit('gameRoomCreated', { message: `Player with ID ${socket.id} has created game: ${gameId}!` });
-    }
-  });
+      socket.emit('gameAtPlayerCapacity', { message: 'Game room is at capacity, create another room', gameId });
+      return; 
+    } 
+  
+    // Add the player to the game state and join the game room
+    gameStates[gameId].players.add(socket.id);
+    socket.join(gameId);
+    console.log(`Player with ID ${socket.id} joined game room ${gameId}`);
+    
+    // Notify the player that they've joined the room
+    socket.emit('gameRoomCreated', { gameId, message: `Joined game room: ${gameId}` });
 
-
-    // If needed, send back an acknowledgment or game state
-    socket.emit('joinedGameRoom', { gameId, message: `Welcome to the game ${gameId}` });
+    // Notify only players within the same room that a new player has joined
+    socket.to(gameId).emit('playerJoinedRoom', { message: `Player with ID ${socket.id} has joined your game '${gameId}'! `, playerId: socket.id, gameId: gameId });
+});
 
 
   // Handle player disconnection

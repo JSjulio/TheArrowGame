@@ -39,7 +39,7 @@ export class Game extends Scene {
     this.sock = io(this.serverUrl);
 
     this.socket.emit('joinGameRoom', { gameId: this.gameId, playerId: this.playerId });
-
+    console.log('Systems check... this.gameId is:', this.gameId, 'this.player is:', this.player); 
 
     //adding collision to floors
     this.map = this.make.tilemap({
@@ -212,7 +212,6 @@ export class Game extends Scene {
       left: this.input.keyboard.addKey(activeKeys.left),
       right: this.input.keyboard.addKey(activeKeys.right),
       spacebar: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
-      // What is the correct way to create a spacebar here?
     };
   }
 
