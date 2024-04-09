@@ -22,7 +22,7 @@ export class MainMenu extends Scene
     }
 
 
-    create (data)
+    create ()
     {
        
 // ***ADDED*** this code extracts socket.io url from Preload then passes it to the following scene. 

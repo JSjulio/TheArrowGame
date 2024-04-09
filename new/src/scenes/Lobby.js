@@ -10,7 +10,7 @@ export class LobbyScene extends Scene {
   create(data) {
 
 // Initializes lobby client socket.io connection.  
-    this.socket = io("http://localhost:3000/lobby")  // TODO : place socket init in constructor 
+    this.socket = io("http://localhost:3000")  // TODO : place socket init in constructor 
       
         this.socket.on('connect', () => {
             console.log('lobby socket.io initialized.');
@@ -67,6 +67,7 @@ export class LobbyScene extends Scene {
       .setInteractive()
       .on("pointerdown", () => {
        let gameId = gameIdInput.node.value;
+      //  console.log(gameId);
        if(gameId) { 
         this.handleJoinRoom(gameId);
         // console.log('gameId:', gameId);
@@ -95,7 +96,7 @@ handleJoinRoom(gameId, player, socket) {
 
     // Listen for the event when another player joins the same room
     this.socket.on('playerJoinedRoom', (response) => {
-        console.log(`Another player joined the room: ${response.message}`);
+        console.log(`Another player joined the room: ${response.socketId}`);
         // Update the lobby UI or game state as needed
     });
 

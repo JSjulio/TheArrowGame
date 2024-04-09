@@ -1,4 +1,5 @@
 import { Scene } from "phaser";
+import io from "socket.io-client";
 
 export class AuthScene extends Scene {
   constructor() {
@@ -7,9 +8,9 @@ export class AuthScene extends Scene {
 
   }
 
-  create(data) {
+  create() {
 
-    this.serverUrl = data.serverUrl; // recieved from MainMenu
+    this.serverUrl = io('http://localhost:3000'); // recieved from MainMenu
 
     const bImage = this.add.image(512, 384, 'loginImage');
     bImage.setAlpha(.6);

@@ -7,6 +7,11 @@ import "../../src/style.css";
 export class Game extends Scene {
   constructor() {
     super("Game");
+    this.gameId = null; 
+  }
+
+  init(data) { 
+    this.gameId = data.gameId; 
   }
 
   preload() {
@@ -28,12 +33,13 @@ export class Game extends Scene {
 
   create(data) {
     this.serverUrl = io("http://localhost:3000"); // initializes the socket.io connection
-
     this.socket = this.serverUrl;
-    // this.socket.emit("startGame", { socket: this.socket, player: data.player }); // sends the player data to the server
     this.player = data.player; // code refactored
     this.playerId = data.player.id; // code refactored
     this.sock = io(this.serverUrl);
+
+    this.socket.emit('joinGameRoom', { gameId: this.gameId, playerId: this.playerId });
+
 
     //adding collision to floors
     this.map = this.make.tilemap({
@@ -78,7 +84,6 @@ export class Game extends Scene {
 
     // CREATE PLAYER
     this.player = new Player(this, 100, 100, this.playerId, this.playerId);
-    console.log('At this point This.playerId means:', this.playerId); 
 
     // Establishes the collision layer within the game. Had to be layered
     // on top of everything to ensure proper collision detection
@@ -281,6 +286,7 @@ export class Game extends Scene {
     };
     // Sends pertinent information to the server
     this.socket.emit("clientPlayerUpdate", {
+      gameId: this.gameId,
       id: this.playerId,
       playerX: this.player.x,
       playerY: this.player.y,

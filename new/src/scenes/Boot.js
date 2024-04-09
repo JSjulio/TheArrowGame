@@ -8,7 +8,6 @@ export class Boot extends Scene // the user does not actually asee this scene. I
         super('Boot');
     }
 
-//This is where assets that require immediate rendering will be loaded.  Think complex data required for landing page.
     preload ()
     {
 
