@@ -55,7 +55,7 @@ export class Game extends Scene {
     });
 
     // Limits the amount of times that the game sends updates to the socket
-    this.rate_limit = 5;
+    this.rate_limit = 1;
     this.rate_limit_count = 0;
 
     const screenWidth = this.cameras.main.width;
@@ -91,31 +91,18 @@ export class Game extends Scene {
     this.collisionLayer.setCollisionByProperty({ collide: true });
     this.collisionLayer.setAlpha(0.6);
 
-    //platform collision layer -----------------------------------------------------
-    this.platformCollision = this.map.createLayer(
-      "platform_collision",
-      this.tileset,
-      0,
-      0
-    );
-    this.platformCollision.setScale(scaleFactorX, scaleFactorY);
-    this.platformCollision.setCollisionByExclusion([-1]);
-    this.platformCollision.setCollisionByProperty({ collide: true });
-    this.physics.add.collider(this.player, this.platformCollision);
-    this.platformCollision.setAlpha(0.6);
+     //ladder collision layer ----------------------------------------------------- Stretch Goal 
+    // this.ladderCollision = this.map.createLayer(
+    //   "ladder_collision",
+    //   this.tileset,
+    //   0,
+    //   0
+    // );
 
-    //ladder collision layer -----------------------------------------------------
-    this.ladderCollision = this.map.createLayer(
-      "ladder_collision",
-      this.tileset,
-      0,
-      0
-    );
-
-    this.ladderCollision.setScale(scaleFactorX, scaleFactorY);
-    this.ladderCollision.setCollisionByProperty({ overlap: true });
-    this.physics.add.collider(this.player, this.ladderCollision);
-    this.ladderCollision.setAlpha(0.6);
+    // this.ladderCollision.setScale(scaleFactorX, scaleFactorY);
+    // this.ladderCollision.setCollisionByProperty({ overlap: true });
+    // this.physics.add.collider(this.player, this.ladderCollision);
+    // this.ladderCollision.setAlpha(0.6);
 
     //***BEGIN NEW CONTENT*** ----------------------------------------------------------------
     // Process and send the map data to the server
@@ -262,7 +249,7 @@ export class Game extends Scene {
         updatePlayer.setDirection(playerData.direction);
         updatePlayer.setPosition(playerData.x, playerData.y);
         updatePlayer.update(updateCursors);
-        console.log(this.playerArr);
+        // console.log(this.playerArr);
       }
     }
   }
