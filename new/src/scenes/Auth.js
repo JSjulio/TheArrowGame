@@ -3,14 +3,18 @@ import io from "socket.io-client";
 
 export class AuthScene extends Scene {
   constructor() {
-    super({ key: "AuthScene" });
-    
+    super("AuthScene");
+    this.socket = null; 
 
   }
 
   create() {
 
-    this.serverUrl = io('http://localhost:3000'); // recieved from MainMenu
+    this.socket = io('http://localhost:3000'); // recieved from MainMenu
+    this.socket.on('connect', () => {
+      console.log("consoleLog: You've connected to rootSocket within the Auth scene");
+  }); 
+
 
     const bImage = this.add.image(512, 384, 'loginImage');
     bImage.setAlpha(.6);
@@ -65,7 +69,7 @@ export class AuthScene extends Scene {
         console.log(`${data.player.name} ${type} successful, your token is:`, data.token);
 
         // if auth is successful, proceed to next scene and pass serverUrl, player data, and token to next scene 
-        this.scene.start('LobbyScene', { serverUrl: this.serverUrl, player: data.player, token: data.token });
+        this.scene.start('LobbyScene', { socket: this.socket, player: data.player, token: data.token });
       } else {
       // Handle authentication failure
       console.error(`${type} failed:`, data.error);

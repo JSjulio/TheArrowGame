@@ -7,11 +7,7 @@ import "../../src/style.css";
 export class Game extends Scene {
   constructor() {
     super("Game");
-    this.gameId = null; 
-  }
-
-  init(data) { 
-    this.gameId = data.gameId; 
+    // this.gameId = null; 
   }
 
   preload() {
@@ -32,14 +28,15 @@ export class Game extends Scene {
   }
 
   create(data) {
-    this.serverUrl = io("http://localhost:3000"); // initializes the socket.io connection
-    this.socket = this.serverUrl;
-    this.player = data.player; // code refactored
-    this.playerId = data.player.id; // code refactored
-    this.sock = io(this.serverUrl);
+   
+    this.gameId = data.gameId; 
+    this.playerId = data.playerId;
+    this.socket =  data.socket; 
+    this.sock = this.socket; // TODO test to see if we can just use this.socket
 
     this.socket.emit('joinGameRoom', { gameId: this.gameId, playerId: this.playerId });
-    console.log('Systems check... this.gameId is:', this.gameId, 'this.player is:', this.player); 
+    console.log('gameConsoleLog: Systems check... this.gameId is:', this.gameId, 'this.playerId is:', this.playerId); 
+    // Add player name by using this emit within APP 
 
     //adding collision to floors
     this.map = this.make.tilemap({
@@ -83,7 +80,7 @@ export class Game extends Scene {
     //***END NEW CONTENT*** ----------------------------------------------------
 
     // CREATE PLAYER
-    this.player = new Player(this, 100, 100, this.playerId, this.playerId);
+    this.player = new Player(this, 100, 100, this.playerId); // here this.player encompasses the information that will be sent to the server to track all player data. playerID equates to the player databse name 
 
     // Establishes the collision layer within the game. Had to be layered
     // on top of everything to ensure proper collision detection
@@ -96,18 +93,6 @@ export class Game extends Scene {
     this.collisionLayer.setCollisionByProperty({ collide: true });
     this.collisionLayer.setAlpha(0.6);
 
-     //ladder collision layer ----------------------------------------------------- Stretch Goal 
-    // this.ladderCollision = this.map.createLayer(
-    //   "ladder_collision",
-    //   this.tileset,
-    //   0,
-    //   0
-    // );
-
-    // this.ladderCollision.setScale(scaleFactorX, scaleFactorY);
-    // this.ladderCollision.setCollisionByProperty({ overlap: true });
-    // this.physics.add.collider(this.player, this.ladderCollision);
-    // this.ladderCollision.setAlpha(0.6);
 
     //***BEGIN NEW CONTENT*** ----------------------------------------------------------------
     // Process and send the map data to the server
@@ -128,10 +113,9 @@ export class Game extends Scene {
       y: this.collisionLayer.scaleY,
     };
 
-    // TODO - Fix the scaling. The scaling is not working as expected
     // for testing purpose
     this.player.setOrigin(0.5, 0.5);
-    // this.player.setScale(this.scaleFactor * 2.5); //!  can't find player after adding this code below
+
     // resizing bouncing box
     this.newBoundingBoxWidth = 16;
     this.newBoundingBoxHeight = 15;
@@ -149,49 +133,32 @@ export class Game extends Scene {
     this.player.body.setOffset(this.offsetX, this.offsetY);
     // this.player.anims.play("idleLeft"); // *new entry test this
 
-    // Add the life counter to the scene
-    // TODO: Implement function that decrements this when hit
-    // requires arrow collision working WIP
-    // this.lifeText = this.add.text(16, 16, 'Lives: ' + this.lifeCounter, { fontSize: '32px', fill: '#fff' }); // * new entry test this
-
-    //resize arrow bounding box
-    // TODO - Non functional code
-    // ***BEGIN NEW CONTENT*** ----------------------------------------------------
-    this.playerArr = [];
-    // Sets up the arrow keys as the input buttons
-    // this.cursors = this.input.keyboard.createCursorKeys(); // This code is alreay created below 
-
-    // Sends the player to the server for storage/broadcast
-    // to other clients
-    this.socket.emit("playerConnect", this.player);
-
-    // Remove a player with a given ID from the local client instance
-    this.socket.on("removePlayer", (playerId) => {
-      let rmPlayer = this.playerArr.find((player) => player.id === playerId);
-      try {
-        rmPlayer.destroy();
-        this.players = this.playerArr.filter(
-          (player) => player.id !== playerId
-        );
-      } catch {}
-    });
-
-    //END CREATE PLAYER
-
     // Reposition the bounding box relative to the player's center
     this.player.body.setOffset(this.offsetX, this.offsetY);
 
+    // TODO: lifeCounter: Implement function that decrements this when hit
+    // requires arrow collision working WIP
+    // this.lifeText = this.add.text(16, 16, 'Lives: ' + this.lifeCounter, { fontSize: '32px', fill: '#fff' });
+  
+
     //resize arrow bounding box
-    // TODO - Non functional code
     // ***BEGIN NEW CONTENT*** ----------------------------------------------------
     this.playerArr = [];
+
     // Sets up the arrow keys as the input buttons
     this.cursors = this.input.keyboard.createCursorKeys();
-    this.cursors.space = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
-    // Sends the player to the server for storage/broadcast
-    // to other clients
-    this.socket.emit("playerConnect", this.player);
-
+    this.cursors.space = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE) // TODO troubleshoot 
+    
+    //Sends the player to the server for storage/broadcast to other clients
+    // once this.player is passed into the server, the server establishes the player.id / and player
+    this.socket.emit("playerConnect", { player: this.player, gameId: this.gameId});
+      // console.log("this gameId we'll send to the server", this.gameId); 
+      // gameId is defined above before it's sent to the server socket.
+    
+    // Listen for the event when another player joins the same room
+    this.socket.on('playerInGameMA', (response) => {
+      console.log(`${response.message}`);
+  });        
     // Remove a player with a given ID from the local client instance
     this.socket.on("removePlayer", (playerId) => {
       let rmPlayer = this.playerArr.find((player) => player.id === playerId);
@@ -203,8 +170,7 @@ export class Game extends Scene {
 
     //***END NEW CONTENT*** ----------------------------------------------------
   }
-  // Turns the other players' data into an object that can be used
-  // in the update method
+  // Turns the other players' movements into an object that can be used in the update method
   createCursorsFromActiveKeys(activeKeys) {
     return {
       up: this.input.keyboard.addKey(activeKeys.up),
@@ -280,18 +246,19 @@ export class Game extends Scene {
       down: this.cursors.down.isDown,
       left: this.cursors.left.isDown,
       right: this.cursors.right.isDown,
-      space: this.cursors.space.isDown // Include the spacebar status
+      space: this.cursors.space.isDown // Include the spacebar status // TODO : Pass this into player data 
 
     };
     // Sends pertinent information to the server
     this.socket.emit("clientPlayerUpdate", {
       gameId: this.gameId,
-      id: this.playerId,
+      id: this.playerId, 
       playerX: this.player.x,
       playerY: this.player.y,
       activeKeys: activeKeys,
       direction: this.player.direction,
     });
+    // console.log('clientplayerupdates gameID check', this.gameId)
   }
 }
 

@@ -9,11 +9,11 @@ export class LobbyScene extends Scene {
 
   create(data) {
 
-// Initializes lobby client socket.io connection.  
-    this.socket = io("http://localhost:3000")  // TODO : place socket init in constructor 
+// gets socket client/server connection from AuthScene
+    this.socket = data.socket;  
       
         this.socket.on('connect', () => {
-            console.log('player connected to lobby, awaiting create/join game:.');
+            console.log("consoleLog: You've connected to rootSocket within the lobbyScene. Create/join a game!");
         }); 
 
     this.player = data.player; 
@@ -30,13 +30,7 @@ export class LobbyScene extends Scene {
 // ***BEGIN NEW CONTENT*** -----------------------------------------------------------------------
 // logic for player joining the lobby socket.io connection 
     
-   //sends a request for player to join the lobby nameSpace socket.io server once player enters the lobby scene
-   this.socket.emit("joinLobby", this.player);
-
-       // Listen for the server to respond confirming player joined the lobby
-       this.socket.on('joinedLobby', (response) => {
-       console.log(`${response.message}`);
-       });  
+   
 
     // TODO Fix this line of code 
     //Listen for new players joining the lobby
@@ -80,23 +74,22 @@ export class LobbyScene extends Scene {
   }
 
 // Handle game room creation/joining
-handleJoinRoom(gameId, player, socket) {
+handleJoinRoom(gameId) {
   // console.log(gameId, this); 
   
   // Emit event to create or join a game room
-    this.socket.emit('createGameRoom', gameId); 
+    this.socket.emit('createGameRoom', gameId, this.player); 
     // console.log('gameId:', gameId, 'player:', this.player);
 
     // Listen for confirmation of room creation/joining
     this.socket.on('gameRoomCreated', (response) => {
-      console.log(`${response.message}`);
-      this.scene.start("Game", { player: this.player, gameId: response.gameId }); // Pass player and gameId to the game scene and move to the game scene
+      // console.log('gameid in socket it', response.gameId); // successfully accesses gameId
+      this.scene.start("Game", { socket: this.socket, playerId: this.playerId, gameId: response.gameId }); // Start game and pass player,socket, and gameId information to game scene. 
     }); 
 
     // Listen for the event when another player joins the same room
     this.socket.on('playerJoinedRoom', (response) => {
         console.log(`${response.message}`);
-        // Update the lobby UI or game state as needed
     });
 
         // Listen for the game start event

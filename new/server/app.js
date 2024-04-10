@@ -71,23 +71,106 @@ const io = socketIO(server, {
   }
 });
 
-const players = new Map(); // Map to store player information
+const players = new Map(); // Map to store player information - recieves player instances from line "playerConnect"
 
-// Map to store game state information, it's global to maintain state across connections
 const gameStates = {};
 
 // Once the game Scene socket is created, server will listen for the following events
 io.on('connection', (socket) => {
 
-  // Get the map data and determine valid positions for player spawns
+// Get the map data and determine valid positions for player spawns
   socket.on('mapData', ({ tileIndices, tileWidth, tileHeight, mapWidth, mapHeight, scale }) => {
-    // omitted for brevity
+    // Reconstruct collision layer based on tile indices
+    // Perform calculations to determine valid spawn locations
+
+    const validSpawnLocations = [];
+
+    for (let y = 0; y < mapHeight; y++) {
+        for (let x = 0; x < mapWidth; x++) {
+            const tileIndex = tileIndices[y * mapWidth + x];
+            console.log(`Tile: ${tileIndex}`);
+            // Assuming tile index -1 represents no collision
+            if (tileIndex === -1) {
+                // Calculate position of tile in world coordinates
+                const posX = x * tileWidth * scale.x;
+                const posY = y * tileHeight * scale.y;
+
+                // console.log(`Position ${posX} ${posY}`)
+
+                let valid = true;
+                for (const [id, playerObject] of players.entries()) {
+                    // console.log(playerObject)
+                    if (posX === playerObject.x || posY === playerObject.y) {
+                        valid = false;
+                        break; // Exit the loop early if collision is found
+
+                    // Add position to valid spawn locations
+                    }
+                  }
+                if(valid){
+                  validSpawnLocations.push({ x: posX, y: posY });
+                }
+              }
+            }
+          }
+    // Emit valid spawn locations back to the client
+    socket.emit('validPositions', validSpawnLocations);
   });
+
+  socket.on('playerIdReq', () => {
+    const pid = socket.id;
+    if(!players.has(pid)){
+      socket.emit('playerIdRes', (pid));
+    }
+})
+
+    // Listen for player connection from client and 
+    socket.on('playerConnect', (data) => {
+      //passed in gameId and player data from line 89. gameId is defined within lobbyScene when a room is created or joined
+      const player = data.player; 
+      const gameId = data.gameId; 
+
+
+      // Stores new player information into players Map using player.id as the key. Refer to game line89 for the definition of player
+      // The line below allows the server to keep track of all players by placing the player object within the Map defined near line 74 
+      players.set(player.id, player); 
+       // Join the player to the room
+      socket.join(gameId);
+      console.log('player', player);
+      
+      // Broadcast to all the clients that a new player has joined, along with the information of that player
+      socket.to(gameId).emit('newPlayer', player); // modified emit to send to specific gameId, ensuring players are in their proper rooms 
+      socket.to(gameId).emit('playerInGameMap', { message:  `Player ${player.name} connected to your '${gameId}' game room!`});
+      console.log(`game_ConsoleLog: Player ${player.name} connected to game room: ${gameId}`);
+
+  });
+
+ 
+    socket.on('clientPlayerUpdate', (playerData) => {
+
+      const gameId = playerData.gameId;
+
+      players.set(playerData.id, playerData);
+      // console.log(playerData.activeKeys)
+      socket.to(gameId).emit('playerUpdates', {'id': playerData.id, 'x': playerData.playerX, 'y': playerData.playerY, 'activeKeys': playerData.activeKeys, 'direction': playerData.direction});
+    });
+
+
+  // Listen for player data from client 
+  socket.on('newPlayerConnect', (playerData) => {
+      
+    const gameId = playerData.gameId;
+    // console.log('New player connected:', playerData.name);
+
+    socket.to(gameId).emit('newPlayerConnect', playerData); 
+    // console.log('New player connected:', playerData.name);
+  
+  });
+
 
   // Listen for game room creation requests
   socket.on('createGameRoom', (gameId) => {
     
-    // Check if the game room already exists and if there are less than 10 players
     
     //create a new gameID
     if (!gameStates[gameId]) {
@@ -104,15 +187,14 @@ io.on('connection', (socket) => {
     // Add the player to the game state and join the game room
     gameStates[gameId].players.add(socket.id);
     socket.join(gameId);
-    console.log(`Player with ID ${socket.id} joined game room ${gameId}`);
+    console.log(`lobby_ConsoleLog: Player with socketID: ${socket.id} joined game room ${gameId}`);
     
     // Notify the player that they've joined the room
-    socket.emit('gameRoomCreated', { gameId, message: `Joined game room: ${gameId}` });
+    socket.emit('gameRoomCreated', { gameId: gameId, message: `lobbyScene_To_Player: You've joined game room: ${gameId}` });
 
     // Notify only players within the same room that a new player has joined
-    socket.to(gameId).emit('playerJoinedRoom', { message: `Player with ID ${socket.id} has joined your game '${gameId}'! `, playerId: socket.id, gameId: gameId });
+    socket.to(gameId).emit('playerJoinedRoom', { message: `lobbyScene_To_GameRoom: Player with ID ${socket.id} has successfully joined your game '${gameId}'! `});
 });
-
 
   // Handle player disconnection
   socket.on('disconnect', () => {
@@ -131,6 +213,8 @@ io.on('connection', (socket) => {
   });
 
 });
+
+
 
   // Start listening on the specified port
   server.listen(PORT, "localhost", () => {
