@@ -1,5 +1,5 @@
 export default class Player extends Phaser.Physics.Arcade.Sprite {
-  constructor(scene, x, y, name, pid) {
+  constructor(scene, x, y, name, pid, gameId) {
     super(scene, x, y, "player");
     console.log(
       `Creating player at X:${this.x} with type:${typeof x} and Y:${
@@ -11,6 +11,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.id = pid;
     this.direction = "left";
     this.isGrounded = true;
+    this.gameId = gameId;
+    console.log('gameId within Player.js:', this.gameId);
+    console.log('playerId within Player.js:', this.id); // here this.id is the player's socket.id. which is that same as player.id 
     // console.log("Player ID: " + this.id);
     // console.log("Player Received ID: " + pid);
 
@@ -119,11 +122,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       this.anims.play("attack");
     }
 
-    // // Destroy arrow after when collision
-    // this.scene.physics.add.collider(arrow, this.scene.platformCollision, () => {
-    //   arrow.destroy();
-    // });
-
     // Destroy arrow after collision
     this.scene.physics.add.collider(arrow, this.scene.collisionLayer, () => {
       arrow.destroy();
@@ -142,6 +140,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.direction = direction;
   }
 
+
   update(cursors) {
     // Check if the player is on the ground
     if (this.body.blocked.down) {
@@ -149,19 +148,15 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     } else {
       this.isGrounded = false;
     }
+      //*NEW CONTENT: Emit playerShoot event to the server
+    if (cursors.space && Phaser.Input.Keyboard.JustDown(cursors.space)) { 
   
-    // Shooting - Check if 'space' key exists in cursors before using it
-    if (cursors.space && Phaser.Input.Keyboard.JustDown(cursors.space)) { // <-- Change made here
       // Trigger shoot animation
-      if (this.direction === "left") {
-        this.flipX = false;
-        this.anims.play("attack", true);
-      } else {
-        this.anims.play("attack", true);
-      }
-  
-      // Perform shooting action
-      this.shoot();
+      this.shoot();  
+
+      //*NEW CONTENT: Emit playerShoot event to the server
+      this.scene.socket.emit('playerShoot', { gameId: this.gameId, playerId: this.id, x: this.x, y: this.y, direction: this.direction });
+      
     }
     // Check for horizontal movement
     else if (cursors.left.isDown) {

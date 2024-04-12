@@ -125,13 +125,13 @@ io.on('connection', (socket) => {
 })
 
     // Listen for player connection from client and 
-    socket.on('playerConnect', (data) => {
-      //passed in gameId and player data from line 89. gameId is defined within lobbyScene when a room is created or joined
+    socket.on('joinRoom', (data) => {
+
       const player = data.player; 
       const gameId = data.gameId; 
 
 
-      // Stores new player information into players Map using player.id as the key. Refer to game line89 for the definition of player
+      // Stores new player information into players Map using player.id as the key. 
       // The line below allows the server to keep track of all players by placing the player object within the Map defined near line 74 
       players.set(player.id, player); 
        // Join the player to the room
@@ -156,6 +156,7 @@ io.on('connection', (socket) => {
     });
 
 
+
   // Listen for player data from client 
   socket.on('newPlayerConnect', (playerData) => {
       
@@ -166,6 +167,19 @@ io.on('connection', (socket) => {
     // console.log('New player connected:', playerData.name);
   
   });
+
+  // *NEWCONTENT: Listen for player Shot from the player.js class and broadcast to all other players in the same game room, excluding the shooter 
+  socket.on('playerShoot', (data) => {
+    const { playerId, x, y, position, direction, gameId } = data;
+    // Make sure gameId is defined here
+    console.log("serverConsoleLog: Received 'playerShoot' event with gameId:", gameId);
+
+    // broadcast to players within a game room that a player shot
+    socket.to(gameId).emit('playerShooting', { playerId, x, y, direction });
+});
+//***END NEW CONTENT*** ---------------------------------------------------------------------------
+
+
 
 
   // Listen for game room creation requests
@@ -194,7 +208,7 @@ io.on('connection', (socket) => {
 
     // Notify only players within the same room that a new player has joined
     socket.to(gameId).emit('playerJoinedRoom', { message: `lobbyScene_To_GameRoom: Player with ID ${socket.id} has successfully joined your game '${gameId}'! `});
-});
+}); 
 
   // Handle player disconnection
   socket.on('disconnect', () => {

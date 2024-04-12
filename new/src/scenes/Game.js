@@ -7,7 +7,6 @@ import "../../src/style.css";
 export class Game extends Scene {
   constructor() {
     super("Game");
-    // this.gameId = null; 
   }
 
   preload() {
@@ -30,9 +29,11 @@ export class Game extends Scene {
   create(data) {
    
     this.gameId = data.gameId; 
-    this.playerId = data.playerId;
+    this.playerId = data.socket.id;
     this.socket =  data.socket; 
     this.sock = this.socket; 
+    // this.playerName = data.player.name; 
+
 
     this.socket.emit('joinGameRoom', { gameId: this.gameId, playerId: this.playerId });
     console.log('gameConsoleLog: Systems check... this.gameId is:', this.gameId, 'this.playerId is:', this.playerId); 
@@ -43,12 +44,8 @@ export class Game extends Scene {
       tileWidth: 12,
       tileHeight: 12,
     });
-
-    // TODO need to refactor this in following making seperate rooms for each player
-    // Create the projectile group for pooling assets
-    // this.arrowGroup = new ArrowGroup(this);
-
-    //*Creates the listener that waits for other player updates from
+    
+    //Creates the listener that waits for other player updates from
     // the server
     this.socket.on("playerUpdates", (playerUpdated) => {
       //Creates the listener that waits for other player updates from
@@ -72,14 +69,14 @@ export class Game extends Scene {
     // this.socket.emit('mapData', { tileIndices, tileWidth, tileHeight, mapWidth, mapHeight, scale });
 
     // Receive the valid spawn positions from the server, deconflicted for each player
+    // TODO implement this code for randomized positions 
     // WIP
     this.socket.on("validPositions", (positions) => {
       console.log("positions are:...", positions);
     });
-    //***END NEW CONTENT*** ----------------------------------------------------
 
-    // CREATE PLAYER
-    this.player = new Player(this, 100, 100, this.playerId); // here this.player encompasses the information that will be sent to the server to track all player data. playerID equates to the player databse name 
+    // CREATE and process player map and send to the server 
+    this.player = new Player(this, 100, 100, this.playerId, this.playerId, this.gameId ); // here this.player encompasses the information that will be passed to the player, shared to the player.js file, and sent to the Map of Players on the server side
 
     // Establishes the collision layer within the game. Had to be layered
     // on top of everything to ensure proper collision detection
@@ -92,11 +89,7 @@ export class Game extends Scene {
     this.collisionLayer.setCollisionByProperty({ collide: true });
     this.collisionLayer.setAlpha(0.6);
 
-
-    //***BEGIN NEW CONTENT*** ----------------------------------------------------------------
-    // Process and send the map data to the server
     // Extract tile indices from the collision layer
-
     this.tileIndices = [];
     this.collisionLayer.forEachTile((tile) => {
       this.tileIndices.push(tile.index);
@@ -135,24 +128,16 @@ export class Game extends Scene {
     // Reposition the bounding box relative to the player's center
     this.player.body.setOffset(this.offsetX, this.offsetY);
 
-    // TODO: lifeCounter: Implement function that decrements this when hit
-    // requires arrow collision working WIP
-    // this.lifeText = this.add.text(16, 16, 'Lives: ' + this.lifeCounter, { fontSize: '32px', fill: '#fff' });
-  
-
-    //resize arrow bounding box
-    // ***BEGIN NEW CONTENT*** ----------------------------------------------------
     this.playerArr = [];
 
     // Sets up the arrow keys as the input buttons
     this.cursors = this.input.keyboard.createCursorKeys();
-    this.cursors.space = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE) // TODO troubleshoot 
+    this.cursors.space = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE) 
+
     
     //Sends the player to the server for storage/broadcast to other clients
-    // once this.player is passed into the server, the server establishes the player.id / and player
-    this.socket.emit("playerConnect", { player: this.player, gameId: this.gameId});
-      // console.log("this gameId we'll send to the server", this.gameId); 
-      // gameId is defined above before it's sent to the server socket.
+    this.socket.emit("joinRoom", { player: this.player, gameId: this.gameId});
+
     
     // Listen for the event when another player joins the same room
     this.socket.on('playerInGameMap', (response) => {
@@ -165,12 +150,38 @@ export class Game extends Scene {
       this.players = this.playerArr.filter((player) => player.id !== playerId);
     });
 
-    //END CREATE PLAYER
 
-    //***END NEW CONTENT*** ----------------------------------------------------
+//***BEGIN NEW CONTENT:Gamroom arrow creation*** ---------------------------------------------
+    this.socket.on('playerShooting', (shootData) => {
+      // console.log(shootData); 
+      this.handlePlayerShot(shootData);
+    });    
   }
+  
+  
+handlePlayerShot(shootData) {
+  // StretchGoal: Add a shootingPlayer parameter to the function
+    // const shootingPlayer = this.playerArr.find(p => p.id === shootData.playerId);
+
+  // Create arrow sprite at the received position
+  const arrow = this.physics.add.sprite(shootData.x, shootData.y, 'arrow');
+  arrow.setOrigin(0.5, 0.5);
+  arrow.setScale(2);
+  if (shootData.direction === 'left') {
+    arrow.setFlipX(true);
+    arrow.setVelocityX(-600); // Assuming -600 is the speed of the arrow
+  } else {
+    arrow.setVelocityX(600); // Assuming 600 is the speed of the arrow
+  }
+
+  // we can implment code here to animate the player/arrow, handle off-screen behavior, etc.
+}
+//***END NEW CONTENT*** ---------------------------------------------------------------------------
+
+
   // Turns the other players' movements into an object that can be used in the update method
   createCursorsFromActiveKeys(activeKeys) {
+    // debugger;
     return {
       up: this.input.keyboard.addKey(activeKeys.up),
       down: this.input.keyboard.addKey(activeKeys.down),
@@ -180,10 +191,10 @@ export class Game extends Scene {
     };
   }
 
-  //***BEGIN NEW CONTENT*** --------------------------------------------------
+
   // Renders the players based on the data from the server
   renderPlayers(playerData) {
-    console.log('playerData', playerData); 
+    // console.log('playerData', playerData); 
     if (playerData.id !== this.playerId) {
       let updateCursors = this.createCursorsFromActiveKeys(
         playerData.activeKeys
@@ -245,7 +256,7 @@ export class Game extends Scene {
       down: this.cursors.down.isDown,
       left: this.cursors.left.isDown,
       right: this.cursors.right.isDown,
-      space: this.cursors.space.isDown // Include the spacebar status // TODO : Pass this into player data 
+      space: this.cursors.space.isDown // *NEWCONTENT Include the spacebar status in the activeKeys object
 
     };
     // Sends pertinent information to the server
