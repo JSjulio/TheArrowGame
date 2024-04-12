@@ -136,8 +136,8 @@ io.on('connection', (socket) => {
       players.set(player.id, player); 
        // Join the player to the room
       socket.join(gameId);
-      console.log('player', player);
-      
+      // console.log('player', player);
+
       // Broadcast to all the clients that a new player has joined, along with the information of that player
       socket.to(gameId).emit('newPlayer', player); // modified emit to send to specific gameId, ensuring players are in their proper rooms 
       socket.to(gameId).emit('playerInGameMap', { message:  `Player ${player.name} connected to your '${gameId}' game room!`});

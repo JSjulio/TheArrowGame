@@ -9,15 +9,12 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     // Added a way to configure the id of the player, as assigned from the server
     this.name = name;
     this.id = pid;
-
     this.direction = "left";
-
     this.isGrounded = true;
     // console.log("Player ID: " + this.id);
     // console.log("Player Received ID: " + pid);
 
     // ***BEGIN NEW CONTENT*** ----------------------------------------------------------------
-    // Added a way to configure the name of the player
 
     // ***END NEW CONTENT*** ------------------------------------------------------------------
 
@@ -122,23 +119,20 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       this.anims.play("attack");
     }
 
-    // Destroy arrow after when collision
-    this.scene.physics.add.collider(arrow, this.scene.platformCollision, () => {
-      arrow.destroy();
-    });
+    // // Destroy arrow after when collision
+    // this.scene.physics.add.collider(arrow, this.scene.platformCollision, () => {
+    //   arrow.destroy();
+    // });
 
     // Destroy arrow after collision
     this.scene.physics.add.collider(arrow, this.scene.collisionLayer, () => {
       arrow.destroy();
     });
 
-    // Destroy arrow after collision with player
-    this.scene.physics.add.overlap(
-      arrow,
-      this.scene.player,
-      (arrow, player) => {
-        // Handle collision between arrow and player here
-
+    // TODO Destroy arrow after collision with player
+    this.scene.physics.add.overlap(arrow, this.scene.player, (arrow, player) => {
+      
+      // Handle collision between arrow and player here
         arrow.destroy();
       }
     );

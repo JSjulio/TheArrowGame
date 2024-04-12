@@ -32,11 +32,10 @@ export class Game extends Scene {
     this.gameId = data.gameId; 
     this.playerId = data.playerId;
     this.socket =  data.socket; 
-    this.sock = this.socket; // TODO test to see if we can just use this.socket
+    this.sock = this.socket; 
 
     this.socket.emit('joinGameRoom', { gameId: this.gameId, playerId: this.playerId });
     console.log('gameConsoleLog: Systems check... this.gameId is:', this.gameId, 'this.playerId is:', this.playerId); 
-    // Add player name by using this emit within APP 
 
     //adding collision to floors
     this.map = this.make.tilemap({
@@ -156,7 +155,7 @@ export class Game extends Scene {
       // gameId is defined above before it's sent to the server socket.
     
     // Listen for the event when another player joins the same room
-    this.socket.on('playerInGameMA', (response) => {
+    this.socket.on('playerInGameMap', (response) => {
       console.log(`${response.message}`);
   });        
     // Remove a player with a given ID from the local client instance
@@ -184,7 +183,7 @@ export class Game extends Scene {
   //***BEGIN NEW CONTENT*** --------------------------------------------------
   // Renders the players based on the data from the server
   renderPlayers(playerData) {
-    // console.log(`Types of playerData members ${typeof playerData.x}`)
+    console.log('playerData', playerData); 
     if (playerData.id !== this.playerId) {
       let updateCursors = this.createCursorsFromActiveKeys(
         playerData.activeKeys
