@@ -7,6 +7,7 @@ import "../../src/style.css";
 export class Game extends Scene {
   constructor() {
     super("Game");
+    this.arrows = [];
   }
 
   preload() {
@@ -32,7 +33,6 @@ export class Game extends Scene {
     this.playerId = data.socket.id;
     this.socket =  data.socket; 
     this.sock = this.socket; 
-    // this.playerName = data.player.name; 
 
 
     this.socket.emit('joinGameRoom', { gameId: this.gameId, playerId: this.playerId });
@@ -45,11 +45,9 @@ export class Game extends Scene {
       tileHeight: 12,
     });
     
-    //Creates the listener that waits for other player updates from
-    // the server
+    //Creates the listener that waits for other player updates from the server
     this.socket.on("playerUpdates", (playerUpdated) => {
-      //Creates the listener that waits for other player updates from
-      // the server
+      //Creates the listener that waits for other player updates from the server
       this.renderPlayers(playerUpdated, this);
     });
 
@@ -64,9 +62,6 @@ export class Game extends Scene {
 
     const backgroundImage = this.add.image(0, 0, "tiles").setOrigin(0); // creates a tilemap from the battlefield.json file
     backgroundImage.setScale(scaleFactorX, scaleFactorY);
-
-    // Send the tile indices and other necessary information to the server
-    // this.socket.emit('mapData', { tileIndices, tileWidth, tileHeight, mapWidth, mapHeight, scale });
 
     // Receive the valid spawn positions from the server, deconflicted for each player
     // TODO implement this code for randomized positions 
@@ -146,37 +141,80 @@ export class Game extends Scene {
     // Remove a player with a given ID from the local client instance
     this.socket.on("removePlayer", (playerId) => {
       let rmPlayer = this.playerArr.find((player) => player.id === playerId);
-      rmPlayer.destroy();
+      rmPlayer.destroy(); // TODO FADE out the player
       this.players = this.playerArr.filter((player) => player.id !== playerId);
     });
 
 
-//***BEGIN NEW CONTENT:Gamroom arrow creation*** ---------------------------------------------
+//***BEGIN NEW CONTENT:Gamroom arrow creation and handling  *** ---------------------------------------------------------------------------------------
+    // Listen for playerShooting event from the server
     this.socket.on('playerShooting', (shootData) => {
       // console.log(shootData); 
-      this.handlePlayerShot(shootData);
-    });    
+      this.createArrow(shootData.x, shootData.y, shootData.direction) // call the createArrow function to recreate arrow sprite at the position received from the server
+    });  
+      
+// TODO - ENSURE OVERLAP WORKS, if not ask Mario for a different way to do it 
+    // Overlap checks for overlap between two game objects, in this case, the arrow and the player
+    // if overlap occurs an event containing gameId and player that was hit is emitted to the server. 
+    this.physics.add.collider(this.arrows, this.playerArr, (arrow, player) => {
+      console.log('this.arrow / this.playerArr should be active ', arrow, player); 
+
+
+      // console.log('isActive? ', this.playerArr(player)); // TODO - ensure this shows the player object
+      console.log('isActive? ', this.arrows); // TODO - ensure this shows the player object
+      console.log('player current lives before the hit are: ', player.lives); // TODO - ensure this shows the player's current lives before the hit
+    
+      if (arrow.active && player.active) {
+        const shootData = arrow.getData('shootData'); // Get the shootData from the arrow to get the gameId
+      
+        // if overlap occurs, emit and event with gameId and player that was hit data to the server.  which will handle the player life deduction
+        this.socket.emit('arrowHitPlayer', { player: player, gameId: shootData.gameId}); 
+        this.arrows.arrow.destroy(); 
+      }
+    });
+      
+// TODO - ENSURE THIS WORKS - Listen for playerHit event from the server, you might have to get access to the specific player object from the playerArr array
+    this.socket.on('playerHit', (data) => {
+      let deductThisPlayerLife = this.playerArr.find((player) => player.id === data.playerId); //TODO verify 
+        player.loseLife();
+        return player.lives; 
+      });
+    
+//***END NEW CONTENT*** ---------------------------------------------------------------------------------------------------------------------------------
   }
   
-  
-handlePlayerShot(shootData) {
-  // StretchGoal: Add a shootingPlayer parameter to the function
-    // const shootingPlayer = this.playerArr.find(p => p.id === shootData.playerId);
 
-  // Create arrow sprite at the received position
-  const arrow = this.physics.add.sprite(shootData.x, shootData.y, 'arrow');
-  arrow.setOrigin(0.5, 0.5);
-  arrow.setScale(2);
-  if (shootData.direction === 'left') {
-    arrow.setFlipX(true);
-    arrow.setVelocityX(-600); // Assuming -600 is the speed of the arrow
-  } else {
-    arrow.setVelocityX(600); // Assuming 600 is the speed of the arrow
-  }
 
-  // we can implment code here to animate the player/arrow, handle off-screen behavior, etc.
-}
-//***END NEW CONTENT*** ---------------------------------------------------------------------------
+  //***BEGIN NEW CONTENT*** ---------------------------------------------------------------------------------------------------------------------------------
+ 
+    createArrow(x, y, direction) {
+
+      // Create arrow sprite at the received position
+      let arrow = this.physics.add.sprite(x, y, 'arrow');
+      arrow.setActive(true).setVisible(true); 
+      arrow.setOrigin(0.5, 0.5);
+      arrow.setScale(2);
+      
+      // Set the arrow's properties 
+      this.physics.world.enable(arrow);
+
+      // Set the size of the arrow for collision detection
+      arrow.body.setSize(8, 3);
+      
+      // Set velocity based on the direction
+      if (direction === 'left') {
+        arrow.setVelocityX(-600); // Set arrow speed
+        arrow.setFlipX(true); // Flip the arrow to face left
+      } else {
+        arrow.setVelocityX(600); // Set arrow speed
+      }
+      
+      // Add to arrows array
+      this.arrows.push(arrow);
+      console.log('arrow shot: ', arrow);
+    }
+
+  //***End NEW CONTENT*** ---------------------------------------------------------------------------------------------------------------------------------
 
 
   // Turns the other players' movements into an object that can be used in the update method
@@ -223,7 +261,7 @@ handlePlayerShot(shootData) {
         this.physics.add.collider(updatePlayer, this.collisionLayer);
         this.physics.add.existing(updatePlayer);
         this.playerArr.push(updatePlayer);
-        console.log(updatePlayer);
+        // console.log(updatePlayer);
         // Otherwise, update the player with the given data
       } else {
         updatePlayer.setDirection(playerData.direction);
@@ -248,6 +286,21 @@ handlePlayerShot(shootData) {
       }
     );
 
+// ***BEGIN NEW CONTENT*** ----------------------------------------------------
+
+// Destroy arrow if it collides with the collision layer 
+this.arrows.forEach((arrow, index) => {
+  if (arrow.active && this.physics.world.collide(arrow, this.collisionLayer)) {
+    console.log('arrow collided with the collision layer: ', arrow);
+    arrow.destroy(); // Destroy the individual arrow
+    this.arrows.splice(index, 1); // Remove the arrow from the array
+  }
+});
+
+
+//***END NEW CONTENT*** --------------------------------------------------------
+
+
     // Update the player with the current arrow key combinations/presses
     this.player.update(this.cursors);
     // Packages the keypresse into a json object for the server
@@ -256,9 +309,9 @@ handlePlayerShot(shootData) {
       down: this.cursors.down.isDown,
       left: this.cursors.left.isDown,
       right: this.cursors.right.isDown,
-      space: this.cursors.space.isDown // *NEWCONTENT Include the spacebar status in the activeKeys object
-
+      space: this.cursors.space.isDown 
     };
+
     // Sends pertinent information to the server
     this.socket.emit("clientPlayerUpdate", {
       gameId: this.gameId,
@@ -268,9 +321,9 @@ handlePlayerShot(shootData) {
       activeKeys: activeKeys,
       direction: this.player.direction,
     });
-    // console.log('clientplayerupdates gameID check', this.gameId)
   }
 }
+
 
 // Function to get the player ID from the server before starting the game
 async function getPlayerIdFromSocket() {
@@ -296,4 +349,3 @@ async function setClientPlayerId() {
   }
 }
 
-//***END NEW CONTENT*** ----------------------------------------------------

@@ -6,18 +6,24 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.y
       } with type: ${typeof y}`
     );
-    // Added a way to configure the id of the player, as assigned from the server
     this.name = name;
     this.id = pid;
     this.direction = "left";
     this.isGrounded = true;
     this.gameId = gameId;
-    console.log('gameId within Player.js:', this.gameId);
-    console.log('playerId within Player.js:', this.id); // here this.id is the player's socket.id. which is that same as player.id 
+    this.lives = 3; // **NEWCONTENT: Sets player lives to 3
+
+
+    // console.log('gameId within Player.js:', this.gameId);
+    // console.log('playerId within Player.js:', this.id); // here this.id is the player's socket.id. which is that same as player.id 
     // console.log("Player ID: " + this.id);
     // console.log("Player Received ID: " + pid);
 
     // ***BEGIN NEW CONTENT*** ----------------------------------------------------------------
+
+
+
+
 
     // ***END NEW CONTENT*** ------------------------------------------------------------------
 
@@ -111,9 +117,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     const velocityX = this.direction === "left" ? -600 : 600;
     arrow.setVelocityX(velocityX);
 
-    // Play shooting animation
-    //const shootAnim = this.direction === "left" ? "attackLeft" : "attackRight";
-    //this.anims.play(shootAnim, true);
+    // TODO add attack left and attack right animations - currently only attack animation is available. Or refactor to use attack animation
+    const shootAnim = this.direction === "left" ? "attackLeft" : "attackRight";
+    this.anims.play(shootAnim, true);
     if (this.direction === "left") {
       this.flipX = true;
       this.anims.play("attack");
@@ -122,23 +128,33 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       this.anims.play("attack");
     }
 
-    // Destroy arrow after collision
+    // TODO Destroy arrow after collision with collisionLayer - add this within the Game.js file in the update method so arrow is destroyed from array of arrows and leaked memory is cleaned up
     this.scene.physics.add.collider(arrow, this.scene.collisionLayer, () => {
       arrow.destroy();
     });
 
-    // TODO Destroy arrow after collision with player
-    this.scene.physics.add.overlap(arrow, this.scene.player, (arrow, player) => {
-      
-      // Handle collision between arrow and player here
-        arrow.destroy();
-      }
-    );
   }
 
   setDirection(direction) {
     this.direction = direction;
   }
+
+  // ***BEGIN NEW LOOSE LIFE CONTENT*** ----------------------------------------------------------------
+
+  loseLife() {
+    this.lives -= 1;
+    if (this.lives <= 0) {
+      this.anims.play("die", true);
+      this.setVelocityX(0);
+      this.setVelocityY(0);
+      this.scene.socket.emit('playerDied', { gameId: this.gameId, playerId: this.id }); 
+    }
+  }
+
+  // TODO: add a way to track lives globally and update the player's lives when they are hit by an arrow
+  
+  // ***END NEW CONTENT*** ------------------------------------------------------------------
+
 
 
   update(cursors) {
@@ -148,16 +164,15 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     } else {
       this.isGrounded = false;
     }
-      //*NEW CONTENT: Emit playerShoot event to the server
     if (cursors.space && Phaser.Input.Keyboard.JustDown(cursors.space)) { 
   
       // Trigger shoot animation
       this.shoot();  
 
-      //*NEW CONTENT: Emit playerShoot event to the server
+      // Emit playerShoot event to the server
       this.scene.socket.emit('playerShoot', { gameId: this.gameId, playerId: this.id, x: this.x, y: this.y, direction: this.direction });
-      
     }
+
     // Check for horizontal movement
     else if (cursors.left.isDown) {
       this.flipX = true;

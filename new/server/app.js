@@ -168,15 +168,29 @@ io.on('connection', (socket) => {
   
   });
 
-  // *NEWCONTENT: Listen for player Shot from the player.js class and broadcast to all other players in the same game room, excluding the shooter 
+  // *NEWCONTENT: Listen for player Shot from the player.js class 
   socket.on('playerShoot', (data) => {
-    const { playerId, x, y, position, direction, gameId } = data;
-    // Make sure gameId is defined here
+    const { playerId, x, y, direction, gameId } = data;
     console.log("serverConsoleLog: Received 'playerShoot' event with gameId:", gameId);
 
-    // broadcast to players within a game room that a player shot
+    // broadcast an event with playerShoot data to Game.js so adjacent players can trigger a handlePlayerShoot function to recreate the shot arrow 
     socket.to(gameId).emit('playerShooting', { playerId, x, y, direction });
 });
+
+// *NEWCONTENT: Listen for arrowHitPlayer event from the game.js deduct player health and broadcast to all players in the same game room
+socket.on('arrowHitPlayer', ({data}) => {
+ console.log('playerHit object recieved from the client', data.player); 
+  const player = data.player.id;
+  if (player) {
+      player.lives -= 1;
+      if (player.lives <= 0) {
+        
+        console.log(`Player ${player} was hit by an arrow and has ${player.lives} health remaining`);
+        // Broadcast send Game.js fihe the new player lives 
+      socket.to(gameId).emit('playerHit', { playerId: data.playerId, health: player.health });
+}}});
+
+
 //***END NEW CONTENT*** ---------------------------------------------------------------------------
 
 
