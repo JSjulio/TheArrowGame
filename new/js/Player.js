@@ -30,7 +30,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     scene.add.existing(this);
     scene.physics.add.existing(this);
     this.setBounce(0.1);
-    this.setCollideWorldBounds(true);
 
     // Create the player's animations
     this.anims.create({
@@ -147,11 +146,10 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       this.anims.play("die", true);
       this.setVelocityX(0);
       this.setVelocityY(0);
-      this.scene.socket.emit('playerDied', { gameId: this.gameId, playerId: this.id }); 
+      this.scene.socket.emit('playerDied', { gameId: this.gameId, playerId: this.id });
     }
   }
 
-  // TODO: add a way to track lives globally and update the player's lives when they are hit by an arrow
   
   // ***END NEW CONTENT*** ------------------------------------------------------------------
 

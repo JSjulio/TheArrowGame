@@ -149,6 +149,7 @@ io.on('connection', (socket) => {
     socket.on('clientPlayerUpdate', (playerData) => {
 
       const gameId = playerData.gameId;
+      
 
       players.set(playerData.id, playerData);
       // console.log(playerData.activeKeys)
@@ -171,7 +172,7 @@ io.on('connection', (socket) => {
   // *NEWCONTENT: Listen for player Shot from the player.js class 
   socket.on('playerShoot', (data) => {
     const { playerId, x, y, direction, gameId } = data;
-    console.log("serverConsoleLog: Received 'playerShoot' event with gameId:", gameId);
+    console.log("serverConsoleLog:", playerId, "in game: ",gameId, "just shot, server recorded/created");
 
     // broadcast an event with playerShoot data to Game.js so adjacent players can trigger a handlePlayerShoot function to recreate the shot arrow 
     socket.to(gameId).emit('playerShooting', { playerId, x, y, direction });
@@ -179,16 +180,21 @@ io.on('connection', (socket) => {
 
 // *NEWCONTENT: Listen for arrowHitPlayer event from the game.js deduct player health and broadcast to all players in the same game room
 socket.on('arrowHitPlayer', ({data}) => {
- console.log('playerHit object recieved from the client', data.player); 
-  const player = data.player.id;
-  if (player) {
-      player.lives -= 1;
-      if (player.lives <= 0) {
-        
-        console.log(`Player ${player} was hit by an arrow and has ${player.lives} health remaining`);
-        // Broadcast send Game.js fihe the new player lives 
-      socket.to(gameId).emit('playerHit', { playerId: data.playerId, health: player.health });
-}}});
+ console.log('serverConsoleLog: arrow has hit player', data.player); 
+ const player = data.player;
+ const playerLives = data.playerLives;
+
+  if (playerLives <= 0) {    
+    console.log(`Player ${player} was hit and died! ${playerLives} lives remaining`);
+    socket.to(gameId).emit('playerDied', { message: `Player ${player} was hit and died! ${playerLives} lives remaining`}); // TODO Create a game event to kill player
+    }    
+
+  console.log(`serverConsole.log: Player ${player} & has ${playerLives} lives left!`);
+  // Broadcast to game.js to remove a player life 
+  socket.to(gameId).emit('takeALife', { playerId: data.playerId, lives: playerLives });
+  
+
+});
 
 
 //***END NEW CONTENT*** ---------------------------------------------------------------------------
