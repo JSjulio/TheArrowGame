@@ -5,7 +5,7 @@ import io from "socket.io-client";
 import "../../src/style.css";
 
 export class Game extends Scene {
-  constructor() {
+  constructor() {      
     super("Game");
     this.arrows = [];
   }
@@ -73,6 +73,7 @@ export class Game extends Scene {
     // CREATE and process player map and send to the server 
     this.player = new Player(this, 100, 100, this.playerId, this.playerId, this.gameId ); // here this.player encompasses the information that will be passed to the player, shared to the player.js file, and sent to the Map of Players on the server side
 
+    
     // Establishes the collision layer within the game. Had to be layered
     // on top of everything to ensure proper collision detection
     this.tileset = this.map.addTilesetImage("Tileset", "tiles");
@@ -122,12 +123,13 @@ export class Game extends Scene {
 
     // Reposition the bounding box relative to the player's center
     this.player.body.setOffset(this.offsetX, this.offsetY);
-
+    
     this.playerArr = [];
-
-
-    // //* TODO **NEWCONTENT: Adds an overlap(or collision) listner player and arrows arrays and calls the arrowHitPlayer function if interaction occurs
-    this.physics.add.collider(this.arrows, this.playerArr, this.arrowHitPlayer, null, this);
+    console.log('playerArr iiissss.....', this.playerArr); 
+    
+    
+    // Adds an collision listner between players and arrows 
+    this.physics.add.collider(this.arrows, this.player, this.arrowHitPlayer, null, this);
 
 
     // Sets up the arrow keys as the input buttons
@@ -146,8 +148,9 @@ export class Game extends Scene {
     // Remove a player with a given ID from the local client instance
     this.socket.on("removePlayer", (playerId) => {
       let rmPlayer = this.playerArr.find((player) => player.id === playerId);
-      rmPlayer.destroy(); // TODO FADE out the player
-      this.players = this.playerArr.filter((player) => player.id !== playerId);
+      rmPlayer.destroy(); 
+      // this.scene.start('GameOverScene'); // send to game over scene
+      this.players = this.playerArr.filter((player) => player.id !== playerId); // refresh the player array
     });
 
 
@@ -156,52 +159,38 @@ export class Game extends Scene {
       // console.log(shootData); 
       this.createArrow(shootData.x, shootData.y, shootData.direction, shootData.playerId) // call the createArrow function to recreate arrow sprite at the position received from the server
     });  
-      
-// TODO third method to handle arrow hit player
-    // // Overlap checks for overlap between two game objects, in this case, the arrow and the player
-    // // // if overlap occurs an event containing gameId and player that was hit is emitted to the server. 
-    // this.physics.add.collider(this.arrows, this.playerArr, (arrow, player) => {
-    //   console.log('this.arrow / this.playerArr should be active ', arrow, player)); 
-    // }); 
-    //   // console.log('isActive? ', this.arrows); // TODO - ensure this shows the player object
-    //   // console.log('player current lives before the hit are: ', player.lives); // TODO - ensure this shows the player's current lives before the hit
     
-    //   if (arrow.active && player.active) {
-    //     const shootData = arrow.getData('shootData'); // Get the shootData from the arrow to get the gameId
-      
-    //     // if overlap occurs, emit and event with gameId and player that was hit data to the server.  which will handle the player life deduction
-    
-    //   }
-    // });
+//! See if I can use remove player instead
+// Listen for killPlayer event from the server and start the killPlayer function
+    this.socket.on('removeDeadPlayer', (data) => {
+      console.log('removeDeadPlayer function called on', data.playerId, 'in game:', data.gameId)
+      // // TODO initiate a die sprite for player that died 
+      // let rmPlayer = this.playerArr.find((player) => player.id === playerId);
+      // rmPlayer.destroy(); 
+      // remove player  from scene 
+      this.scene.start('GameOver'); // send to game over scene
 
-  
-// TODO - Impliment after debugging player / arrow collision- Listen for playerHit event from the server, you might have to get access to the specific player object from the playerArr array
-    // this.socket.on('takeALife', (data) => {
-    //   let deductThisPlayerLife = this.playerArr.find((player) => player.id === data.playerId); 
-    //     player.loseLife();
-    //     // return player.lives; 
-    //   });
+        // ensure player disconnects from the socket, and that the player is removed from the game room
+    });
 
 
-    
-//***END NEW CONTENT*** ---------------------------------------------------------------------------------------------------------------------------------
-  }
+  } //END Create Method---------------------------------------------------------------------------------------------------------------------------------
 
 
-  //***BEGIN NEW CONTENT*** ---------------------------------------------------------------------------------------------------------------------------------
+
+//***BEGIN NEW CONTENT*** ---------------------------------------------------------------------------------------------------------------------------------
  
+  // Create arrow sprite at the received position
     createArrow(x, y, direction, playerId) {
-
-      // Create arrow sprite at the received position
-      let offSetX = direction === 'left' ? -20 : 20 // Set the offset based on the direction to deconflict shooter and arrow;
-      let arrow = this.physics.add.sprite(x + offSetX, y, 'arrow');
+      
+      let xOffset = direction === 'left' ? -20 : 20; // Set the offset based on the direction to deconflict shooter and arrow
+      let arrow = this.physics.add.sprite(x + xOffset , y, 'arrow');
       arrow.setActive(true).setVisible(true); 
       arrow.setOrigin(0.5, 0.5);
-      arrow.setScale(5); //server arrow set bigger for debugging purposes // *remove once debugging is done
+      arrow.setScale(2); 
       
-      // arrowId 
+      // arrowId is set to the playerId of the player who shot the arrow
        arrow.arrowId = playerId;
-       console.log('arrow shot by player with socket:', arrow.arrowId);
 
       // Set the arrow's properties 
       this.physics.world.enable(arrow);
@@ -219,33 +208,33 @@ export class Game extends Scene {
       
       // Add to arrows array
       this.arrows.push(arrow);
-      console.log('arrow shot: ', arrow);
-    }
+      // console.log('arrow shot: ', arrow);
+    } //*create method ends here -------------------------------------------------------------------------
+
     
-    //*HANDLE ARROW HIT PLAYER-----------------------------------------------------------------
-    //TODO - See if this works, if not use for each logic within update method to track every arrow and player interaction
+
+// ***NEW CONTENT*** ---------------------------------------------------------------------------------------------------------------------------------
+ 
+
+// Arrow collision detection with player
     arrowHitPlayer(arrow, player) {
-      // debugger; 
       // Ignore inactive arrows or players
       if (!arrow.active || !player.active) {
         return;
       } 
-      arrow.destroy(); // Destroy the arrow
+      arrow.destroy(); 
       player.loseLife(); //player loose life method is called which takes a life and chekcs if lives = 0. If lives = zero player.js emits a call to initiate the // TODO playerDied event
       console.log('Arrow has hit a player!', arrow, player);
-      console.log('lives remaining:', player.lives); // TODO - ensure this shows the player's current lives after the hit
-
-      this.socket.emit('arrowHitPlayer', { player: player.id, playerLives: player.lives});
+      console.log('lives remaining:', player.lives); 
   }
 
-        
-
-    //TODO after arrowHitPlayer is successfully implemented this should work once player lives = 0.
+    
     // Listen for playerDied event from the server 
    killPlayer() {
-    this.socket.on('playerDied', (data) => {
-    //  make player inactive until game is done or remove player from the game
-    // inform player that they have died and are out of the game
+    this.socket.on('killPlayer', (data) => {
+      console.log('killplayer function called on', data.playerId, 'in game:', data.gameId);
+      //see if you need to disable the player from shooting / set them to invisible
+      //TODO initiate a death sprite for player that died   
     }); 
 
   }
@@ -264,7 +253,6 @@ export class Game extends Scene {
       spacebar: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
     };
   }
-
 
   // Renders the players based on the data from the server
   renderPlayers(playerData) {
@@ -311,39 +299,23 @@ export class Game extends Scene {
 
   
   update() {
+    // Collision detection between the server emitted player and the collision layer   
     this.physics.world.collide(
       this.player,
       this.collisionLayer,
       (player, tile) => {
-        // console.log("Collision detected at position:", tile.pixelX, tile.pixelY);
-        // console.log("Collision detected at player position:", player.x, player.y);
-
         this.player.isGrounded = true;
       }
     );
 
-// ***BEGIN NEW CONTENT*** ----------------------------------------------------
-
-// Destroy arrow if it collides with the collision layer 
-this.arrows.forEach((arrow, index) => {
-  if (arrow.active && this.physics.world.collide(arrow, this.collisionLayer)) {
-    // console.log('arrow collided with the collision layer: ', arrow);
-    arrow.destroy(); // Destroy the individual arrow
-    this.arrows.splice(index, 1); // Remove the arrow from the array
-  }
-});
-
-// TODO  Second method to handle arrow hit player
-// this.arrows.forEach((arrow) => {
-//   this.playerArr.forEach((player) => {
-//     if (this.physics.overlap(arrow, player)) {
-//       this.arrowHitPlayer(arrow, player);
-//     }
-//   });
-// });
-
-//***END NEW CONTENT*** --------------------------------------------------------
-
+    // Collision detection between the server emitted arrow and the collision layer
+    this.arrows.forEach((arrow, index) => {
+      if (arrow.active && this.physics.world.collide(arrow, this.collisionLayer)) {
+        // console.log('arrow collided with the collision layer: ', arrow);
+        arrow.destroy(); // Destroy the individual arrow
+        this.arrows.splice(index, 1); // Remove the arrow from the array
+      }
+    });
 
     // Update the player with the current arrow key combinations/presses
     this.player.update(this.cursors);
@@ -368,27 +340,26 @@ this.arrows.forEach((arrow, index) => {
   }
 }
 
+  // Function to get the player ID from the server before starting the game
+  async function getPlayerIdFromSocket() {
+    return new Promise((resolve, reject) => {
+      // Listen for player ID response from the server
+      this.sock.once("playerIdRes", (pid) => {
+        resolve(pid); // Resolve the promise with the player ID
+      });
 
-// Function to get the player ID from the server before starting the game
-async function getPlayerIdFromSocket() {
-  return new Promise((resolve, reject) => {
-    // Listen for player ID response from the server
-    this.sock.once("playerIdRes", (pid) => {
-      resolve(pid); // Resolve the promise with the player ID
+      // Request player ID from the server
+      this.sock.emit("playerIdReq");
     });
-
-    // Request player ID from the server
-    this.sock.emit("playerIdReq");
-  });
-}
-
-// Function that sets the received playerID
-async function setClientPlayerId() {
-  try {
-    const hold = await getPlayerIdFromSocket();
-    this.playerId = hold;
-    console.log("Received player ID:", this.playerId);
-  } catch (error) {
-    console.error("Error:", error);
   }
+
+  // Function that sets the received playerID
+  async function setClientPlayerId() {
+    try {
+      const hold = await getPlayerIdFromSocket();
+      this.playerId = hold;
+      console.log("Received player ID:", this.playerId);
+    } catch (error) {
+      console.error("Error:", error);
+    }
 }

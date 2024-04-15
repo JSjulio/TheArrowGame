@@ -6,26 +6,15 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.y
       } with type: ${typeof y}`
     );
+
     this.name = name;
-    this.id = pid;
+    this.id = pid; // here this.id is the player's socket.id. which is that same as player.id 
     this.direction = "left";
     this.isGrounded = true;
     this.gameId = gameId;
     this.lives = 3; // **NEWCONTENT: Sets player lives to 3
 
 
-    // console.log('gameId within Player.js:', this.gameId);
-    // console.log('playerId within Player.js:', this.id); // here this.id is the player's socket.id. which is that same as player.id 
-    // console.log("Player ID: " + this.id);
-    // console.log("Player Received ID: " + pid);
-
-    // ***BEGIN NEW CONTENT*** ----------------------------------------------------------------
-
-
-
-
-
-    // ***END NEW CONTENT*** ------------------------------------------------------------------
 
     scene.add.existing(this);
     scene.physics.add.existing(this);
@@ -98,6 +87,11 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
   //shooting funtion
   shoot() {
+    
+    if (this.dead) { 
+      return;
+    }
+
     // Create arrow sprite at the player's position
     const arrow = this.scene.physics.add.sprite(this.x, this.y, "arrow");
     arrow.setOrigin(0.5, 0.5);
@@ -116,7 +110,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     const velocityX = this.direction === "left" ? -600 : 600;
     arrow.setVelocityX(velocityX);
 
-    // TODO add attack left and attack right animations - currently only attack animation is available. Or refactor to use attack animation
+    // Stretch - add attack left and attack right animations to player and transmit to game room following
     const shootAnim = this.direction === "left" ? "attackLeft" : "attackRight";
     this.anims.play(shootAnim, true);
     if (this.direction === "left") {
@@ -127,35 +121,50 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       this.anims.play("attack");
     }
 
-    // TODO Destroy arrow after collision with collisionLayer - add this within the Game.js file in the update method so arrow is destroyed from array of arrows and leaked memory is cleaned up
+    //  Destroy arrow after collision with collisionLayer
     this.scene.physics.add.collider(arrow, this.scene.collisionLayer, () => {
       arrow.destroy();
     });
 
   }
 
+
+
+  
   setDirection(direction) {
     this.direction = direction;
   }
-
-  // ***BEGIN NEW LOOSE LIFE CONTENT*** ----------------------------------------------------------------
-
+// ***NEW CONTENT*** ----------------------------------------------------------------
   loseLife() {
-    this.lives -= 1;
+    if (this.lives > 0) {
+      this.lives -= 1;
+    }
     if (this.lives <= 0) {
-      this.anims.play("die", true);
-      this.setVelocityX(0);
-      this.setVelocityY(0);
-      this.scene.socket.emit('playerDied', { gameId: this.gameId, playerId: this.id });
+      this.lives = 0; // Set lives to 0 to prevent further loss of lives
+      this.playerDead(); 
     }
   }
 
-  
+  playerDead () {
+  this.dead = true; // disable player movements locally and on the server
+  this.anims.play("die", true);
+  this.setVelocityX(0);
+  this.setVelocityY(0);
+  this.disableBody(true, true); // set the player active to false
+  // debugger;
+  this.scene.socket.emit('playerDied', { gameId: this.gameId, playerId: this.id }); // send a message to the server that the player has died
+  this.lives = 0; // sets lives to 0 
+  }   
+
   // ***END NEW CONTENT*** ------------------------------------------------------------------
 
 
 
   update(cursors) {
+  
+    if (this.dead) {
+      return; // If the player is dead, don't update their position/shooting
+    } 
     // Check if the player is on the ground
     if (this.body.blocked.down) {
       this.isGrounded = true;
