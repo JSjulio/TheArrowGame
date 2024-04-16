@@ -125,7 +125,6 @@ export class Game extends Scene {
     this.player.body.setOffset(this.offsetX, this.offsetY);
     
     this.playerArr = [];
-    console.log('playerArr iiissss.....', this.playerArr); 
     
     
     // Adds an collision listner between players and arrows 

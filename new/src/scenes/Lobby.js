@@ -26,8 +26,10 @@ export class LobbyScene extends Scene {
 // Form HTML Elements 
   createGameIdForm() {
     //creates text for gameId input form
-    this.add.text(300, 250, "GAME ID: ").setOrigin(0);
-
+    let text = this.add.text(300, 250, 'GAME ID:', {
+      fill: '#000000', 
+    }).setOrigin(0);
+    
     //input fields for gameId
     const gameIdInput = this.add.dom(400, 250, "input").setOrigin(0);
 

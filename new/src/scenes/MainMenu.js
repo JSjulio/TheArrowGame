@@ -24,6 +24,7 @@ export class MainMenu extends Scene
             fill: '#31CA01',
             fontSize: 37, 
             backgroundColor: '#000000',
+            padding: 8,
         });
         
         // Tween that animates the 'alpha' property of the text
