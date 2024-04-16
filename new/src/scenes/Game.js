@@ -163,7 +163,6 @@ export class Game extends Scene {
 
 // Client-side in Game scene
 this.socket.on('removeDeadPlayer', (data) => {
-  debugger; 
   // Check if the dead player is the local player
   if (data.playerId === this.playerId) {
     // If so, stop all input events, animations, or movement the player may have

@@ -140,6 +140,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 loseLife() {
     if (this.lives > 0) {
       this.lives -= 1;
+      this.scene.cameras.main.shake(300, 0.01); // Shake the camera for 300ms with an intensity of 0.01 when the player gets hit
     }
     if (this.lives <= 0) {
       this.lives = 0; // Set lives to 0 to prevent further loss of lives
@@ -156,7 +157,7 @@ loseLife() {
   // debugger;
   this.scene.socket.emit('playerDied', { gameId: this.gameId, playerId: this.id }); // send a message to the server that the player has died
   this.lives = 0; // sets lives to 0 
-  this.scene.cameras.main.shake(300, 0.01); // shake the camera when player dies 
+  this.scene.cameras.main.shake(300, 4.7); // shake the camera when player dies 
   this.scene.cameras.main.fade(250, 0, 0, 0); // fade the camera to black
   this.scene.cameras.main.once("camerafadeoutcomplete", () => {
     this.scene.scene.start("GameOver"); // redirect to game over scene

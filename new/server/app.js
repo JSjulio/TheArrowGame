@@ -174,14 +174,16 @@ io.on('connection', (socket) => {
 // Emit player died event to game room players and remove the players
 socket.on('playerDied', (data) => {
   const {gameId, playerId} = data;
+  console.log(`Player ${playerId} died - in game room: ${gameId}.`);
+
 
   // Remove the player from the players Map
   players.delete(playerId); 
 
   //clean up any empty game rooms
-  const gameStates = gameStates[gameId];
-  if (gameStates) {
-    if (gameStates.players.size === 0) { 
+  const refreshGS = gameStates[gameId];
+  if (refreshGS) {
+    if (refreshGS.players.size === 0) { 
       delete gameStates[gameId];
   }
 }

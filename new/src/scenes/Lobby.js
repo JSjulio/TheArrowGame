@@ -1,7 +1,4 @@
 import { Scene } from "phaser";
-import io from "socket.io-client";
-import jwt from "jsonwebtoken";
-
 export class LobbyScene extends Scene {
   constructor() {
     super({ key: "LobbyScene" });
@@ -9,42 +6,37 @@ export class LobbyScene extends Scene {
 
   create(data) {
 
-// gets socket client/server connection from AuthScene
+    this.cameras.main.fadeIn(1000)
     this.socket = data.socket;  
-      
-        this.socket.on('connect', () => {
-            console.log("consoleLog: You've connected to rootSocket within the lobbyScene. Create/join a game!");
-        }); 
+    this.socket.on('connect', () => {
+        console.log("consoleLog: You've connected to rootSocket within the lobbyScene. Create/join a game!");
+    }); 
 
     this.player = data.player; 
-    // console.log(this.player);
 
     this.playerId = data.player.id;
-    // console.log(this.playerId);
 
     this.token = data.token; 
-    // console.log(this.token);
     
-
-// Form for creating a game room.
-  this.createGameIdForm();
+    // Form for creating a game room.
+    this.createGameIdForm();
 
   }
 
 // Form HTML Elements 
   createGameIdForm() {
     //creates text for gameId input form
-    this.add.text(100, 250, "GAME ID: ").setOrigin(0);
+    this.add.text(300, 250, "GAME ID: ").setOrigin(0);
 
     //input fields for gameId
-    const gameIdInput = this.add.dom(200, 250, "input").setOrigin(0);
+    const gameIdInput = this.add.dom(400, 250, "input").setOrigin(0);
 
     //action button to set gameId
     const actionButton = this.add
-      .text(100, 300, "START GAME!", {
+      .text(407, 290, "START GAME!", {
         fill: "#D1ED9E",
         backgroundColor: "#111",
-        padding: 10, 
+        padding: 8, 
       })
       .setInteractive()
       .on("pointerdown", () => {
@@ -95,4 +87,3 @@ handleJoinRoom(gameId) {
 }
 
 
-// ***END NEW CONTENT*** -----------------------------------------------------------------------

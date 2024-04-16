@@ -1,11 +1,10 @@
 import { Scene } from "phaser";
-import io from "socket.io-client";
-
 export class Preloader extends Scene {
   constructor() {
    super("Preloader");
   
   }
+ 
   preload() {
     this.load.setPath("assets"); 
 
@@ -14,8 +13,6 @@ export class Preloader extends Scene {
   }
 
   create() {
-
     this.scene.start("MainMenu"); 
-
   }
 }

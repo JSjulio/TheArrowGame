@@ -10,6 +10,7 @@ export class AuthScene extends Scene {
 
   create() {
 
+    this.cameras.main.fadeIn(1000)
     this.socket = io('http://localhost:3000'); // recieved from MainMenu
     this.socket.on('connect', () => {
       console.log("consoleLog: You've connected to rootSocket within the Auth scene");
@@ -20,7 +21,25 @@ export class AuthScene extends Scene {
     bImage.setAlpha(.6);
     this.createLoginForm();
     this.createRegisterForm();
+
+     // Cool text effect for the scene title
+     const titleText = this.add.text(this.cameras.main.centerX, 50, 'Welcome to The Arrow Game', {
+      font: 'Arial',
+      fontSize: 48,
+      fill: '#ffffff',
+    }).setOrigin(0.5).setShadow(3, 3, 'rgba(0,0,0,0.5)', 2);
+
+    // Adding flicker effect to the title text
+    this.tweens.add({
+      targets: titleText,
+      alpha: { start: 0.7, to: 1 },
+      ease: 'Linear',
+      duration: 700,
+      repeat: -1,
+      yoyo: true
+    });
   }
+  
 
   // Unified form creation for login and registration
   createForm(type, yPosition) {
@@ -33,12 +52,24 @@ export class AuthScene extends Scene {
     const passwordInput = this.add.dom(300, yPosition + 40, 'input', { type: 'password' }, ).setOrigin(0);
 
     // action button for login/registration
-    const actionButton = this.add.text(100, yPosition + 80, text, { fill: '#0f0', backgroundColor: '#000', padding: 10})
+    const actionButton = this.add.text(100, yPosition + 80, text, { fill: '#0f0', backgroundColor: '#000', padding: 8})
       .setInteractive()
+      .on('pointerover', () => {
+        this.tweens.add({
+          targets: actionButton,
+          alpha: { start: 0.7, to: 1 },
+          ease: 'Linear',
+          duration: 300,
+          repeat: -1,
+          yoyo: true
+        })})
       .on('pointerdown', () => {
         const username = usernameInput.node.value;
         const password = passwordInput.node.value;
         this.handleAuth(username, password, type);
+    
+
+    
       });
 
     return { usernameInput, passwordInput, actionButton };
@@ -67,17 +98,21 @@ export class AuthScene extends Scene {
       if (data.token) {
         // Handle successful authentication
         console.log(`${data.player.name} ${type} successful, your token is:`, data.token);
-
-        // if auth is successful, proceed to next scene and pass serverUrl, player data, and token to next scene 
-        this.scene.start('LobbyScene', { socket: this.socket, player: data.player, token: data.token });
+  
+        // Fade out effect before switching scenes
+        this.cameras.main.fadeOut(1000, 0, 0, 0, (camera, progress) => {
+          if (progress === 1) {
+            // if auth is successful, proceed to next scene and pass serverUrl, player data, and token to next scene 
+            this.scene.start('LobbyScene', { socket: this.socket, player: data.player, token: data.token });
+          }
+        });
       } else {
-      // Handle authentication failure
-      console.error(`${type} failed:`, data.error);
-    }
+        // Handle authentication failure
+        console.error(`${type} failed:`, data.error);
+      }
     })
     .catch(error => {
       console.error(`Error during ${type}:`, error);
     });
   }
 }
-// 
