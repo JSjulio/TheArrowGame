@@ -26,18 +26,6 @@ export class LobbyScene extends Scene {
     // console.log(this.token);
     
 
-  
-// ***BEGIN NEW CONTENT*** -----------------------------------------------------------------------
-// logic for player joining the lobby socket.io connection 
-    
-   
-
-    // TODO Fix this line of code 
-    //Listen for new players joining the lobby
-    // this.socket.on("newplayerInLobby", (response) => {
-    //   console.log(`${response.message}`);
-    // });
-
 // Form for creating a game room.
   this.createGameIdForm();
 
