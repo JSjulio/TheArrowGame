@@ -173,20 +173,25 @@ io.on('connection', (socket) => {
 // *NEWCONTENT Create a game event to kill player
 // Emit player died event to game room players and remove the players
 socket.on('playerDied', (data) => {
-  const gameId = data.gameId;
-  const playerId = data.playerId; 
+  const {gameId, playerId} = data;
 
-  console.log(`Player ${playerId} died - in game room: ${gameId}.`);
-  socket.to(gameId).emit('removeDeadPlayer', { playerId: playerId, gameId: gameId});
+  // Remove the player from the players Map
+  players.delete(playerId); 
+
+  //clean up any empty game rooms
+  const gameStates = gameStates[gameId];
+  if (gameStates) {
+    if (gameStates.players.size === 0) { 
+      delete gameStates[gameId];
+  }
+}
+
+  console.log(`Player ${playerId} died - in game room: ${gameId}, removing dead player.`);
+  socket.to(gameId).emit('removeDeadPlayer', { playerId, gameId});
 }); 
 
 // STRETCH GOAL: Listen for arrowHitPlayer event from the game.js deduct player health and broadcast to all players in the same game room
-// socket.on('takeALife', ({data}) => {
-// console.log('player lives before the server goes down are:', data.playerLives)
-//  console.log('serverConsoleLog: arrow has hit player', data.player); 
-//  const player = data.player;
-//  const playerLives = data.playerLives;
-// });
+
 
 //***END NEW CONTENT*** ---------------------------------------------------------------------------
 

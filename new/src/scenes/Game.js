@@ -149,7 +149,6 @@ export class Game extends Scene {
     this.socket.on("removePlayer", (playerId) => {
       let rmPlayer = this.playerArr.find((player) => player.id === playerId);
       rmPlayer.destroy(); 
-      // this.scene.start('GameOverScene'); // send to game over scene
       this.players = this.playerArr.filter((player) => player.id !== playerId); // refresh the player array
     });
 
@@ -160,18 +159,33 @@ export class Game extends Scene {
       this.createArrow(shootData.x, shootData.y, shootData.direction, shootData.playerId) // call the createArrow function to recreate arrow sprite at the position received from the server
     });  
     
-//! See if I can use remove player instead
-// Listen for killPlayer event from the server and start the killPlayer function
-    this.socket.on('removeDeadPlayer', (data) => {
-      console.log('removeDeadPlayer function called on', data.playerId, 'in game:', data.gameId)
-      // // TODO initiate a die sprite for player that died 
-      // let rmPlayer = this.playerArr.find((player) => player.id === playerId);
-      // rmPlayer.destroy(); 
-      // remove player  from scene 
-      this.scene.start('GameOver'); // send to game over scene
+//! TEST
 
-        // ensure player disconnects from the socket, and that the player is removed from the game room
-    });
+// Client-side in Game scene
+this.socket.on('removeDeadPlayer', (data) => {
+  debugger; 
+  // Check if the dead player is the local player
+  if (data.playerId === this.playerId) {
+    // If so, stop all input events, animations, or movement the player may have
+    this.player.disableBody(true, false);
+    this.player.setVisible(false);
+
+    // Now transition to the 'GameOver' scene or any other logic for when the player dies
+    this.scene.start('GameOver');
+  } else {
+    // If it's another player, find them in your player array and destroy their character
+    const otherPlayer = this.playerArr.find((p) => p.id === data.playerId);
+    if (otherPlayer) {
+      // otherPlayer.setVisible(false);
+      // this.scene.start('GameOver');
+      otherPlayer.destroy();
+    }
+  }
+});
+
+
+
+    
 
 
   } //END Create Method---------------------------------------------------------------------------------------------------------------------------------
@@ -183,6 +197,8 @@ export class Game extends Scene {
   // Create arrow sprite at the received position
     createArrow(x, y, direction, playerId) {
       
+    
+
       let xOffset = direction === 'left' ? -20 : 20; // Set the offset based on the direction to deconflict shooter and arrow
       let arrow = this.physics.add.sprite(x + xOffset , y, 'arrow');
       arrow.setActive(true).setVisible(true); 
@@ -228,16 +244,6 @@ export class Game extends Scene {
       console.log('lives remaining:', player.lives); 
   }
 
-    
-    // Listen for playerDied event from the server 
-   killPlayer() {
-    this.socket.on('killPlayer', (data) => {
-      console.log('killplayer function called on', data.playerId, 'in game:', data.gameId);
-      //see if you need to disable the player from shooting / set them to invisible
-      //TODO initiate a death sprite for player that died   
-    }); 
-
-  }
 
   //***End NEW CONTENT*** ---------------------------------------------------------------------------------------------------------------------------------
 

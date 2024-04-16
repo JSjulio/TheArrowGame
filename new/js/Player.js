@@ -13,6 +13,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.isGrounded = true;
     this.gameId = gameId;
     this.lives = 3; // **NEWCONTENT: Sets player lives to 3
+    this.dead = false; // Add this line in your constructor to initialize the property
 
 
 
@@ -135,7 +136,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.direction = direction;
   }
 // ***NEW CONTENT*** ----------------------------------------------------------------
-  loseLife() {
+ 
+loseLife() {
     if (this.lives > 0) {
       this.lives -= 1;
     }
@@ -154,6 +156,11 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   // debugger;
   this.scene.socket.emit('playerDied', { gameId: this.gameId, playerId: this.id }); // send a message to the server that the player has died
   this.lives = 0; // sets lives to 0 
+  this.scene.cameras.main.shake(300, 0.01); // shake the camera when player dies 
+  this.scene.cameras.main.fade(250, 0, 0, 0); // fade the camera to black
+  this.scene.cameras.main.once("camerafadeoutcomplete", () => {
+    this.scene.scene.start("GameOver"); // redirect to game over scene
+  });
   }   
 
   // ***END NEW CONTENT*** ------------------------------------------------------------------
