@@ -185,6 +185,7 @@ socket.on('playerDied', (data) => {
   if (refreshGS) {
     if (refreshGS.players.size === 0) { 
       delete gameStates[gameId];
+      //Can I add an if statement here that checks whether the game room is 1 and if so emit's a call saying that player won? 
   }
 }
 

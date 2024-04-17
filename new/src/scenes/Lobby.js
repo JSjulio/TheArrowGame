@@ -5,7 +5,8 @@ export class LobbyScene extends Scene {
   }
 
   create(data) {
-
+//*BEGIN NEW CONTENT
+    // Fade in the scene  
     this.cameras.main.fadeIn(1000)
     this.socket = data.socket;  
     this.socket.on('connect', () => {
