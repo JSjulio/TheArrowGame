@@ -158,7 +158,7 @@ io.on('connection', (socket) => {
     const gameId = playerData.gameId;
     // console.log('New player connected:', playerData.name);
     socket.to(gameId).emit('newPlayerConnect', playerData); 
-    // console.log('New player connected:', playerData.name);
+    console.log('New player connected:', playerData.name);
   });
 
   // Listen for player Shot from the player.js class 
@@ -170,44 +170,38 @@ io.on('connection', (socket) => {
     socket.to(gameId).emit('playerShooting', { playerId, x, y, direction });
 });
 
-// *NEWCONTENT Create a game event to kill player
-// Emit player died event to game room players and remove the players
+
+//*NEW CONTENT -------------------------------------------------------------------------------------
+// Disable dead player by setting player as inactive. 
+// Emit player died event to game room players and 
+// once player is net as inactive, player's position will not be required clientPlayerUpdate
 socket.on('playerDied', (data) => {
   const {gameId, playerId} = data;
+    
+  // *NEWCONTENT - Set player as inactive after death instead of deleting
+  if (players.has(playerId)) {
+    const player = players.get(playerId); // Get the player object from the players Map
+    player.active = false; // Set the player as inactive
+    players.set(playerId, player); // Update the player status in the players Map
+  };
+
   console.log(`Player ${playerId} died - in game room: ${gameId}.`);
-
-
-  // Remove the player from the players Map
-  players.delete(playerId); 
-
-  //clean up any empty game rooms
-  const refreshGS = gameStates[gameId];
-  if (refreshGS) {
-    if (refreshGS.players.size === 0) { 
-      delete gameStates[gameId];
-      //Can I add an if statement here that checks whether the game room is 1 and if so emit's a call saying that player won? 
-  }
-}
-
-  console.log(`Player ${playerId} died - in game room: ${gameId}, removing dead player.`);
-  socket.to(gameId).emit('removeDeadPlayer', { playerId, gameId});
-}); 
-
-// STRETCH GOAL: Listen for arrowHitPlayer event from the game.js deduct player health and broadcast to all players in the same game room
+  socket.to(gameId).emit('setDeadPlayerStatus', { playerId, active: false});
+});  
 
 
 //***END NEW CONTENT*** ---------------------------------------------------------------------------
 
 
 
-//TODO Add game start logic 
   // Listen for game room creation requests
   socket.on('createGameRoom', (gameId) => {
     
-    
     //create a new gameID
     if (!gameStates[gameId]) {
-      gameStates[gameId] = { players: new Set() };
+      gameStates[gameId] = { 
+        players: new Set(),
+        started: false};
       console.log(`New Game room '${gameId}' created`);
     }
 
@@ -216,6 +210,11 @@ socket.on('playerDied', (data) => {
       socket.emit('gameAtPlayerCapacity', { message: 'Game room is at capacity, create another room', gameId });
       return; 
     } 
+    // Check if the game has already started and prevent new players from joining
+    if (gameStates[gameId].started === true) {
+      socket.emit('gameAlreadyStarted', { message: 'Game has already started, create another room', gameId });
+      return; // TODO QC THIS 
+    }
   
     // Add the player to the game state and join the game room
     gameStates[gameId].players.add(socket.id);
@@ -229,24 +228,54 @@ socket.on('playerDied', (data) => {
     socket.to(gameId).emit('playerJoinedRoom', { message: `lobbyScene_To_GameRoom: Player with ID ${socket.id} has successfully joined your game '${gameId}'! `});
 }); 
 
-  // Handle player disconnection
+
+//**** NEW CONTENT ****-----------------------------------------------------------------------------
+
+socket.on('playerReady', (data) => {
+  const { gameId, playerId } = data;
+
+  if (gameStates[gameId] && players.has(playerId)) {
+    let game = gameStates[gameId];
+    players.get(playerId).active = true;  // Mark player as active (ready)
+
+    // Check if all players in the game are active
+    if (Array.from(game.players).every(id => players.get(id).active)) {
+      startGame(gameId); // Start the game after all players are ready
+    }
+  } // TODO Implement a time that locks the game room after 40 seconds
+});
+
+function startGame(gameId) {
+  let game = gameStates[gameId];
+  game.started = true; // Mark the game as started // TODO Check this to see if it locks the game room
+  io.in(gameId).emit('gameStarted', { message: 'Game has started.' });
+  console.log(`Game ${gameId} has started.`);
+}
+
+
+
+  //TODO Create gameover logic that does deletes all but the socket.id. 
+
+
+// Handle player disconnection
   socket.on('disconnect', () => {
     Object.keys(gameStates).forEach(gameId => {
-      // Remove the player from the game room
       if (gameStates[gameId].players.has(socket.id)) {
         gameStates[gameId].players.delete(socket.id);
-        console.log(`Player with ID ${socket.id} has left game room ${gameId}`);
-        // If the game room is empty, delete it
-        if (gameStates[gameId].players.size === 0) {
+
+        // Check if the game can still start
+        if (gameStates[gameId].players.size > 0 && Array.from(gameStates[gameId].players).every(id => players.get(id).active)) {
+          startGame(gameId);
+        } else if (gameStates[gameId].players.size === 0) {
           delete gameStates[gameId];
         }
+
+        console.log(`Player with ID ${socket.id} has left game room ${gameId}`);
       }
     });
     console.log(`Player with ID ${socket.id} disconnected`);
   });
-
-});
-
+})
 
 
   // Start listening on the specified port
@@ -256,4 +285,3 @@ socket.on('playerDied', (data) => {
 
   module.exports = app;
 
-///

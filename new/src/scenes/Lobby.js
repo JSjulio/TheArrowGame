@@ -5,20 +5,17 @@ export class LobbyScene extends Scene {
   }
 
   create(data) {
-//*BEGIN NEW CONTENT
+//*BEGIN NEW CONTENT - 
     // Fade in the scene  
     this.cameras.main.fadeIn(1000)
-    this.socket = data.socket;  
-    this.socket.on('connect', () => {
-        console.log("consoleLog: You've connected to rootSocket within the lobbyScene. Create/join a game!");
-    }); 
-
-    this.player = data.player; 
-
-    this.playerId = data.player.id;
-
-    this.token = data.token; 
     
+    // Set the socket, player, playerId, from Auth scene 
+    // from gameOver scene if player is returning
+    this.socket = data.socket;  
+    this.player = data.player; 
+    this.playerId = data.playerId;
+    
+
     // Form for creating a game room.
     this.createGameIdForm();
 
@@ -61,15 +58,20 @@ handleJoinRoom(gameId) {
   // console.log(gameId, this); 
   
   // Emit event to create or join a game room
-    this.socket.emit('createGameRoom', gameId, this.player); 
-    // console.log('gameId:', gameId, 'player:', this.player);
+    this.socket.emit('createGameRoom', gameId);  //! TESTING - see if this.player is requied to be passed here 
+    // console.log('gameId:', gameId, 'player:', this.player); // Need to pass in data as required for players who want to respawn 
 
     // Listen for confirmation of room creation/joining
     this.socket.on('gameRoomCreated', (response) => {
       // console.log('gameid in socket it', response.gameId); // successfully accesses gameId
-      this.scene.start("Game", { socket: this.socket, playerId: this.playerId, gameId: response.gameId }); // Start game and pass player,socket, and gameId information to game scene. 
+      
+      
+      // *navigate to the Ready up scene and pass the gameId and playerId and socketId to the Ready scene
+      this.cameras.main.fade(2000);
+      this.scene.start("Ready", { socket: this.socket, playerId: this.playerId, gameId: response.gameId, active: true })
     }); 
-
+    
+    
     // Listen for the event when another player joins the same room
     this.socket.on('playerJoinedRoom', (response) => {
         console.log(`${response.message}`);
@@ -80,6 +82,11 @@ handleJoinRoom(gameId) {
         console.log(`Game in room ${data.room} is starting.`);
         // Transition to the game scene or perform other setup as needed
     });
+
+    this.socket.on('gameAlreadyStarted', (response) => {
+        console.log(`${response.message}`);
+        return; // TODO QC THIS 
+    })
 
     // Listen for the event when the game room is at capacity
     this.socket.on('gameAtPlayerCapacity', (response) => {

@@ -4,11 +4,14 @@ export class GameOver extends Scene
 {
     constructor ()
     {
-        super('GameOver'); //Gameover scene 
+        super('GameOver'); 
     }
 
-    create ()
-    {
+    create (data) {
+
+        // recieves playerId from the GameOver scene.
+        this.playerId = data.playerId; 
+       
         // Fade in the scene
         this.cameras.main.fadeIn(1000)
 
@@ -38,13 +41,12 @@ export class GameOver extends Scene
         });
 
         this.input.once('pointerdown', () => {
-            this.scene.start('MainMenu'); // redirects user to the main menu. 
+            this.scene.start('LobbyScene', { playerId: this.playerId, socketId : this.playerId} ); // redirects user to the lobby scene. 
         });
     }
 
     openScene() { 
-        this.scene.cameras.main.fadeIn(1000);
-        this.scene.launch('GameOver');
-        this.scene.pause
+        this.scene.cameras.main.fadeIn(5000, 75, 114, 135);
+        // this.scene.pause
     }
 }

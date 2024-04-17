@@ -67,7 +67,7 @@ export class AuthScene extends Scene {
         const username = usernameInput.node.value;
         const password = passwordInput.node.value;
         this.handleAuth(username, password, type);
-    
+        actionButton.setAlpha(0.5);
 
     
       });

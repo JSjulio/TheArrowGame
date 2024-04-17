@@ -5,6 +5,7 @@ import { MainMenu } from "./scenes/MainMenu";
 import { Preloader } from "./scenes/Preloader";
 import { AuthScene } from "./scenes/Auth"; 
 import { LobbyScene } from "./scenes/Lobby";
+import { Ready } from "./scenes/Ready";
 
 const sizes = {
   width: 1000,
@@ -34,7 +35,7 @@ const config = {
     mode: Phaser.Scale.FIT, 
     autoCenter: Phaser.Scale.CENTER_BOTH, 
   },
-  scene: [Boot, Preloader, MainMenu, AuthScene, LobbyScene, Game, GameOver], // The scenes to add different pages to the Phaser application. Scenes resemble components
+  scene: [Boot, Preloader, MainMenu, AuthScene, LobbyScene, Ready, Game, GameOver], // The scenes to add different pages to the Phaser application. Scenes resemble components
   
 };
 
