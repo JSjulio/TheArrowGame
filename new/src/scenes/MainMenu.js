@@ -5,21 +5,22 @@ export class MainMenu extends Scene
     {
         super('MainMenu'); 
     }
-
+    
+    // preload method that loads the login background-image and the battlefield.json file
     preload ()
     {   
         this.load.setPath('assets');
-        this.load.image('loginImage', 'login.png'); // loads the login background-image 
-        this.load.tilemapTiledJSON("map", "map/battlefield.json");//loads the battlefield.json file
-        this.load.image("tiles", "map/battlefield.png");//loads the battlefield.png file that the tile battlefiled.json file references
+        this.load.image('loginImage', 'login.png');  
+        this.load.tilemapTiledJSON("map", "map/battlefield.json");
+        this.load.image("tiles", "map/battlefield.png");
     }
 
+    // create method that creates the login background-image and the battlefield.json file
     create ()
     {
-        this.add.image(512, 310, 'theArrowGame'); // renders theArrowGame image on the landing page. 
-        //'START GAME' wording on landing page
+        this.add.image(512, 310, 'theArrowGame'); 
       
-        let flickerText = this.add.text(350, 520, 'ClICK ANYWHERE!', {
+        let flickerText = this.add.text(275, 520, 'ClICK ANYWHERE TO START!', {
             frontFamily: 'Arial Black',
             fill: '#31CA01',
             fontSize: 37, 
@@ -27,13 +28,12 @@ export class MainMenu extends Scene
             padding: 8,
         });
         
-        // Tween that animates the 'alpha' property of the text
         this.tweens.add({
             targets: flickerText,
-            alpha: { start: 0, to: 1 },  // Fades between invisible and visible
-            ease: 'Linear',  // Linear tween to make the flicker sharp rather than smooth
-            duration: 900,  // Duration of one flicker in milliseconds
-            repeat: -1,  // -1 makes the tween repeat indefinitely
+            alpha: { start: 0, to: 1 },  
+            ease: 'Linear',  
+            duration: 900, 
+            repeat: -1,  
             yoyo: true  
         });
 

@@ -12,7 +12,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.direction = "left";
     this.isGrounded = true;
     this.gameId = gameId;
-    this.lives = 3; 
+    this.lives = 10; 
     this.active = true; // All players start as active since they ready up the ReadyLobby Scene. When a player dies they become inactive again.
 
 
@@ -152,7 +152,7 @@ loseLife() {
   this.disableBody(true, true); // set the player active to false
   // debugger;
   this.scene.socket.emit('playerDied', { gameId: this.gameId, playerId: this.id }); // send a message to the server that the player has died
-  this.lives = 3; // sets lives to 3 after player dies
+  this.lives = 10; // sets lives to 10 after player dies
   
   //player die effects 
   this.scene.cameras.main.shake(300, 4.7); // shake the camera when player dies 

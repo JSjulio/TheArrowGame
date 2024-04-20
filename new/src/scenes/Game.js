@@ -1,13 +1,14 @@
 import { Scene } from "phaser"; // scenes are where the game logic is written for different parts of the game
 import Phaser, { NONE } from "phaser";
 import Player from "../../js/Player";
-import io from "socket.io-client";
 import "../../src/style.css";
 
 export class Game extends Scene {
   constructor() {
     super("Game");
+    // this.playerId = null;
     this.arrows = [];
+    this.player = null;
   }
 
   preload() {
@@ -31,9 +32,13 @@ export class Game extends Scene {
 
     // set game, player, and socket information from the data object
     this.gameId = data.gameId;
-    this.playerId = data.socket.id;
+    // debugger;
+    this.playerId = data.playerId;
     this.socket = data.socket;
     this.sock = this.socket;
+    this.playerDb = data.player;
+    this.playerName = data.playerName;
+    this.playerId = data.socket.id; 
 
     //create floor collision layer
     this.map = this.make.tilemap({
@@ -42,9 +47,11 @@ export class Game extends Scene {
       tileHeight: 12,
     });
   
-    // Room is started from the ReadyLobby scene via the server emitting the startGame event
+    // Room is started from the Ready scene via the server emitting the startGame event
 
-    //Verify the gameId and playerId
+
+
+    //Verify the gameId and playerId // TODO TEST and remove
     this.socket.emit("joinGameRoom", {
       gameId: this.gameId,
       playerId: this.playerId,
@@ -68,12 +75,6 @@ export class Game extends Scene {
     const backgroundImage = this.add.image(0, 0, "tiles").setOrigin(0); // creates a tilemap from the battlefield.json file
     backgroundImage.setScale(scaleFactorX, scaleFactorY);
 
-    // Receive the valid spawn positions from the server, deconflicted for each player
-    // Stretch goal: implement this code for randomized positions // TODO 
-    // WIP
-    this.socket.on("validPositions", (positions) => {
-      console.log("positions are:...", positions);
-    });
 
     // CREATE and process player map and send to the server
     this.player = new Player(
@@ -154,6 +155,7 @@ export class Game extends Scene {
 
     //Sends the player to the server for storage/broadcast to other clients
     this.socket.emit("joinRoom", { player: this.player, gameId: this.gameId });
+
 
     // Listen for the event when another player joins the same room
     this.socket.on("playerInGameMap", (response) => {
@@ -333,9 +335,9 @@ export class Game extends Scene {
       }
     });
 
-    //*NEWCONTENT: if a player is active then send the player with the current arrow key combinations/presses to the server
     this.player.update(this.cursors);
-    // Packages the keypresse into a json object for the server
+
+    // Packages the key presses into a json object for the server
     if (this.player.active) {
       const activeKeys = {
         up: this.cursors.up.isDown,

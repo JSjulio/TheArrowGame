@@ -41,7 +41,7 @@ export class GameOver extends Scene
         });
 
         this.input.once('pointerdown', () => {
-            this.scene.start('LobbyScene', { playerId: this.playerId, socketId : this.playerId} ); // redirects user to the lobby scene. 
+            this.scene.start('Game', { playerId: this.playerId, socketId : this.playerId} ); // redirects user to the lobby scene. 
         });
     }
 
