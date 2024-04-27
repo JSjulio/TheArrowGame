@@ -235,7 +235,7 @@ socket.on('playerIdReq', () => {
   }
 })
 
-  // Handle player disconnection // TODO verify that disconnection is working as intended
+  // Handle player disconnection 
     socket.on('disconnect', () => {
       Object.keys(gameStates).forEach(gameId => {
         if (gameStates[gameId] && gameStates[gameId].players.has(socket.id)) {
