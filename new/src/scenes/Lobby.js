@@ -49,22 +49,10 @@ handleSetRoom(gameId) {
           gameId: this.gameId,
           socket: this.socket
         });
-      if (data.sucess && data.started) {
-        this.cameras.main.fadeOut(3000, 0, 0, 255);
-        console.log('lobbyConsoleLog:', data.message);    
-        this.cameras.main.once('camerafadeoutcomplete', () => {
-          this.scene.start('Game', {
-          gameId: this.gameId,
-          socket: this.socket,
-          playerName: this.playerName,
-          active: this.active
-          })});
-      } if (data.failure) {
-        // Log failure message
-        console.log(`lobbyConsoleLog game ${this.gameId} already began.`);
+      }  if (data.failure) {
+        console.log(data.message);
         return;
       }
-    }}
-    ); 
+    }); 
   }
 }

@@ -150,18 +150,18 @@ loseLife() {
   this.setVelocityX(0);
   this.setVelocityY(0);
   this.disableBody(true, true); // set the player active to false
-  // debugger;
   this.scene.socket.emit('playerDied', { gameId: this.gameId, playerId: this.id }); // send a message to the server that the player has died
-  this.lives = 10; // sets lives to 10 after player dies
+  this.lives = 0; // sets lives to 0 after player dies
   
   //player die effects 
   this.scene.cameras.main.shake(300, 4.7); // shake the camera when player dies 
   this.scene.cameras.main.fade(300, 255, 0, 0); // fade the camera to red
   this.scene.cameras.main.once("camerafadeoutcomplete", () => {
     this.scene.cameras.main.fadeIn(3000), 125, 217, 217;    
-    this.scene.scene.start('GameOver', { playerId: this.id}); // redirect to the game over scene
-  
+    this.scene.scene.launch('GameOver', { playerId: this.id}); // ! Test - Launch GameOver scene and give client the option to leave game or stay and watch the game
+    this.scene.scene.resume('Game'); // ! test resume the scene and await for client to make a decision on staying or leaving the game
   });
+
   }   
 
   // ***END NEW CONTENT*** ------------------------------------------------------------------

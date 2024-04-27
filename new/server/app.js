@@ -79,32 +79,34 @@ const io = socketIO(server, {
   const players = new Map(); 
   const gameStates = {};
 
-  // Once the game Scene socket is created, server will listen for the following events
+  // Event handling for starting a game room socket connection 
   io.on('connection', (socket) => {
 
-    // Within the Lobby Scene the player will reques to set their gameId
     socket.on('gameRoomSetRequest', (data) => {
-     
+      
+      // Check if the game room exists, if not, allow first to join the socket connection of that gameroom
       const gameId = data.gameId;
       if (!gameStates[gameId]) {
+        socket.join(gameId);
         socket.emit('gameRoomSetResponse', {gameId: gameId, success: true, message: `, success!.`});
         return;
       }
     
-      // Check if the game has already started if timer is note exceeded player is automatically added
-      if (gameStates[gameId].started || gameStates[gameId].countdown  > 5 ) {
+      // If game room exist and there is more than 5 seconds left in the countdown, allow player to join socket connection
+      if (!gameStates[gameId].started && gameStates[gameId].countdown  >= 5) {
         gameStates[gameId].players.add(socket.id);
         socket.join(gameId);
-        socket.emit('gameRoomSetResponse', {gameId: gameId, success: true, started: true,  message: `, Game started, but we'll get you in there 🎯 ${gameId}!!.`});
+        socket.emit('gameRoomSetResponse', {gameId: gameId, success: true, started: true,  message: `, Countdown started, but we'll get you in there 🎯!.`});
         return;
       }
 
-      else {
-        socket.emit('gameRoomSetResponse', {gameId: gameId, success: false, message: `, Game ${gameId} already started, try another one 🎯!`});
+      // If socket connection does not meet the above conditions, emit a message to the client that the socket connection cannot be joined
+      if (gameStates[gameId].started && gameStates[gameId].countdown <= 4) {
+        socket.emit('gameRoomSetResponse', {gameId: gameId, failure: true, message: `, Game ${gameId} already started, try another one 🙃!`});
       }
     });
 
-// Server-side Socket.io event handling for creating a game room
+// Event handling for creating a game room with existing socket connection created in lobby scene via the code above
 socket.on('createGameRoom', (data) => {
   const gameId = data.gameId;
 
@@ -131,51 +133,27 @@ socket.on('createGameRoom', (data) => {
     socket.join(gameId);
   }
 
-  // // Check if the game room is full or already started
-  // if (gameStates[gameId].players.size >= 10) {
-  //   socket.emit('gameAtPlayerCapacity', {
-  //     message: 'Game room is at capacity, please create another room',
-  //     gameId
-  //   });
-  //   return;
-  // } if (gameStates[gameId].started) {
-  //   socket.emit('gameAlreadyStarted', {
-  //     message: 'Game has already started, please join another room',
-  //     gameId
-  //   });
-  //   return; 
-  // TODO Streamline and this by creating a new array of players which you can check how many there is of and is somehow replicate this logic 
-
-
   // Start countdown if it has not already started
   if (!gameStates[gameId].countdownStarted) {
     gameStates[gameId].countdownStarted = true;
     gameStates[gameId].players.add(socket.id);
     socket.join(gameId);
 
-    // Countdown logic
+    // Countdown 
     const countdownInterval = setInterval(() => {
       if (gameStates[gameId].countdown > 0) {
         gameStates[gameId].countdown--;
         io.in(gameId).emit('updateCountdown', { countdown: gameStates[gameId].countdown });
+        io.in(gameId).emit('disableReadyUp');
       }
        else { // Countdown has ended
         clearInterval(countdownInterval);
-        if (gameStates[gameId]) { // TODO }.players.size > 0) {
+        if (gameStates[gameId]) { 
           io.in(gameId).emit('startItUp', { message: `Game room ${gameId} is starting.` });
-        } // } else {
-        //   console.log(`No players in room ${gameId}, deleting game room.`);
-        //   delete gameStates[gameId];
-        // }
+        } 
       }
     }, 1000);
-    io.in(gameId).emit('countdownStarted');
-  } else {
-    gameStates[gameId].players.add(socket.id);
-    socket.join(gameId);
-    io.in(gameId).emit('startItUp?', { message: `NOT SURE HOW BUT this player just joined the game '${gameId}' .` });
-
-  }
+  } 
 
   // Notify player of successful room join
   socket.emit('gameRoomJoined', { message: `You have successfully joined the game room ${gameId}.` });

@@ -32,14 +32,12 @@ export class Game extends Scene {
 
     // set game, player, and socket information from the data object
     this.gameId = data.gameId;
-    // debugger;
     this.playerId = data.playerId;
     this.socket = data.socket;
     this.sock = this.socket;
     this.playerDb = data.player;
     this.playerName = data.playerName;
     this.playerId = data.socket.id; 
-
     //create floor collision layer
     this.map = this.make.tilemap({
       key: "map",
@@ -307,7 +305,7 @@ export class Game extends Scene {
 
   update() {
     //** NEWCONTENT if a player is not active then skip and do not send information to the server,
-    // since server does not have any information to update the player will remain in their last know position?
+    // since server does not have any information to update the player will remain in their last know position
     
     // Collision detection between the server emitted player and the collision layer
     this.physics.world.collide(

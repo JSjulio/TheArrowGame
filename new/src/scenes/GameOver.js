@@ -9,7 +9,16 @@ export class GameOver extends Scene
 
     create (data) {
 
-        // recieves playerId from the GameOver scene.
+        this.socket = data.socket; 
+
+
+        // this.socket.on('incomingDeadPlayer', (data) => {
+            // this.playerId = data.playerId; // stores the socket.id of the player that died.
+            // console.log('incomingDeadPlayers id(socketId) in Game over is:', this.playerId);
+            this.createDeadPlayerButtons(); 
+
+        // }); 
+
         this.playerId = data.playerId; 
        
         // Fade in the scene
@@ -29,8 +38,8 @@ export class GameOver extends Scene
             stroke: '#000000', strokeThickness: 4,
             align: 'center'
         }).setOrigin(0.5);
-
-        let movingText = this.add.text(512,520, 'Click Anywhere!', { fontSize: '18px', color: '#AAA739' });
+        
+        let movingText = this.add.text(512,520, 'Click Anywhere To Continue!', { fontSize: '18px', color: '#AAA739' });
         this.tweens.add({
         targets: movingText,
         x: 400,
@@ -40,13 +49,41 @@ export class GameOver extends Scene
         loop: -1
         });
 
-        this.input.once('pointerdown', () => {
-            this.scene.start('Game', { playerId: this.playerId, socketId : this.playerId} ); // redirects user to the lobby scene. 
-        });
     }
 
+
+    createDeadPlayerButtons () { 
+            
+        const returnToGameButton = this.add.text(512, 400, 'Return to Game', {
+            font: "16px Arial",
+            fill: "#ffffff",
+            backgroundColor: "#000000",
+            padding: { x: 10, y: 5 }
+            }).setInteractive();
+
+            returnToGameButton.on('pointerdown', () => {
+                this.scene.stop('GameOver'); 
+            });
+
+            const newGame = this.add.text(512, 450, 'New Game', {
+                font: "16px Arial",
+                fill: "#ffffff",
+                backgroundColor: "#000000",
+                padding: { x: 10, y: 5 }
+                }).setInteractive();
+                
+                newGame.on('pointerdown', () => { 
+                    // this.scene.stop('Game')
+                    this.scene.restart('LobbyScene'); // !Test what the console.log of their socket is once they are in lobbyScene 
+                })
+        }
+    
+    
+    // Not being used, delete after complete 
     openScene() { 
         this.scene.cameras.main.fadeIn(5000, 75, 114, 135);
         // this.scene.pause
     }
+
+
 }
