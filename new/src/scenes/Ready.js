@@ -3,7 +3,7 @@ import { Scene } from "phaser";
 export class Ready extends Scene {
     constructor() {
         super("Ready");
-        this.readyCountdown = 50; // Initially set for display purposes, actual value will be received from server
+        this.readyCountdown = 30; // init count as 50 for display purposes, actual value will be received from server
         this.active = true;
         this.playerId = null;
     }
@@ -39,7 +39,6 @@ export class Ready extends Scene {
              readyUpButton.setAlpha(0.1);
             }
          });
-
     }
 
     setupEventListeners() {
@@ -68,7 +67,7 @@ export class Ready extends Scene {
     }
 
     handlePostTimerRoomState() {
-        this.cameras.main.fadeOut(3000, 19.2, 31.8, 47.1);
+        this.cameras.main.fadeOut(3500, 29, 61.2, 100);
         this.cameras.main.once('camerafadeoutcomplete', () => {
             this.scene.start('Game', {
                 gameId: this.gameId,
@@ -76,7 +75,6 @@ export class Ready extends Scene {
                 playerName: this.playerName,
                 active: this.active
             });
-            this.scene.stop('Ready');
         });
     }
 }

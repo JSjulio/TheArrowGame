@@ -116,7 +116,7 @@ socket.on('createGameRoom', (data) => {
       players: new Set(),
       started: false,
       countdownStarted: false,
-      countdown: 50 // Initialize countdown
+      countdown: 30 // Initialize countdown
     };
   }
   
@@ -141,12 +141,12 @@ socket.on('createGameRoom', (data) => {
 
     // Countdown 
     const countdownInterval = setInterval(() => {
-      if (gameStates[gameId].countdown > 0) {
+      if (gameStates[gameId] && gameStates[gameId].countdown > 0) {
         gameStates[gameId].countdown--;
         io.in(gameId).emit('updateCountdown', { countdown: gameStates[gameId].countdown });
         io.in(gameId).emit('disableReadyUp');
       }
-       else { // Countdown has ended
+       else { // Countdown has ended or no longer exists
         clearInterval(countdownInterval);
         if (gameStates[gameId]) { 
           io.in(gameId).emit('startItUp', { message: `Game room ${gameId} is starting.` });
@@ -235,29 +235,27 @@ socket.on('playerIdReq', () => {
   }
 })
 
-// Handle player disconnection // TODO verify that disconnection is working as intended
-  socket.on('disconnect', () => {
-    Object.keys(gameStates).forEach(gameId => {
-      if (gameStates[gameId].players.has(socket.id)) {
-        gameStates[gameId].players.delete(socket.id);
+  // Handle player disconnection // TODO verify that disconnection is working as intended
+    socket.on('disconnect', () => {
+      Object.keys(gameStates).forEach(gameId => {
+        if (gameStates[gameId] && gameStates[gameId].players.has(socket.id)) {
+          gameStates[gameId].players.delete(socket.id);
 
-        // Check if the game can still start
-        if (gameStates[gameId].players.size > 0 && Array.from(gameStates[gameId].players).every(id => players.get(id).active)) {
-          startGame(gameId);
-        } 
-        else if (gameStates[gameId].players.size === 0) {
-          delete gameStates[gameId];
+          // if all players have left the game room, clean up the game state
+          if (gameStates[gameId].players.size === 0) {
+            clearInterval(gameStates[gameId].countdownInterval); // Clear the countdown interval
+            delete gameStates[gameId]; // Remove the game state
+          } else {
+            // Update all players about the changed player count
+            io.in(gameId).emit('playerDisconnected', { playerId: socket.id });
+          console.log(`Player with ID ${socket.id} has left game room ${gameId}`);
         }
-
-        console.log(`Player with ID ${socket.id} has left game room ${gameId}`);
       }
     });
-    console.log(`Player with ID ${socket.id} disconnected`);
+  console.log(`Player with ID ${socket.id} disconnected`);
   });
-
-  //?END Socket Event Listeners---------------------------------------------------------------------------
-
 })
+//*END Socket Event Listeners---------------------------------------------------------------------------
 
   // Start listening on the specified port
   server.listen(PORT, "localhost", () => {
