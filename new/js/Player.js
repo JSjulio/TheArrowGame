@@ -15,7 +15,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.lives = 10; 
     this.active = true; // All players start as active since they ready up the ReadyLobby Scene. When a player dies they become inactive again.
 
-
     scene.add.existing(this);
     scene.physics.add.existing(this);
     this.setBounce(0.1);
@@ -135,6 +134,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 loseLife() {
     if (this.lives > 0) {
       this.lives -= 1;
+      // this.scene.socket.emit('updatePlayerLives', { gameId: this.gameId, playerId: this.id } )
       this.scene.cameras.main.shake(300, 0.01); // Shake the camera for 300ms with an intensity of 0.01 when the player gets hit
     }
     if (this.lives <= 0) {
@@ -158,7 +158,7 @@ loseLife() {
   this.scene.cameras.main.fade(300, 255, 0, 0); // fade the camera to red
   this.scene.cameras.main.once("camerafadeoutcomplete", () => {
     this.scene.cameras.main.fadeIn(3000), 125, 217, 217;    
-    this.scene.scene.launch('GameOver', { playerId: this.id}); // ! Test - Launch GameOver scene and give client the option to leave game or stay and watch the game
+    this.scene.scene.launch('GameOver', { playerId: this.id}); // TODO clear socket from this gameId and allow for player to join the lobby scene successfully 
     this.scene.scene.resume('Game'); // ! test resume the scene and await for client to make a decision on staying or leaving the game
   });
 

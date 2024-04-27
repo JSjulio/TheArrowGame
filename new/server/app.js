@@ -115,8 +115,10 @@ socket.on('createGameRoom', (data) => {
     gameStates[gameId] = {
       players: new Set(),
       started: false,
-      countdownStarted: false,
-      countdown: 30 // Initialize countdown
+      countDownStarted: false, 
+      gameCountStarted: false, //TODO
+      countdown: 30, 
+      gameCountDown: 300 // TODO
     };
   }
   
@@ -134,8 +136,8 @@ socket.on('createGameRoom', (data) => {
   }
 
   // Start countdown if it has not already started
-  if (!gameStates[gameId].countdownStarted) {
-    gameStates[gameId].countdownStarted = true;
+  if (!gameStates[gameId].countDownStarted) {
+    gameStates[gameId].countDownStarted = true;
     gameStates[gameId].players.add(socket.id);
     socket.join(gameId);
 
@@ -149,7 +151,7 @@ socket.on('createGameRoom', (data) => {
        else { // Countdown has ended or no longer exists
         clearInterval(countdownInterval);
         if (gameStates[gameId]) { 
-          io.in(gameId).emit('startItUp', { message: `Game room ${gameId} is starting.` });
+          io.in(gameId).emit('startItUp', { message: `Game room ${gameId} is starting now!.` });
         } 
       }
     }, 1000);
@@ -164,7 +166,7 @@ socket.on('createGameRoom', (data) => {
   // Listen for player room and receive player data
   socket.on('joinRoom', (data) => {
 
-    const player = data.player; // ? should be player socket
+    const player = data.player; 
     console.log('player', player);
     const gameId = data.gameId; 
 
@@ -172,17 +174,50 @@ socket.on('createGameRoom', (data) => {
     // The line below allows the server to keep track of all players by placing the player object within the Map defined near line 74 
     players.set(player, player);  
       
-    // Join the player socke tto the game room, 
+    // Join the player socket to the game room, 
     socket.join(gameId);
     // console.log('player', player);
 
     // Broadcast to all the clients that a new player has joined, along with the information of that player
     socket.to(gameId).emit('newPlayer', player); // modified emit to send to specific gameId, ensuring players are in their proper rooms 
-    
+
     //functional check to see if player is in the game room
     socket.to(gameId).emit('playerInGameMap', { message:  `Player ${player} connected to your '${gameId}' game room!`});
-    console.log(`game_ConsoleLog: S Player connected to game room: ${gameId}`);
+    console.log(`game_ConsoleLog: Player connected to game room: ${gameId}`);
 });
+
+ //TODO - Add a game timer to the game room
+ socket.on('requestGameTimer', (data) => {
+  const gameId = data.gameId;
+
+  if (!gameStates[gameId].gameCountStarted) {
+  gameStates[gameId].gameCountStarted = true; 
+
+  //start countdown if it has not already started
+  const countDownInterval = setInterval(() => {
+      if (gameStates[gameId] && gameStates[gameId].gameCountdown > 0) {
+        gameStates[gameId].gameCountDown--;
+        io.in(gameId).emit('updateGameTimer', { gameCountDown: gameStates[gameId].gameCountdown });
+        io.in(gameId).emit('countdownrunninggood', { message: `Countdown is starting now in this game room!.` });
+      } 
+      else {
+        clearInterval(countDownInterval);
+        // if (gameStates[gameId]) {
+        //   //Player with the most lives wins
+        //   // const players = Array.from(gameStates[gameId].players);
+        //   const playerLives = Array.from(gameStates[gameId].players).map(playerId => players.get(playerId).lives);
+        //   const maxLives = Math.max(...playerLives);
+        //   const winner = Array.from(gameStates[gameId].players.get(playerId => players.get(playerId).lives === maxLives));
+        //   io.in(gameId).emit('gameOver', { message: `Game room ${gameId} is over. Player ${winner} wins!` });
+        //   io.in(gameId).emit('gameOver', { message: `Game room ${gameId} is over.` });
+        // }
+      }
+    }, 1000);
+  }
+  });
+// });
+
+
 
   // Listen for client movements (active keys being pressed which correlate to adjacent player movement)
   socket.on('clientPlayerUpdate', (playerData) => {
@@ -206,6 +241,20 @@ socket.on('createGameRoom', (data) => {
     socket.to(gameId).emit('playerShooting', { playerId, x, y, direction });
 });
 
+// //TODO TEST2 - Update player lives
+//   socket.on('updatePlayerLives', (data) => {
+//     const {gameId, playerId} = data;
+//     if (gameStates[gameId] && gameStates[gameId].players.has(playerId)) {
+//       const player = players.get(playerId);
+//       player.lives -= 1;
+//       players.set(playerId, player.lives);
+//     }
+//     console.log(`serverConsoleLog: Player ${playerId} has ${lives} lives left.`);
+//     socket.to(gameId).emit('updatePlayerLives', { playerId, lives });
+//   });
+
+
+
   //Disable Client update methods for a player 
   socket.on('playerDied', (data) => {
     const {gameId, playerId} = data;
@@ -220,13 +269,6 @@ socket.on('createGameRoom', (data) => {
     socket.to(gameId).emit('setDeadPlayerStatus', { playerId, active: false});
   });  
 
-
-  //TODO Game over logic
-  // create logic that listen to when one player.active = truthy and all other players.active = falsy
-  // emit a game over event to all players in the game room
-
-  //  implement an option for players to join the lobby and enter a new game // Ensure to maintain socket.id in this scenario
-  //  Implement a way for players to be invsivile and see when the game is over and the winner is declared.
 
 socket.on('playerIdReq', () => {
   const pid = socket.id;

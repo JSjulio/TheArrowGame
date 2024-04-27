@@ -3,7 +3,7 @@ import { Scene } from "phaser";
 export class Ready extends Scene {
     constructor() {
         super("Ready");
-        this.readyCountdown = 30; // init count as 50 for display purposes, actual value will be received from server
+        this.readyCountDown = 30; // init count as 50 for display purposes, actual value will be received from server
         this.active = true;
         this.playerId = null;
     }
@@ -29,21 +29,21 @@ export class Ready extends Scene {
 
         readyUpButton.on('pointerdown', () => {
             this.socket.emit('createGameRoom', { gameId: this.gameId });
-            readyUpButton.disableInteractive();
-            readyUpButton.setAlpha(0.1);
+            readyUpButton.disableInteractive(); // Disable button after clicking for the player that clicked it
+            readyUpButton.setAlpha(0.3);
         });
 
         this.socket.on('disableReadyUp', () => {
             if (readyUpButton.active) { 
-             readyUpButton.disableInteractive();
-             readyUpButton.setAlpha(0.1);
+             readyUpButton.disableInteractive(); // disable button for all players once first player clicks it
+             readyUpButton.setAlpha(0.3);
             }
          });
     }
 
     setupEventListeners() {
         this.socket.on('updateCountdown', (data) => {
-            this.readyCountdown = data.countdown; // Update countdown from server
+            this.readyCountDown = data.countdown; 
             this.updateCountdownDisplay();
         });
 
@@ -56,13 +56,14 @@ export class Ready extends Scene {
             this.handlePostTimerRoomState();
             console.log(data.message);
         });
+        
     }
 
     updateCountdownDisplay() {
-        if (!this.countdownText) {
-            this.countdownText = this.add.text(400, 350, `Game Starts in... ${this.readyCountdown}`, { fill: '#ffffff' });
+        if (!this.countDownText) {
+            this.countDownText = this.add.text(400, 350, `Game Starts in... ${this.readyCountDown}`, { fill: '#ffffff' });
         } else {
-            this.countdownText.setText(`Game Starts in... ${this.readyCountdown}`);
+            this.countDownText.setText(`Game Starts in... ${this.readyCountDown}`);
         }
     }
 

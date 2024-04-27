@@ -9,6 +9,7 @@ export class Game extends Scene {
     // this.playerId = null;
     this.arrows = [];
     this.player = null;
+    this.gameCountDown = 300;
   }
 
   preload() {
@@ -38,6 +39,8 @@ export class Game extends Scene {
     this.playerDb = data.player;
     this.playerName = data.playerName;
     this.playerId = data.socket.id; 
+    this.gameTimerEventListener();
+
     //create floor collision layer
     this.map = this.make.tilemap({
       key: "map",
@@ -47,9 +50,6 @@ export class Game extends Scene {
   
     // Room is started from the Ready scene via the server emitting the startGame event
 
-
-
-    //Verify the gameId and playerId // TODO TEST and remove
     this.socket.emit("joinGameRoom", {
       gameId: this.gameId,
       playerId: this.playerId,
@@ -153,6 +153,16 @@ export class Game extends Scene {
 
     //Sends the player to the server for storage/broadcast to other clients
     this.socket.emit("joinRoom", { player: this.player, gameId: this.gameId });
+    
+    //ADDED request game timer from server 
+    this.socket.emit('requestGameTimer', {gameId: this.gameId})
+
+    //TODO TEST2
+    console.log('FIXXX THIIS AFTER', this.player.lives); 
+
+    this.socket.on("countdownrunninggood", (data) => {
+      console.log(data.message);
+    });
 
 
     // Listen for the event when another player joins the same room
@@ -189,10 +199,29 @@ export class Game extends Scene {
         console.log("deadPlayer:", playerToUpdate, "is inactive:");
       }
     });
-  } //END Create Method---------------------------------------------------------------------------------------------------------------------------------
+  } //*END Create Method---------------------------------------------------------------------------------------------------------------------------------
 
+  
+
+  //TODO TEST1
+  gameTimerEventListener() {
+    //Update counter
+    this.socket.on("updateGameTimer", (data) => {
+      this.gameCountDown = data.gameCountDown;
+      updateGameTimerDisplay()
+    });
+  }
+
+    updateGameTimerDisplay() {
+      if (!this.gameCountDownText) {
+        this.gameCountDownText = this.add.text(10, 10, `TIME: ${this.gameCountDown}`, {fontSize: "16px", fill: "#ffffff"});
+      } else { 
+        this.gameCountDownText.setText(`TIME: ${this.gameCountDown}`);
+      }
+      console.log('gameCountDown:', this.gameCountDown);
+    }
+    
   handlePLayerReadyUp() {
-    // create logic that will check if all players are ready
     // if all players are ready, emit a startGame event to the server
     // the server will then start the game
     const allPlayersReady = this.playerArr.every(
@@ -231,7 +260,7 @@ export class Game extends Scene {
     // Add to arrows array
     this.arrows.push(arrow);
     // console.log('arrow shot: ', arrow);
-  } //*create method ends here -------------------------------------------------------------------------
+  }
 
 
 
@@ -316,11 +345,6 @@ export class Game extends Scene {
       }
     );
     
-    // place inactive here to prevent the player from falling from map when they are inactive 
-    if (!this.player.active) {
-      return;
-    }
-    
     // Collision detection between the server emitted arrow and the collision layer
     this.arrows.forEach((arrow, index) => {
       if (
@@ -332,6 +356,12 @@ export class Game extends Scene {
         this.arrows.splice(index, 1); // Remove the arrow from the array
       }
     });
+
+    // place inactive here to prevent the player from falling from map when they are inactive and server arrows from becoming leaking data.
+    if (!this.player.active) {
+      return;
+    }
+    
 
     this.player.update(this.cursors);
 
