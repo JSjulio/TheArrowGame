@@ -39,8 +39,8 @@ export class Game extends Scene {
     this.playerDb = data.player;
     this.playerName = data.playerName;
     this.playerId = data.socket.id; 
-    this.gameTimerEventListener();
-
+    this.setupEventListeners();
+    
     //create floor collision layer
     this.map = this.make.tilemap({
       key: "map",
@@ -160,10 +160,10 @@ export class Game extends Scene {
     //TODO TEST2
     console.log('FIXXX THIIS AFTER', this.player.lives); 
 
-    this.socket.on("countdownrunninggood", (data) => {
-      console.log(data.message);
-    });
-
+    //TODO TEST1 - DELETE ONCE COMPLETE
+    // this.socket.on("countdownrunninggood", (data) => {
+    //   console.log(data.message);
+    // });
 
     // Listen for the event when another player joins the same room
     this.socket.on("playerInGameMap", (response) => {
@@ -204,21 +204,25 @@ export class Game extends Scene {
   
 
   //TODO TEST1
-  gameTimerEventListener() {
+
+  setupEventListeners() {
     //Update counter
     this.socket.on("updateGameTimer", (data) => {
+      // console.log('within event listener gameCountDown is:', this.gameCountDown);  
       this.gameCountDown = data.gameCountDown;
-      updateGameTimerDisplay()
+      this.updateCountDownDisplay();
     });
   }
 
-    updateGameTimerDisplay() {
-      if (!this.gameCountDownText) {
-        this.gameCountDownText = this.add.text(10, 10, `TIME: ${this.gameCountDown}`, {fontSize: "16px", fill: "#ffffff"});
+    updateCountDownDisplay() {
+      console.log('within update timer function gameCountDown is:', this.gameCountDown);
+
+      if (!this.countDownText) {
+        this.countDownText = this.add.text(10, 10, `TIME: ${this.gameCountDown}`, {fill: "#ffffff"});
       } else { 
-        this.gameCountDownText.setText(`TIME: ${this.gameCountDown}`);
+        this.countDownText.setText(`TIME: ${this.gameCountDown}`);
       }
-      console.log('gameCountDown:', this.gameCountDown);
+      // console.log('gameCountDown:', this.gameCountDown);
     }
     
   handlePLayerReadyUp() {

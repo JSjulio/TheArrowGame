@@ -142,14 +142,14 @@ socket.on('createGameRoom', (data) => {
     socket.join(gameId);
 
     // Countdown 
-    const countdownInterval = setInterval(() => {
+    const countDownInterval = setInterval(() => {
       if (gameStates[gameId] && gameStates[gameId].countdown > 0) {
         gameStates[gameId].countdown--;
         io.in(gameId).emit('updateCountdown', { countdown: gameStates[gameId].countdown });
         io.in(gameId).emit('disableReadyUp');
       }
        else { // Countdown has ended or no longer exists
-        clearInterval(countdownInterval);
+        clearInterval(countDownInterval);
         if (gameStates[gameId]) { 
           io.in(gameId).emit('startItUp', { message: `Game room ${gameId} is starting now!.` });
         } 
@@ -195,10 +195,9 @@ socket.on('createGameRoom', (data) => {
 
   //start countdown if it has not already started
   const countDownInterval = setInterval(() => {
-      if (gameStates[gameId] && gameStates[gameId].gameCountdown > 0) {
+      if (gameStates[gameId] && gameStates[gameId].gameCountdown != 0 ) {
         gameStates[gameId].gameCountDown--;
-        io.in(gameId).emit('updateGameTimer', { gameCountDown: gameStates[gameId].gameCountdown });
-        io.in(gameId).emit('countdownrunninggood', { message: `Countdown is starting now in this game room!.` });
+        io.in(gameId).emit('updateGameTimer', { gameCountDown: gameStates[gameId].gameCountDown});
       } 
       else {
         clearInterval(countDownInterval);
