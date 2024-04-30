@@ -6,10 +6,9 @@ import "../../src/style.css";
 export class Game extends Scene {
   constructor() {
     super("Game");
-    // this.playerId = null;
-    this.arrows = [];
-    this.player = null;
-    this.gameCountDown = 300;
+    this.arrows = []; 
+    this.player = null; // init player object to be created in the create method
+    this.gameCountDown = 300; // init count for display purposes, actual value will be received from server
   }
 
   preload() {
@@ -33,7 +32,7 @@ export class Game extends Scene {
 
     // set game, player, and socket information from the data object
     this.gameId = data.gameId;
-    this.playerId = data.playerId;
+    // this.playerId = data.playerId;
     this.socket = data.socket;
     this.sock = this.socket;
     this.playerDb = data.player;
@@ -57,7 +56,6 @@ export class Game extends Scene {
 
     //Creates the listener that waits for other player updates from the server
     this.socket.on("playerUpdates", (playerUpdated) => {
-      //Creates the listener that waits for other player updates from the server
       this.renderPlayers(playerUpdated, this);
     });
 
@@ -69,20 +67,21 @@ export class Game extends Scene {
     const screenHeight = this.cameras.main.height;
     const scaleFactorX = screenWidth / this.map.widthInPixels;
     const scaleFactorY = screenHeight / this.map.heightInPixels;
-
     const backgroundImage = this.add.image(0, 0, "tiles").setOrigin(0); // creates a tilemap from the battlefield.json file
     backgroundImage.setScale(scaleFactorX, scaleFactorY);
-
 
     // CREATE and process player map and send to the server
     this.player = new Player(
       this,
       100,
       100,
+      this.playerId, // here playerId's value is the socket.id of the player
       this.playerId,
-      this.playerId,
-      this.gameId
+      this.gameId, 
+      this.lives // value of lives is defined within the player class
     ); // here this.player encompasses the information that will be passed to the player, shared to the player.js file, and sent to the Map of Players on the server side
+
+    console.log('this.player:', this.player);
 
     // Establishes the collision layer within the game. Had to be layered
     // on top of everything to ensure proper collision detection
@@ -152,28 +151,13 @@ export class Game extends Scene {
     );
 
     //Sends the player to the server for storage/broadcast to other clients
-    this.socket.emit("joinRoom", { player: this.player, gameId: this.gameId });
+    this.socket.emit("joinRoom", { player: this.player, gameId: this.gameId, playerId: this.playerId });
     
     //ADDED request game timer from server 
     this.socket.emit('requestGameTimer', {gameId: this.gameId})
 
-    //TODO TEST2
-    console.log('FIXXX THIIS AFTER', this.player.lives); 
-
-    //TODO TEST1 - DELETE ONCE COMPLETE
-    // this.socket.on("countdownrunninggood", (data) => {
-    //   console.log(data.message);
-    // });
-
-    // Listen for the event when another player joins the same room
-    this.socket.on("playerInGameMap", (response) => {
-      console.log(`${response.message}`);
-    });
-    // Remove a player with a given ID from the local client instance
-    this.socket.on("removePlayer", (playerId) => {
-      let rmPlayer = this.playerArr.find((player) => player.id === playerId);
-      rmPlayer.destroy();
-      this.players = this.playerArr.filter((player) => player.id !== playerId); // refresh the player array
+    this.socket.on("gameOver", () => { 
+      this.scene.start("GameOver", { socket: this.socket, player: this.playerDb, playerId: this.playerId });
     });
 
     // Listen for playerShooting event from the server
@@ -187,7 +171,12 @@ export class Game extends Scene {
       ); // call the createArrow function to recreate arrow sprite at the position received from the server
     });
 
-    //*NEWCONTENT- Listen for the event when a player dies and update status to inactive
+    // Listen for the event when a player's lives are updated
+    this.socket.on("completePlayerLivesUpdate", (data) => { 
+      console.log(data.message, "player object is:", data.player);
+    })
+
+    // Listen for the event when a player dies and update status to inactive
     this.socket.on("setDeadPlayerStatus", (data) => {
       const { playerId, active } = data;
       // console.log('active here has a value of:', active, 'playerId:', playerId)
@@ -199,12 +188,16 @@ export class Game extends Scene {
         console.log("deadPlayer:", playerToUpdate, "is inactive:");
       }
     });
-  } //*END Create Method---------------------------------------------------------------------------------------------------------------------------------
+    
+    // Remove a player with a given ID from the local client instance
+    this.socket.on("removePlayer", (playerId) => {
+      let rmPlayer = this.playerArr.find((player) => player.id === playerId);
+      rmPlayer.destroy();
+      this.players = this.playerArr.filter((player) => player.id !== playerId); // refresh the player array
+    });
+  } //END Create Method---------------------------------------------------------------------------------------------------------------------------------
 
   
-
-  //TODO TEST1
-
   setupEventListeners() {
     //Update counter
     this.socket.on("updateGameTimer", (data) => {
@@ -215,7 +208,7 @@ export class Game extends Scene {
   }
 
     updateCountDownDisplay() {
-      console.log('within update timer function gameCountDown is:', this.gameCountDown);
+      // console.log('within update timer function gameCountDown is:', this.gameCountDown);
 
       if (!this.countDownText) {
         this.countDownText = this.add.text(10, 10, `TIME: ${this.gameCountDown}`, {fill: "#ffffff"});
@@ -224,17 +217,6 @@ export class Game extends Scene {
       }
       // console.log('gameCountDown:', this.gameCountDown);
     }
-    
-  handlePLayerReadyUp() {
-    // if all players are ready, emit a startGame event to the server
-    // the server will then start the game
-    const allPlayersReady = this.playerArr.every(
-      (player) => player.active === true
-    );
-    if (allPlayersReady) {
-      this.socket.emit("startGame", { gameId: this.gameId });
-    }
-  }
 
   // Create arrow sprite at the received position
   createArrow(x, y, direction, playerId) {
@@ -245,7 +227,8 @@ export class Game extends Scene {
     arrow.setScale(2);
 
     // arrowId is set to the playerId of the player who shot the arrow
-    arrow.arrowId = playerId;
+    arrow.arrowId = playerId + Math.random();
+    console.log("arrowInfo:", arrow);
 
     // Set the arrow's properties
     this.physics.world.enable(arrow);
@@ -263,10 +246,7 @@ export class Game extends Scene {
 
     // Add to arrows array
     this.arrows.push(arrow);
-    // console.log('arrow shot: ', arrow);
   }
-
-
 
   // Arrow collision detection with player
   arrowHitPlayer(arrow, player) {
@@ -274,8 +254,8 @@ export class Game extends Scene {
     if (!arrow.active || !player.active) {
       return;
     }
-    arrow.destroy();
-    player.loseLife(); //player loose life method is called which takes a life and chekcs if lives = 0. If lives = zero player.js emits a call to initiate the // TODO playerDied event
+    // arrow.destroy();
+    player.loseLife(arrow); 
     console.log("Arrow has hit a player!", arrow, player);
     console.log("lives remaining:", player.lives);
   }

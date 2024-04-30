@@ -69,13 +69,11 @@ export class Ready extends Scene {
 
     handlePostTimerRoomState() {
         this.cameras.main.fadeOut(3500, 29, 61.2, 100);
-        this.cameras.main.once('camerafadeoutcomplete', () => {
             this.scene.start('Game', {
                 gameId: this.gameId,
                 socket: this.socket,
                 playerName: this.playerName,
                 active: this.active
             });
-        });
-    }
+        }
 }

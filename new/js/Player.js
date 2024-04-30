@@ -8,11 +8,11 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     );
 
     this.name = name;
-    this.id = pid; // here this.id is the player's socket.id. which is that same as player.id 
+    this.id = pid; // here this.id is the player's socket.id. which is that same as player.id
     this.direction = "left";
     this.isGrounded = true;
     this.gameId = gameId;
-    this.lives = 10; 
+    this.lives = 10;
     this.active = true; // All players start as active since they ready up the ReadyLobby Scene. When a player dies they become inactive again.
 
     scene.add.existing(this);
@@ -86,8 +86,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
   //shooting funtion
   shoot() {
-
-
     // Create arrow sprite at the player's position
     const arrow = this.scene.physics.add.sprite(this.x, this.y, "arrow");
     arrow.setOrigin(0.5, 0.5);
@@ -106,9 +104,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     const velocityX = this.direction === "left" ? -600 : 600;
     arrow.setVelocityX(velocityX);
 
-    // Stretch - add attack left and attack right animations to player and transmit to game room following
-    
-
     const shootAnim = this.direction === "left" ? "attackLeft" : "attackRight";
     this.anims.play(shootAnim, true);
     if (this.direction === "left") {
@@ -118,61 +113,60 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       this.flipX = false;
       this.anims.play("attack");
     }
-  
+
     //  Destroy arrow after collision with collisionLayer
     this.scene.physics.add.collider(arrow, this.scene.collisionLayer, () => {
       arrow.destroy();
     });
-
   }
 
   setDirection(direction) {
     this.direction = direction;
   }
- 
 
-loseLife() {
+  loseLife(arrow) {
     if (this.lives > 0) {
       this.lives -= 1;
-      // this.scene.socket.emit('updatePlayerLives', { gameId: this.gameId, playerId: this.id } )
+      this.scene.socket.emit("updatePlayerLives", {
+        gameId: this.gameId,
+        playerId: this.id,
+        lives: this.lives,
+      });
       this.scene.cameras.main.shake(300, 0.01); // Shake the camera for 300ms with an intensity of 0.01 when the player gets hit
     }
     if (this.lives <= 0) {
       this.lives = 0; // Set lives to 0 to prevent further loss of lives
       this.setAlpha(0.5); // set player as half transparent when they lose all their lives on the client side
-      this.playerDead(); 
+      this.playerDead();
     }
   }
 
-  playerDead () {
-  this.active = false; // disable player movements on server side
-  this.anims.play("die", true);
-  this.setVelocityX(0);
-  this.setVelocityY(0);
-  this.disableBody(true, true); // set the player active to false
-  this.scene.socket.emit('playerDied', { gameId: this.gameId, playerId: this.id }); // send a message to the server that the player has died
-  this.lives = 0; // sets lives to 0 after player dies
-  
-  //player die effects 
-  this.scene.cameras.main.shake(300, 4.7); // shake the camera when player dies 
-  this.scene.cameras.main.fade(300, 255, 0, 0); // fade the camera to red
-  this.scene.cameras.main.once("camerafadeoutcomplete", () => {
-    this.scene.cameras.main.fadeIn(3000), 125, 217, 217;    
-    this.scene.scene.launch('GameOver', { playerId: this.id}); // TODO clear socket from this gameId and allow for player to join the lobby scene successfully 
-    this.scene.scene.resume('Game'); // ! test resume the scene and await for client to make a decision on staying or leaving the game
-  });
+  playerDead() {
+    // this.active = false; // disable player movements on server side
+    this.anims.play("die", true);
+    this.setVelocityX(0);
+    this.setVelocityY(0);
+    this.disableBody(true, true); // set the player active to false
+    this.scene.socket.emit("playerDied", {
+      gameId: this.gameId,
+      playerId: this.id,
+    }); // send a message to the server that the player has died
+    this.lives = 0; // sets lives to 0 after player dies
 
-  }   
-
-  // ***END NEW CONTENT*** ------------------------------------------------------------------
-
-
+    //player die effects
+    this.scene.cameras.main.shake(300, 4.7); // shake the camera when player dies
+    this.scene.cameras.main.fade(300, 255, 0, 0); // fade the camera to red
+    this.scene.cameras.main.once("camerafadeoutcomplete", () => {
+      this.scene.cameras.main.fadeIn(3000), 125, 217, 217;
+      this.scene.scene.launch("GameOver", { playerId: this.id }); // TODO clear socket from this gameId and allow for player to join the lobby scene successfully
+      this.scene.scene.resume("Game");
+    });
+  }
 
   update(cursors) {
-  
     if (this.active === false) {
-      return; // If the player is not active, don't update their position/shooting ability 
-    } 
+      return; // If the player is not active, don't update their position/shooting ability
+    }
 
     // Check if the player is on the ground
     if (this.body.blocked.down) {
@@ -180,16 +174,21 @@ loseLife() {
     } else {
       this.isGrounded = false;
     }
-    if (cursors.space && Phaser.Input.Keyboard.JustDown(cursors.space)) { 
-  
+    if (cursors.space && Phaser.Input.Keyboard.JustDown(cursors.space)) {
       // Trigger shoot animation
-      this.shoot();  
+      this.shoot();
 
-      if (!this.dead) { 
+      if (!this.dead) {
         // Emit playerShoot event to the server
-      this.scene.socket.emit('playerShoot', { gameId: this.gameId, playerId: this.id, x: this.x, y: this.y, direction: this.direction });
+        this.scene.socket.emit("playerShoot", {
+          gameId: this.gameId,
+          playerId: this.id,
+          x: this.x,
+          y: this.y,
+          direction: this.direction,
+        });
+      }
     }
-  }
     // Check for horizontal movement
     else if (cursors.left.isDown) {
       this.flipX = true;
