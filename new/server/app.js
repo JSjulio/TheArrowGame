@@ -229,14 +229,14 @@ socket.on('createGameRoom', (data) => {
 
 //Recieve player lives from client and update player lives in the players Map
   socket.on('updatePlayerLives', (data) => {
-    const {gameId, playerId, lives, arrowId} = data;
+    const {gameId, playerId, lives} = data;
     if (gameStates[gameId] && players.has(playerId)) {
       const player = players.get(playerId);
       player.lives = lives;
       
       players.set(playerId, player);
       console.log(`serverConsoleLog: Player ${playerId} has ${lives} lives left.`);
-      io.in(gameId).emit('destroyArrow', { arrowId: arrowId }); // Tell all clients to destroy this arrow
+      // io.in(gameId).emit('destroyArrow', { arrowId: arrowId }); // Tell all clients to destroy this arrow
       io.in(gameId).emit('completePlayerLivesUpdate', {player: player, playerId: playerId, lives: player.lives, message: `serverConsoleLog: Player ${playerId} has ${player.lives}  left.` });
     }
 });
