@@ -115,7 +115,7 @@ socket.on('createGameRoom', (data) => {
       countDownStarted: false, 
       gameCountStarted: false, 
       countdown: 15, //TODO change to 30 once changes are made to the client side
-      gameCountDown: 60 //TODO change to 60 once changes are made to the client side
+      gameCountDown: 15 //TODO change to 60 once changes are made to the client side
     };
   }
   // deny player from setting gameId if gameId already exists in the Ready scene or Game scene
@@ -166,8 +166,6 @@ socket.on('createGameRoom', (data) => {
     const player = data.player; 
     const gameId = data.gameId; 
 
-
-
     let playerId = data.playerId;
     playerId = socket.id; // to ensure that playerId is the socket.id is it set to socket.id once more within the server
     
@@ -191,18 +189,30 @@ socket.on('createGameRoom', (data) => {
       else {
         clearInterval(countDownInterval);
         if (gameStates[gameId]) {
-          io.in(gameId).emit('gameOver', { message: `Game room ${gameId} is over.` });
+    
           // Retrieve the player objects from the players Map using their IDs from the gameStates players Set
           const playerObjects = Array.from(gameStates[gameId].players)
-          .map(playerId => players.get(playerId))
-          .filter(player => player); // Filter out any undefined entries
-      
-          // Determine the winner based on who has the most lives // ! TroubleShoot 
-          const winner = playerObjects.reduce((prev, current) => (prev.lives > current.lives) ? prev : current, { lives: -Infinity });
-      
+            .map(playerId => players.get(playerId))
+            .filter(player => player); // Filter out any undefined entries
+    
+          // Determine the maximum number of lives
+          const maxLives = Math.max(...playerObjects.map(player => player.lives));
+    
+          // Find all players who have the maximum number of lives
+          const winners = playerObjects.filter(player => player.lives === maxLives);
+    
+          let message;
+          if (winners.length > 1) {
+            const winnerIds = winners.map(player => player.id).join(', ');
+            console.log(`Game room ${gameId} ends in a draw. Players ${winnerIds} have the most lives!`);
+            message = `Game room ${gameId} ends in a draw. Players ${winnerIds} have the most lives!`;
+          } else if (winners.length === 1) {
+            message = `Game room ${gameId} is over. Player ${winners[0].id} wins!`;
+          }
+    
           // Emit the winner message
-          io.in(gameId).emit('gameOver', { message: `Game room ${gameId} is over. Player ${winner.id} wins!` });
-          console.log(`Game room ${gameId} is over. Player ${winner.id} wins!`);
+          io.in(gameId).emit('gameOverEvent', { message: message });
+          console.log(message);
         }
       }
     }, 1000);
@@ -210,15 +220,14 @@ socket.on('createGameRoom', (data) => {
   });
 
 
-    
-
 
   // Listen for client movements (active keys being pressed which correlate to adjacent player movement)
   socket.on('clientPlayerUpdate', (playerData) => {
     const gameId = playerData.gameId;  
     players.set(playerData.id, playerData);
     // console.log(playerData.activeKeys)
-    socket.to(gameId).emit('playerUpdates', {'id': playerData.id, 'x': playerData.playerX, 'y': playerData.playerY, 'activeKeys': playerData.activeKeys, 'direction': playerData.direction});
+    console.log(`serverConsoleLog: Player ${playerData.id} has ${playerData.lives} lives left.`);
+    socket.to(gameId).emit('playerUpdates', {'id': playerData.id, 'x': playerData.playerX, 'y': playerData.playerY, 'activeKeys': playerData.activeKeys, 'direction': playerData.direction, 'lives': playerData.lives});
   });
 
   // Listen / Emit client arrow shots 
@@ -227,19 +236,19 @@ socket.on('createGameRoom', (data) => {
     socket.to(gameId).emit('playerShooting', { playerId, x, y, direction });
 });
 
-//Recieve player lives from client and update player lives in the players Map
-  socket.on('updatePlayerLives', (data) => {
-    const {gameId, playerId, lives} = data;
-    if (gameStates[gameId] && players.has(playerId)) {
-      const player = players.get(playerId);
-      player.lives = lives;
+// //Recieve player lives from client and update player lives in the players Map
+//   socket.on('updatePlayerLives', (data) => {
+//     const {gameId, playerId, lives} = data;
+//     if (gameStates[gameId] && players.has(playerId)) {
+//       const player = players.get(playerId);
+//       player.lives = lives;
       
-      players.set(playerId, player);
-      console.log(`serverConsoleLog: Player ${playerId} has ${lives} lives left.`);
-      // io.in(gameId).emit('destroyArrow', { arrowId: arrowId }); // Tell all clients to destroy this arrow
-      io.in(gameId).emit('completePlayerLivesUpdate', {player: player, playerId: playerId, lives: player.lives, message: `serverConsoleLog: Player ${playerId} has ${player.lives}  left.` });
-    }
-});
+//       players.set(playerId, player);
+//       console.log(`serverConsoleLog: Player ${playerId} has ${lives} lives left.`);
+//       // io.in(gameId).emit('destroyArrow', { arrowId: arrowId }); // Tell all clients to destroy this arrow
+//       io.in(gameId).emit('completePlayerLivesUpdate', {player: player, playerId: playerId, lives: player.lives, message: `serverConsoleLog: Player ${playerId} has ${player.lives}  left.` });
+//     }
+// });
 
   //Disable Client update methods for a player 
   socket.on('playerDied', (data) => {
