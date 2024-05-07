@@ -50,7 +50,7 @@ handleSetRoom(gameId) {
           socket: this.socket
         });
       }  if (data.failure) {
-        console.log(data.message);
+        console.log('game started choose another');
         return;
       }
     }); 

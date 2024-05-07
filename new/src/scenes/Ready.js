@@ -28,7 +28,7 @@ export class Ready extends Scene {
         }).setInteractive();
 
         readyUpButton.on('pointerdown', () => {
-            this.socket.emit('createGameRoom', { gameId: this.gameId });
+            this.socket.emit('startCountDown', { gameId: this.gameId });
             readyUpButton.disableInteractive(); // Disable button after clicking for the player that clicked it
             readyUpButton.setAlpha(0.3);
         });

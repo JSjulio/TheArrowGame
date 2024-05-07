@@ -26,37 +26,30 @@ export class GameOver extends Scene
             stroke: '#000000', strokeThickness: 8,
             align: 'center'
         }).setOrigin(0.5);
-
-        this.add.text(512, 300, 'Play Again?', {
-            fontFamily: 'Arial Black', fontSize: 32, color: '#36B736', 
-            stroke: '#000000', strokeThickness: 4,
-            align: 'center'
-        }).setOrigin(0.5);
-    
     }
 
     setUpEventListeners() {
       
         if (this.typeOfGameOver === 'playerDeath') {
             this.createDeadPlayerButtons(); 
-        } else if (this.typeOfGameOver === 'gameFinished') {
+        } else if (this.typeOfGameOver === 'timeFinished' || 'lastPlayerStanding') {
             this.createGameOverButtons();
         }
     } 
 
     createDeadPlayerButtons () { 
         
-        let movingText = this.add.text(512,520, 'Welcome to the Gulag 👼!', { fontSize: '18px', color: '#AAA739' });
+        let movingText = this.add.text(512,520, 'Welcome to the Gulag 👼!', { fontSize: '18px', color: '#ffffff' });
         this.tweens.add({
         targets: movingText,
-        x: 400,
+        x: 200,
         ease: 'Power1',
         duration: 3000,
         yoyo: true,
         loop: -1
         });
 
-        const returnToGameButton = this.add.text(512, 400, 'Return to Game 🎯 ?', {
+        const returnToGameButton = this.add.text(512, 400, 'Return to Game?', {
             font: "16px Arial",
             fill: "#ffffff",
             backgroundColor: "#000000",
@@ -74,9 +67,10 @@ export class GameOver extends Scene
             }).setInteractive();
             newGame.on('pointerdown', () => { 
                 this.scene.stop('Game') // stops the game scene for individual player and returns player to lobby scene //!TEST
+                this.scene.stop('GameOver')
+                this.scene.start('LobbyScene'); 
                 // this.scene.socket.emit('removePlayer', { gameId: this.gameId, playerId: this.data.playerId }); // removes the player from the game room //TODO confirm in the terminal that the player is removed from the game room
-                this.scene.start('LobbyScene'); // !Test what the console.log of their socket is once they are in lobbyScene 
-                //might have to add more data here including playerDb data
+                // TODO here you need to remove the socket from the game room but keep the socket active for the lobby scene
             })
 
         const quitGame = this.add.text(512, 500, 'Quit Game', {
@@ -87,22 +81,21 @@ export class GameOver extends Scene
             }).setInteractive();
             quitGame.on('pointerdown', () => {
                 this.scene.stop('Game');
-                this.scene.restart('MainMenu');
+                this.scene.start('MainMenu');
+                // TODO here you need to destroy the game room and the socket
             });
         }
     
 
     createGameOverButtons () {
         
-        let movingText = this.add.text(512,520, `${this.winnerMessage}!`, { fontSize: '18px', color: '#AAA739' });
-        this.tweens.add({
-        targets: movingText,
-        x: 400,
-        ease: 'Power1',
-        duration: 3000,
-        yoyo: true,
-        loop: -1
-        });
+
+        this.add.text(512, 300, `${this.winnerMessage}`, {
+            fontFamily: 'Arial Black', fontSize: 32, color: '#36B736', 
+            stroke: '#000000', strokeThickness: 4,
+            align: 'center'
+        }).setOrigin(0.5);
+
 
         const newGame = this.add.text(512, 450, 'New Game', {
             font: "16px Arial",
