@@ -14,6 +14,7 @@ export class LobbyScene extends Scene {
     this.playerName = data.playerName;  
     this.player = data.player;  // db data 
     this.socket = data.socket; 
+    // console.log ('socket id:', this.socket.id, 'name:', this.playerName);
 
     //creates text for gameId input form  
     const text = this.add.text(300, 250, 'GAME ID:', { fill: '#000000' }).setOrigin(0);
@@ -35,7 +36,7 @@ export class LobbyScene extends Scene {
   
 handleSetRoom(gameId) {
     // Emit 'gameRoomSetRequest' with the gameId as part of the data object
-    this.socket.emit('gameRoomSetRequest', { gameId }); 
+    this.socket.emit('gameRoomSetRequest', { gameId: gameId, playerName: this.playerName}); 
 
       // Listen for 'gameRoomSetResponse' from the server
     this.socket.on('gameRoomSetResponse', (data) => {

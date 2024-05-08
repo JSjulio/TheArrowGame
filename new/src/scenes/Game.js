@@ -172,13 +172,13 @@ export class Game extends Scene {
     this.socket.on('requestFinalPlayerStates', () => {
       // Gather final state data
       // const playerState = {
-      //   playerId: this.playerId,  // TODO ensure this holds the player object 
+      //   playerId: this.playerId,  
       //   lives: this.player.lives,
       // };
 
       console.log('during the last update, stats are', this.player)
 
-      // Send the final state data back to the server
+      // Send the final state data back to the server// TODO ensure this holds the proper values 
       this.socket.emit('finalPlayerUpdate', {playerID: this.player.playerId, lives: this.player.lives}); //! Test to see if this fixes it 
   });
 

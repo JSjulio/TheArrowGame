@@ -79,19 +79,26 @@ const io = socketIO(server, {
   io.on('connection', (socket) => {
 
     socket.on('gameRoomSetRequest', (data) => {
-      
-      // Check if the game room exists in the gameStates, if not create it and add the player to socket room
       const gameId = data.gameId;
-      if (!gameStates[gameId]) {
-        socket.join(gameId);
+      const playerName = data.playerName; 
+      const playerId = socket.id;
 
-        //Intialize game parameters once game is created via the lobby - this allows for entry/restriction into game
+
+      // Check if the game room exists in the gameStates, if not create it and add the player to socket room
+      if (!gameStates[gameId]) {
+        socket.join(gameId); // Add player to a seperate socket room
+
+        //Intialize game parameters once game socket room is created within the lobby Scene- this init allows for entry/restriction into game rooms already started
         gameStates[gameId] = { 
           countDownStarted: false,
           started: false,
-          countdown: 15
+          countdown: 15,
+          players: new Map()
         };
 
+        // add available player data to the players list temporarily for disconnection 
+        gameStates[gameId].players.set(playerId, {playerName: playerName}) 
+        console.log('gameId values after players init 1:', Array.from(gameStates[gameId].players.values())); 
         socket.emit('gameRoomSetResponse', {gameId: gameId, success: true, message: `, success!.`});
         return;
       }
@@ -99,13 +106,15 @@ const io = socketIO(server, {
       // if game has not started and 5 or more seconds remain on the Ready scene countdown, add the player to the Ready Scene / socket connection 
       if (!gameStates[gameId].started && gameStates[gameId].countdown >=5 ) {
         socket.join(gameId);
+        gameStates[gameId].players.set(playerId, {playerName: playerName})       
+        console.log('gameId values after player init2:', Array.from(gameStates[gameId].players.values())); 
         socket.emit('gameRoomSetResponse', {gameId: gameId, success: true,  message: `, Countdown started, but we'll get you in there 🎯!.`});
         return;
       }
 
       // If socket connection does not meet the criteria above, emit a message to the client that their desired gameId cannot be joined
       if (!gameStates[gameId].started && gameStates[gameId].countdown <= 4) {
-        socket.emit('gameRoomSetResponse', {gameId: gameId, failure: true, message: `, Game ${gameId} already started, try another one 🙃!`});
+        socket.emit('gameRoomSetResponse', {gameId: gameId, failure: true, message: `, Game ${gameId} already started, try another one !`});
         return;
       }
     });
@@ -114,30 +123,21 @@ const io = socketIO(server, {
 socket.on('startCountDown', (data) => {
   const gameId = data.gameId;
 
+  // Start countdown 
   if (!gameStates[gameId].countDownStarted && !gameStates[gameId].started) {
-      gameStates[gameId] = {
-      countDownStarted: false, //ready scene countdown 
-      started: false, // game started
-      gameCountStarted: false, // game countdown started?
-      countdown: 15, //TODO Ready Scene countdown
-      gameCountDown: 60 //TODO in game countdown 
-    };
-  }
-
-  // Start waiting room countdown 
-  if (!gameStates[gameId].countDownStarted) {
     gameStates[gameId].countDownStarted = true;
 
-    const countDownInterval = setInterval(() => {
+    gameStates[gameId].waitingRoomCountDownInterval = setInterval(() => {
       if (gameStates[gameId] && gameStates[gameId].countdown > 0) {
         gameStates[gameId].countdown--;
         io.in(gameId).emit('updateCountdown', { countdown: gameStates[gameId].countdown });
         io.in(gameId).emit('disableReadyUp');
       }
        else { // Countdown has ended or no longer exists
-        clearInterval(countDownInterval);
+        clearInterval(gameStates[gameId].waitingRoomCountDownInterval);
         if (gameStates[gameId]) { 
           io.in(gameId).emit('startItUp', { message: `Game room ${gameId} is starting now!.` });
+          gameStates[gameId].players.clear(); // Clear the players map
         } 
       }
     }, 1000);
@@ -146,95 +146,82 @@ socket.on('startCountDown', (data) => {
 
   // Set player data as new maps within gameStates - once player starts the Game Scene 
   socket.on('joinRoom', (data) => {
-  
+      
     const gameId = data.gameId; 
     const player = data.player; //player object 
     const playerId = data.playerId; // player.playerId = socket.id throughout this codebase // player.playerName is the player's name from the database
-
     
-    // gameStates[gameId] id redefined here for game play
-    if (!gameStates[gameId].gameCountStarted) { 
-      gameStates[gameId] = {
-        players: new Map(),
-        started: true, // game started 
-        countdown: 0, // ready room count expired 
-        countDownStarted: true,  // ready room count expired 
-        gameCountDown: 60, // TODO in game count down
-        gameCountStarted: false, // countdown not started yet
-        gameOver: false
-      };
-    }
+    // verify that the room still exist, if it does, then create a new player map 
+    if (gameStates[gameId] && !gameStates[gameId].started) {
+          gameStates[gameId].players = new Map();
+          
+          // Add the current player to the newly cleared & initialized map
+          gameStates[gameId].players.set(playerId, player);
+          
+          console.log('player values during set:', Array.from(gameStates[gameId].players.values()));
+        }
+  
+});
+  
+  socket.on('requestGameTimer', (data) => {
+    const gameId = data.gameId;
     
-    // console.log('Players map before player object is set', Array.from(gameStates[gameId].players.values())); 
-    gameStates[gameId].players.set(playerId, player);  // set all player objects as individual maps within gameId
-    console.log(`players map immediately after it's set: ${Array.from(gameStates[gameId].players.values())}`)     
+  // Setting game parameters as started
+  gameStates[gameId].started = true; // set game as started 
+  gameStates[gameId].gameCountDown = 60; // set game countdown
 
+    // Start the countdown only if it has not already started
+    if (!gameStates[gameId].gameCountStarted) {
+      gameStates[gameId].gameCountStarted = true;  
+      
+      // game counter is stored within gameStates[gameId] to be cleared when the game ends
+      gameStates[gameId].countDownInterval = setInterval(() => {
+        // Check if the game state still exists and the countdown is above zero
+        if (gameStates[gameId] && gameStates[gameId].gameCountDown > 0) {
+          gameStates[gameId].gameCountDown--;
+          io.in(gameId).emit('updateGameTimer', { gameCountDown: gameStates[gameId].gameCountDown });
+          console.log('player values during count:', Array.from(gameStates[gameId].players.values()));
+        } else {
+          clearInterval(gameStates[gameId].countDownInterval);
+          if (gameStates[gameId]) {  // Ensure the game state still exists before proceeding
+            
+          const updateTimeout = setTimeout(() => {
+            calculateAndAnnounceWinner(gameId);
+          }, 2000);  // 2 second timeout for winner calculation
+        } 
+      }
+    }, 1000);
+  }
 });
 
- socket.on('requestGameTimer', (data) => {
-  const gameId = data.gameId;
-
-  //start countdown if it has not already started
-  if (!gameStates[gameId].gameCountStarted) {
-    gameStates[gameId].gameCountStarted = true; 
-
-  const countDownInterval = setInterval(() => {
-      if (gameStates[gameId] && gameStates[gameId].gameCountDown > 0 ) {
-        gameStates[gameId].gameCountDown--;
-        io.in(gameId).emit('updateGameTimer', { gameCountDown: gameStates[gameId].gameCountDown});
-      } 
-      else {
-      clearInterval(countDownInterval);
-      io.in(gameId).emit('requestFinalPlayerStates'); // request an update of the final player lives to calculate the winner
-      let updatedCount = 0
-      let totalPlayers = gameStates[gameId].players.size;
-
-      const updateTimeout = setTimeout(() => {
-        calculateAndAnnounceWinner();
-      }, 2000); // 2 second timeout for winner calculation
-
-      console.log('Players before winner calculation:', Array.from(gameStates[gameId].players.values())); 
-
-      function calculateAndAnnounceWinner() {
-        if (gameStates[gameId]) return;  // Exit if the game state does not exist
-
-        clearInterval(updateTimeout);
-
-        const playerObjects = Array.from(gameStates[gameId].players.values()) 
-        const maxLives = Math.max(...playerObjects.map(player => player.lives));
-        const winners = playerObjects.filter(player => player.lives === maxLives);
-       
-        let message;
-        if (winners.length > 1) {
-          const winnerNames = winners.map(player => player.playerName).join(", ");
-          message = `${winnerNames} wins!`;
-        } else if (winners.length === 1) {
-          message = `${winners[0].playerName} wins!`;
-        } else {
-          message = "No winners this game.";
-        }
-        
-        io.in(gameId).emit('gameOverEvent1', { message: message }); 
-        console.log('Final winner message:', message);
-      }
-
-      socket.on('finalPlayerUpdate', data => {
-        const { playerId, lives } = data;
-        if (gameStates[gameId].players.has(playerId)) {
-          let player = gameStates[gameId].players.get(playerId);
-          player.lives = lives;
-          gameStates[gameId].players.set(playerId, player);
-          updatedCount++;
-          if (updatedCount === totalPlayers) {
-            console.log('Players after final update:', Array.from(gameStates[gameId].players.values())); 
-            calculateAndAnnounceWinner();
-          }
-        }
-      });
-    }
-  }, 1000);
+// Helper function to calculate and announce the winner
+function calculateAndAnnounceWinner(gameId) {
+  if (!gameStates[gameId]) { // Check if the game state exists before accessing it
+    return;
   }
-  });
+
+  const playerObjects = Array.from(gameStates[gameId].players.values());
+  const maxLives = Math.max(...playerObjects.map(player => player.lives));
+  const winners = playerObjects.filter(player => player.lives === maxLives);
+
+  let message;
+  if (winners.length > 1) {
+    const winnerNames = winners.map(player => player.playerName).join(", ");
+    message = `${winnerNames} win!`;
+  } else if (winners.length === 1) {
+    message = `${winners[0].playerName} wins!`;
+  } else {
+    message = "No winners this game.";
+  }
+
+  io.in(gameId).emit('gameOverEvent1', { message: message });
+  console.log('Final winner message:', message);
+  
+  // Stop the game countdown and clear the game state
+  clearInterval(gameStates[gameId].countDownInterval);
+  gameStates[gameId].players.clear();
+  delete gameStates[gameId];
+}
 
   // Listen for client movements (active keys being pressed which correlate to adjacent player movement)
   socket.on('clientPlayerUpdate', (playerData) => {
@@ -261,49 +248,80 @@ socket.on('startCountDown', (data) => {
       gameStates[gameId].players.set(playerId, player); // Set player status to false within players Object 
     }
 
-    // if there is only one actve player left, end the game
-    const activePlayers = Array.from(gameStates[gameId].players.values()).filter(player => player.active);
-    if (activePlayers.length === 1 && gameStates[gameId].gameCountDown < 100 ) {
-      // stop the game timer and set the winner as the last remaining player
-      gameStates[gameId].gameOver = true; 
-      io.in(gameId).emit('gameOverEvent2', { message: `Player ${activePlayers[0].playerName} wins!` });
+    // filter gameStates for active players, if one remains, declare that player as the winner / end the game
+    const activePlayers = Array.from(gameStates[gameId].players.values()).filter(playerId => playerId.active);
+    if (activePlayers.length === 1) {
       
-    }
+      const remainingPlayer = activePlayers[0];
+      io.in(gameId).emit('gameOverEvent2', { message: `Player ${remainingPlayer.playerName} wins as the sole survivor!` });
+    
+      // Stop the game countdown
+      clearInterval(gameStates[gameId].countDownInterval);
+      gameStates[gameId].players.delete(playerId); // remove socket from the game states players map = server stops tracking the player
+      delete gameStates[gameId]; // delete game state
+      console.log('active game rooms:', gameStates);
+
+    } 
+    
+  
+    // TODO fix this logic to account for the last player standing
 
     console.log(`Player ${playerId} died - in game room: ${gameId}.`);
     socket.to(gameId).emit('setDeadPlayerStatus', { playerId, active: false});
   });  
 
 
-
   socket.on('disconnect', () => {
-    // Iterate over all game states to find and remove the player
+    // Iterate over all game states , if no players, stop the countdown and delete the game room
     Object.keys(gameStates).forEach(gameId => {
-        if (gameStates[gameId].players.has(socket.id)) {
-          
-          // disable the player on the client side
-          io.in(gameId).emit('setDeadPlayerStatus', { playerId: socket.id, active: false});
-          
-          // Remove the player from the players map
-          gameStates[gameId].players.delete(socket.id);
-          console.log(`Player with ID ${socket.id} has left game room ${gameId}`);
 
-          console.log('Players after disconnect:', Array.from(gameStates[gameId].players.values())); 
+      const inWaitingRoom = !gameStates[gameId].started && gameStates[gameId].players.has(socket.id);
+      const inGame = gameStates[gameId].started && gameStates[gameId].players.has(socket.id);
 
-          // Check if the game room is empty
-            if (gameStates[gameId].players.size === 0) {
-                // If empty, perform clean up
-                if (gameStates[gameId].countdownInterval) {
-                    clearInterval(gameStates[gameId].countdownInterval);
-                    delete gameStates[gameId];
-                }
-                console.log(`Game room ${gameId} has been deleted due to no remaining players.`);
-            }
-        }
-    });
+      //disconnection if player in waiting room
+      if (inWaitingRoom) {
+
+        //remove player from game players map and socket room 
+        gameStates[gameId].players.delete(socket.id);
+        socket.leave(gameId); // Remove  player from the game state if present
+          
+        // if waitingRoom count is active, disable it, before deleting the game instance 
+        if (gameStates[gameId].waitingRoomCountDownInterval) {
+            clearInterval(gameStates[gameId].waitingRoomCountDownInterval);
+          }
+        delete gameStates[gameId];
+      }
+
+      //disconnection if player in game room
+      if (inGame) {
+         // delete disconnected player from gameStates
+         gameStates[gameId].players.delete(socket.id);
+         socket.broadcast.emit("removePlayer", socket.id);
+         // Log player disconnection
+         console.log(`Player with ID ${socket.id} has left game room ${gameId}`);
+
+        // Check if no players are left in game or waiting room
+        if (gameStates[gameId].players.size === 0) {
+
+          if (gameStates[gameId].countDownInterval) {
+            clearInterval(gameStates[gameId].countDownInterval);
+          }
+
+          if (gameStates[gameId].waitingRoomCountDownInterval) {
+            clearInterval(gameStates[gameId].waitingRoomCountDownInterval);
+          }
+          
+          // Delete the game room state
+          delete gameStates[gameId];
+          console.log(`Game room ${gameId} has been deleted due to no remaining players.`);
+          console.log('Active game rooms:', gameStates);
+      }
+    }
+  }
+)}); 
+console.log('Active game rooms:', gameStates);
 });
-
-})
+ 
 //END Socket Event Listeners---------------------------------------------------------------------------
 
   // Start listening on the specified port
