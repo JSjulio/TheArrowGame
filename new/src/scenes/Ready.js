@@ -3,17 +3,14 @@ import { Scene } from "phaser";
 export class Ready extends Scene {
     constructor() {
         super("Ready");
-        this.readyCountDown = 30; // init count as 50 for display purposes, actual value will be received from server
-        this.active = true;
-        this.playerId = null;
+        this.readyCountDown = 15; // init count as 50 for display purposes, actual value will be received from server
+        // this.active = true; // TODO is required? 
     }
 
     create(data) {
-        this.player = data.player; //required to navigate back to the lobby scene if the game is already started
         this.gameId = data.gameId;
         this.socket = data.socket;
         this.playerName = data.playerName; // Player's name from database
-        this.playerId = data.playerId; // Player's ID from socket connection
         this.createReadyUpButton();
         this.setupEventListeners();
 
@@ -48,8 +45,8 @@ export class Ready extends Scene {
         });
 
         this.socket.on('gameAlreadyStarted', (data) => {
-          this.scene.start('LobbyScene', {playerName: this.playerName, player: this.player, socket: this.socket}); 
-          console.log(data.message);
+            this.scene.start('LobbyScene', {playerName: this.playerName, socket: this.socket}); 
+            console.log(data.message);
        });
 
         this.socket.on('startItUp', (data) => {
@@ -73,7 +70,7 @@ export class Ready extends Scene {
                 gameId: this.gameId,
                 socket: this.socket,
                 playerName: this.playerName,
-                active: this.active
+                // active: this.active // TODO is required?
             });
         }
 }

@@ -12,7 +12,6 @@ export class LobbyScene extends Scene {
 
     // Lobby scene data initialization
     this.playerName = data.playerName;  
-    this.player = data.player;  // db data 
     this.socket = data.socket; 
     // console.log ('socket id:', this.socket.id, 'name:', this.playerName);
 
@@ -46,7 +45,7 @@ handleSetRoom(gameId) {
         console.log('lobbyConsoleLog: Player game Id set to:', this.gameId, data.message);
         this.scene.start('Ready', {
           playerName: this.playerName,
-          player: this.player,
+          // player: this.player,
           gameId: this.gameId,
           socket: this.socket
         });

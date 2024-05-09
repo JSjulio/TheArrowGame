@@ -9,6 +9,7 @@ export class Game extends Scene {
     this.player = null;
     this.arrows = [];
     this.lives = 10; // initialize player life
+    this.active = true; // initialize players as active
     this.gameCountDown = 300; //TODO-Change once done init count for display purposes, actual value will be received from server
   }
 
@@ -33,10 +34,9 @@ export class Game extends Scene {
     this.gameId = data.gameId;
     this.socket = data.socket;
     this.sock = this.socket;
-    this.playerDb = data.player;
+    // this.playerDb = data.player; // TODO remove once refactored cleanly 
     this.playerName = data.playerName;
     this.playerId = data.socket.id;
-    this.setupEventListeners();
 
     //create floor collision layer
     this.map = this.make.tilemap({
@@ -80,7 +80,8 @@ export class Game extends Scene {
       this.playerName, // actual player name from the db
       this.playerId, // player socket.id used to communicate changes throughout the game 
       this.gameId,
-      this.lives
+      this.lives,
+      this.active
     ); // here this.player encompasses the information that will be passed to the player map within the server
 
     //Sends the player to the server for storage/broadcast to other clients
@@ -164,25 +165,17 @@ export class Game extends Scene {
         playerToUpdate.active = active; // Set the player as inactive
         playerToUpdate.lives = 0; // Set the player's lives to 0
         playerToUpdate.setAlpha(0.5);
-        console.log("deadPlayer:", playerToUpdate, "is inactive:");
       }
+
+      if(playerToUpdate.id === this.playerId) {
+        this.player.active = active;
+        this.player.lives = 0;
+        this.player.setAlpha(0.5);
+      } 
+
     });
 
-    // Listen for the server's request for final player states
-    this.socket.on('requestFinalPlayerStates', () => {
-      // Gather final state data
-      // const playerState = {
-      //   playerId: this.playerId,  
-      //   lives: this.player.lives,
-      // };
-
-      console.log('during the last update, stats are', this.player)
-
-      // Send the final state data back to the server// TODO ensure this holds the proper values 
-      this.socket.emit('finalPlayerUpdate', {playerID: this.player.playerId, lives: this.player.lives}); //! Test to see if this fixes it 
-  });
-
-    // Listen for the game over event from the server timer finishing
+    // Timer finished game over event 
     this.socket.on("gameOverEvent1", (data) => {
       console.log('gameOver data', data.message);
 
@@ -190,14 +183,12 @@ export class Game extends Scene {
         winnerMessage: data.message,
         typeOfGameOver: "timeFinished",
         socket: this.socket,
-        player: this.playerDb,
+        playerName: this.playerName,
         playerId: this.playerId,
       });
-
-      // this.scene.stop("Game"); //TODO test this type of game over event
     });
 
-    // Listen for the game over event from the server when only one player is alive (active) in the game
+    // Last player standing game over event 
     this.socket.on("gameOverEvent2", (data) => {
       console.log('gameOver data', data.message);
 
@@ -205,11 +196,9 @@ export class Game extends Scene {
         winnerMessage: data.message,
         typeOfGameOver: "lastPlayerStanding",
         socket: this.socket,
-        player: this.playerDb,
+        playerName: this.playerName,
         playerId: this.playerId,
       });
-
-      // this.scene.stop("Game"); //TODO test this type of game over event
     });
 
     // Remove a player with a given ID from the local client instance
@@ -220,13 +209,7 @@ export class Game extends Scene {
     });
   } //END Create Method---------------------------------------------------------------------------------------------------------------------------------
 
-  setupEventListeners() {
-console.log('clean this up if it works')
-
-
-
-  }
-
+  
   updateCountDownDisplay() {
     if (!this.countDownText) {
       this.countDownText = this.add.text(
@@ -331,7 +314,7 @@ console.log('clean this up if it works')
     }
     arrow.destroy();
     player.loseLife();
-    console.log(`Arrow has hit player ${player.playerName}`, arrow, player);
+    console.log(`Arrow has hit player`, arrow, player);
   }
 
   update() {
@@ -385,7 +368,8 @@ console.log('clean this up if it works')
         activeKeys: activeKeys,
         direction: this.player.direction,
         lives: this.player.lives,
-        playerName: this.playerName
+        playerName: this.playerName,
+        active: this.player.active
       });
     }
   }

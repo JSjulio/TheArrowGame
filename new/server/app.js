@@ -151,11 +151,11 @@ socket.on('startCountDown', (data) => {
     const player = data.player; //player object 
     const playerId = data.playerId; // player.playerId = socket.id throughout this codebase // player.playerName is the player's name from the database
     
-    // verify that the room still exist, if it does, then create a new player map 
+    // verify that the room still exist, if it does and count hasn't started create a new players map 
     if (gameStates[gameId] && !gameStates[gameId].started) {
-          gameStates[gameId].players = new Map();
+          gameStates[gameId].players = new Map(); // 
           
-          // Add the current player to the newly cleared & initialized map
+          // set individual player data (game data) within the players map 
           gameStates[gameId].players.set(playerId, player);
           
           console.log('player values during set:', Array.from(gameStates[gameId].players.values()));
@@ -221,6 +221,19 @@ function calculateAndAnnounceWinner(gameId) {
   clearInterval(gameStates[gameId].countDownInterval);
   gameStates[gameId].players.clear();
   delete gameStates[gameId];
+
+  //remove players from socket room
+  const removeAllUsersFromRoom = (gameId) => {
+    const room = io.sockets.adapter.rooms.get(gameId);
+    if (room) {
+      room.forEach(playerId => {
+        const socket = io.sockets.sockets.get(playerId);
+        socket.leave(gameId);
+      });
+    }
+  }
+  removeAllUsersFromRoom(gameId);
+
 }
 
   // Listen for client movements (active keys being pressed which correlate to adjacent player movement)
@@ -230,6 +243,10 @@ function calculateAndAnnounceWinner(gameId) {
       gameStates[gameId].players.set(playerData.id, playerData);
     }
     socket.to(gameId).emit('playerUpdates', {'id': playerData.id, 'x': playerData.playerX, 'y': playerData.playerY, 'activeKeys': playerData.activeKeys, 'direction': playerData.direction, 'lives': playerData.lives});
+
+    if(!gameStates[gameId]) { 
+    }
+
   });
 
   // Listen / Emit client arrow shots 
@@ -246,29 +263,68 @@ function calculateAndAnnounceWinner(gameId) {
       const player = gameStates[gameId].players.get(playerId); // Get the player object from the players Map
       player.active = false; // Set the player as inactive
       gameStates[gameId].players.set(playerId, player); // Set player status to false within players Object 
+      
+      socket.to(gameId).emit('setDeadPlayerStatus', { playerId, active: false});
+    }
+    console.log(`Player ${playerId} died - in game room: ${gameId}.`);
+
+    const activePlayers = Array.from(gameStates[gameId].players.values()).filter(playerId => playerId.active);
+
+    if (activePlayers.length === 1) {
+      // if one player is left after a player dies, announce the winner / end game
+      const remainingPlayer = activePlayers[0];
+      io.in(gameId).emit('gameOverEvent2', { message: `${remainingPlayer.playerName} wins as the sole survivor!`});
+    
+      // clean game state
+      clearInterval(gameStates[gameId].countDownInterval);
+      gameStates[gameId].players.delete(playerId); 
+      delete gameStates[gameId]; // delete game state    
+      
+      // Remove all players from the socket room
+      const removeAllUsersFromRoom = (gameId) => {
+        const room = io.sockets.adapter.rooms.get(gameId);
+        if (room) {
+          room.forEach(playerId => {
+            const socket = io.sockets.sockets.get(playerId);
+            socket.leave(gameId);
+          });
+        }
+      }
+
+      removeAllUsersFromRoom(gameId) 
+
+    }
+    console.log('active game rooms after last man:', gameStates);
+  
+  });  
+
+  socket.on('gameRoomDisconnect', (data) => {
+    const {gameId, playerId, socket} = data;
+    
+    // handles disconnection after players leave game room and choose to start a new game or exit through the game over scene
+    if (gameStates[gameId] && gameStates[gameId].players.has(socket.id)) {
+      gameStates[gameId].players.delete(socket.id);
+      socket.leave(gameId); // Remove  player from the game room 
+      console.log(`Player just rage quit after dying in gameroom: ${gameId}`);
+    } 
+    if (gameStates[gameId].countDownInterval) {
+      clearInterval(gameStates[gameId].countDownInterval);
     }
 
-    // filter gameStates for active players, if one remains, declare that player as the winner / end the game
-    const activePlayers = Array.from(gameStates[gameId].players.values()).filter(playerId => playerId.active);
-    if (activePlayers.length === 1) {
-      
-      const remainingPlayer = activePlayers[0];
-      io.in(gameId).emit('gameOverEvent2', { message: `Player ${remainingPlayer.playerName} wins as the sole survivor!` });
-    
-      // Stop the game countdown
-      clearInterval(gameStates[gameId].countDownInterval);
-      gameStates[gameId].players.delete(playerId); // remove socket from the game states players map = server stops tracking the player
-      delete gameStates[gameId]; // delete game state
-      console.log('active game rooms:', gameStates);
+    if (gameStates[gameId].waitingRoomCountDownInterval) {
+      clearInterval(gameStates[gameId].waitingRoomCountDownInterval);
+    }
 
-    } 
-    
-  
-    // TODO fix this logic to account for the last player standing
+    if(gameStates[gameId]) { 
+      delete gameStates[gameId]; // delete game state 
+    }
 
-    console.log(`Player ${playerId} died - in game room: ${gameId}.`);
-    socket.to(gameId).emit('setDeadPlayerStatus', { playerId, active: false});
-  });  
+    else {
+      console.log('active game rooms after play again call:', gameStates);
+     }
+    return;
+
+  }); 
 
 
   socket.on('disconnect', () => {
@@ -278,7 +334,8 @@ function calculateAndAnnounceWinner(gameId) {
       const inWaitingRoom = !gameStates[gameId].started && gameStates[gameId].players.has(socket.id);
       const inGame = gameStates[gameId].started && gameStates[gameId].players.has(socket.id);
 
-      //disconnection if player in waiting room
+      //disconnection if player in waiting room: 
+      // if a disconnection occurs while in waiting room, terminate that specific game room
       if (inWaitingRoom) {
 
         //remove player from game players map and socket room 
@@ -313,6 +370,7 @@ function calculateAndAnnounceWinner(gameId) {
           
           // Delete the game room state
           delete gameStates[gameId];
+          socket.leave(gameId); // Remove player from the socket room 
           console.log(`Game room ${gameId} has been deleted due to no remaining players.`);
           console.log('Active game rooms:', gameStates);
       }

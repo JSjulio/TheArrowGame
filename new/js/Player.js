@@ -1,5 +1,5 @@
 export default class Player extends Phaser.Physics.Arcade.Sprite {
-  constructor(scene, x, y, name, pid, gameId, lives) {
+  constructor(scene, x, y, name, pid, gameId, lives, active) {
     super(scene, x, y, "player");
 
     this.name = name;
@@ -7,8 +7,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.direction = "left";
     this.isGrounded = true;
     this.gameId = gameId;
-    this.lives = lives; // Initialize player life
-    this.active = true; // All players start as active since they ready up the ReadyLobby Scene. When a player dies they become inactive again.
+    this.lives = lives; 
+    this.active = active; 
 
     scene.add.existing(this);
     scene.physics.add.existing(this);
