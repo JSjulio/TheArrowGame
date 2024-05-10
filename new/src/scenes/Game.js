@@ -1,4 +1,4 @@
-import { Scene } from "phaser"; // scenes are where the game logic is written for different parts of the game
+import { Scene } from "phaser";
 import Phaser, { NONE } from "phaser";
 import Player from "../../js/Player";
 import "../../src/style.css";
@@ -6,11 +6,11 @@ import "../../src/style.css";
 export class Game extends Scene {
   constructor() {
     super("Game");
-    this.player = null;
+    this.player = null; // initialized player object
     this.arrows = [];
     this.lives = 10; // initialize player life
     this.active = true; // initialize players as active
-    this.gameCountDown = 300; //TODO-Change once done init count for display purposes, actual value will be received from server
+    this.gameCountDown = 60; //TODO-Change once done init count for display purposes, actual value will be received from server
   }
 
   preload() {
@@ -34,7 +34,6 @@ export class Game extends Scene {
     this.gameId = data.gameId;
     this.socket = data.socket;
     this.sock = this.socket;
-    // this.playerDb = data.player; // TODO remove once refactored cleanly 
     this.playerName = data.playerName;
     this.playerId = data.socket.id;
 
@@ -78,22 +77,19 @@ export class Game extends Scene {
       100,
       100,
       this.playerName, // actual player name from the db
-      this.playerId, // player socket.id used to communicate changes throughout the game 
+      this.playerId, // player socket.id used to communicate changes throughout the game
       this.gameId,
       this.lives,
-      this.active
+      this.active,
     ); // here this.player encompasses the information that will be passed to the player map within the server
+
+    // console.log("player object is:", this.player);  
 
     //Sends the player to the server for storage/broadcast to other clients
     this.socket.emit("joinRoom", {
       player: this.player,
       gameId: this.gameId,
       playerId: this.playerId,
-    });
-
-    this.socket.on("updateGameTimer", (data) => {
-      this.gameCountDown = data.gameCountDown;
-      this.updateCountDownDisplay();
     });
 
     // resizing bouncing box
@@ -112,9 +108,15 @@ export class Game extends Scene {
     // Reposition the bounding box relative to the player's center
     this.player.body.setOffset(this.offsetX, this.offsetY);
     // console.log("this.player:", this.player);
-    
+
     this.playerArr = [];
-    
+
+    this.playerArr.forEach((player) => {
+      this.player.lives = 10;
+      this.player.active = true;
+      this.player.setAlpha(.2);  
+    });
+
     // Sets up the arrow keys as the input buttons
     this.cursors = this.input.keyboard.createCursorKeys();
     this.cursors.space = this.input.keyboard.addKey(
@@ -140,6 +142,12 @@ export class Game extends Scene {
     // request game timer from server
     this.socket.emit("requestGameTimer", { gameId: this.gameId });
 
+    // Listen for the game timer update and render the countdown
+    this.socket.on("updateGameTimer", (data) => {
+      this.gameCountDown = data.gameCountDown;
+      this.updateCountDownDisplay();
+    });
+
     // Listen for playerShooting event from the server
     this.socket.on("playerShooting", (shootData) => {
       // console.log(shootData);
@@ -151,15 +159,10 @@ export class Game extends Scene {
       ); // call the createArrow function to recreate arrow sprite at the position received from the server
     });
 
-    // Listen for the event when a player's lives are updated
-    this.socket.on("completePlayerLivesUpdate", (data) => {
-      console.log(data.message, "player object is:", data.player);
-    });
-
     // Listen for the event when a player dies or disconnects and update status to inactive
     this.socket.on("setDeadPlayerStatus", (data) => {
       const { playerId, active } = data;
-      // console.log('active here has a value of:', active, 'playerId:', playerId)
+
       let playerToUpdate = this.playerArr.find((p) => p.id === playerId);
       if (playerToUpdate) {
         playerToUpdate.active = active; // Set the player as inactive
@@ -167,17 +170,17 @@ export class Game extends Scene {
         playerToUpdate.setAlpha(0.5);
       }
 
-      if(playerToUpdate.id === this.playerId) {
+      // set player as inactive, freezing the player, set opcacity to 0.5 and lives to 0
+      if (playerToUpdate.id === this.playerId) {
         this.player.active = active;
         this.player.lives = 0;
-        this.player.setAlpha(0.5);
-      } 
-
+        this.player.setAlpha(0.5); 
+      }
     });
 
-    // Timer finished game over event 
+    // Timer finished game over event
     this.socket.on("gameOverEvent1", (data) => {
-      console.log('gameOver data', data.message);
+      console.log("gameOver data", data.message);
 
       this.scene.start("GameOver", {
         winnerMessage: data.message,
@@ -188,9 +191,9 @@ export class Game extends Scene {
       });
     });
 
-    // Last player standing game over event 
+    // Last player standing game over event
     this.socket.on("gameOverEvent2", (data) => {
-      console.log('gameOver data', data.message);
+      console.log("gameOver data", data.message);
 
       this.scene.start("GameOver", {
         winnerMessage: data.message,
@@ -209,7 +212,6 @@ export class Game extends Scene {
     });
   } //END Create Method---------------------------------------------------------------------------------------------------------------------------------
 
-  
   updateCountDownDisplay() {
     if (!this.countDownText) {
       this.countDownText = this.add.text(
@@ -219,11 +221,16 @@ export class Game extends Scene {
         { fill: "#ffffff" }
       );
     } else {
-      this.countDownText.setText(`TIME: ${this.gameCountDown}`);
+      this.countDownText.destroy(); // Destroy the previous text object and reset value to server value - this set up required to avoid errors after game state restarts following a game over
+      this.countDownText = this.countDownText = this.add.text(
+        10,
+        10,
+        `TIME: ${this.gameCountDown}`,
+        { fill: "#ffffff" }
+      );
     }
   }
 
-  // Turns the other players' movements into an object that can be used in the update method
   createCursorsFromActiveKeys(activeKeys) {
     return {
       up: this.input.keyboard.addKey(activeKeys.up),
@@ -369,7 +376,7 @@ export class Game extends Scene {
         direction: this.player.direction,
         lives: this.player.lives,
         playerName: this.playerName,
-        active: this.player.active
+        active: this.player.active,
       });
     }
   }

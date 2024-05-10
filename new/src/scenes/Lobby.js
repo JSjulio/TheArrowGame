@@ -1,9 +1,12 @@
 import { Scene } from "phaser";
+import io from "socket.io-client";
+
 
 export class LobbyScene extends Scene {
   constructor() {
     super("LobbyScene"); 
     this.gameId = null; 
+    this.socket = null; // socket initialization
   };
 
   create(data) {
@@ -12,7 +15,7 @@ export class LobbyScene extends Scene {
 
     // Lobby scene data initialization
     this.playerName = data.playerName;  
-    this.socket = data.socket; 
+    this.socket = io('http://localhost:3000'); 
     // console.log ('socket id:', this.socket.id, 'name:', this.playerName);
 
     //creates text for gameId input form  

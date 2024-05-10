@@ -5,7 +5,6 @@ export class GameOver extends Scene
     constructor ()
     {
         super('GameOver'); 
-
     }
 
     create (data) {
@@ -21,7 +20,6 @@ export class GameOver extends Scene
         const bImage = this.add.image(512, 310, 'gameOver'); 
         bImage.setAlpha(0.45); 
         
-
         this.add.text(512, 200, 'Game Over', {
             fontFamily: 'Arial Black', fontSize: 64, color: '#ffffff',
             stroke: '#000000', strokeThickness: 8,
@@ -38,9 +36,10 @@ export class GameOver extends Scene
         }
     };
 
+    // if 2 or more players are still alive, the dead player will have the option to spectate the game or quit
     createDeadPlayerButtons () { 
         
-        let flashingText = this.add.text(385, 500, '👻 Ghost-Mode Activated 👻', { fontSize: '18px', color: '#000000' });
+        let flashingText = this.add.text(385, 500, '👻 Ghost Mode Activated 👻', { fontSize: '18px', color: '#000000' });
         this.tweens.add({
         targets: flashingText,
         alpha: { start: 0.7, to: 1 },
@@ -51,7 +50,7 @@ export class GameOver extends Scene
         });
         flashingText.setAlpha(2); 
 
-        const returnToGameButton = this.add.text(395, 375, 'Return to Game?', {
+        const returnToGameButton = this.add.text(375, 375, 'Return to Game?', {
             font: "16px Arial",
             fill: "#0f0",
             backgroundColor: "#000",
@@ -76,7 +75,7 @@ export class GameOver extends Scene
             quitGame.setAlpha(2);
         };
     
-
+    // if game is over, the player will have the option to start a new game or quit the game
     createGameOverButtons () {
                 
         this.add.text(512, 275, `${this.winnerMessage}`, {
@@ -84,7 +83,6 @@ export class GameOver extends Scene
             stroke: '#000000', strokeThickness: 4,
             align: 'center'
         }).setOrigin(0.5).setAlpha(2);
-
 
         const newGame = this.add.text(395, 375, 'New Game', {
             font: "16px Arial",
@@ -103,7 +101,6 @@ export class GameOver extends Scene
                 })})
                 .on('pointerdown', () => { 
                 this.scene.start('LobbyScene', {socket: this.socket, playerName: this.playerName });
-                // this.socket.emit('gameRoomDisconnect', { gameId: this.gameId, playerId: this.playerId, socket: this.socket }); 
             })
             newGame.setAlpha(2);
 

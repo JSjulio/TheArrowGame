@@ -12,11 +12,11 @@ export class AuthScene extends Scene {
     this.cameras.main.fadeIn(1000)
 
     // Initialize the socket
-    this.socket = io('http://localhost:3000'); 
+    // this.socket = io('http://localhost:3000'); 
     
-    this.socket.on('connect', () => {
-      console.log("authConsoleLog: socket init!");
-  }); 
+  //   this.socket.on('connect', () => {
+  //     console.log("authConsoleLog: socket init!");
+  // }); 
 
     const bImage = this.add.image(512, 384, 'loginImage');
     bImage.setAlpha(.6);

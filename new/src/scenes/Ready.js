@@ -4,16 +4,14 @@ export class Ready extends Scene {
     constructor() {
         super("Ready");
         this.readyCountDown = 15; // init count as 50 for display purposes, actual value will be received from server
-        // this.active = true; // TODO is required? 
     }
 
-    create(data) {
+    create(data) {        
         this.gameId = data.gameId;
         this.socket = data.socket;
         this.playerName = data.playerName; // Player's name from database
         this.createReadyUpButton();
         this.setupEventListeners();
-
     }
 
     createReadyUpButton() {
@@ -41,6 +39,7 @@ export class Ready extends Scene {
     setupEventListeners() {
         this.socket.on('updateCountdown', (data) => {
             this.readyCountDown = data.countdown; 
+            console.log('Countdown:', this.readyCountDown); 
             this.updateCountdownDisplay();
         });
 
@@ -60,7 +59,8 @@ export class Ready extends Scene {
         if (!this.countDownText) {
             this.countDownText = this.add.text(400, 350, `Game Starts in... ${this.readyCountDown}`, { fill: '#ffffff' });
         } else {
-            this.countDownText.setText(`Game Starts in... ${this.readyCountDown}`);
+            this.countDownText.destroy(); // Destroy the previous text object and reset value to server value - this set up required to avoid errors after game state restarts follwoing a game over
+            this.countDownText = this.add.text(400, 350, `Game Starts in... ${this.readyCountDown}`, { fill: '#ffffff' })
         }
     }
 
@@ -70,7 +70,6 @@ export class Ready extends Scene {
                 gameId: this.gameId,
                 socket: this.socket,
                 playerName: this.playerName,
-                // active: this.active // TODO is required?
             });
         }
 }

@@ -100,9 +100,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     const velocityX = this.direction === "left" ? -600 : 600;
     arrow.setVelocityX(velocityX);
 
-    // Stretch - add attack left and attack right animations to player and transmit to game room following
-    
-
+    // Play shoot animation
     const shootAnim = this.direction === "left" ? "attackLeft" : "attackRight";
     this.anims.play(shootAnim, true);
     if (this.direction === "left") {
@@ -126,7 +124,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   update(cursors) {
   
     if (this.active === false) {
-      return; // If the player is not active, don't update their position/shooting ability 
+      return; // If the player is not active, don't update their position/shooting locally 
     } 
 
     // Check if the player is on the ground
@@ -204,11 +202,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.lives > 0) {
       this.lives -= 1;
       this.scene.cameras.main.shake(300, 0.01); // Shake the camera when player gets hit
-    
     }
     if (this.lives <= 0) {
-      this.lives = 0; // Set lives to 0 to prevent further loss of lives
-      this.setAlpha(0.5); // set player as half transparent when they lose all their lives on the client side
       this.playerDead(); 
     }
   }
@@ -220,7 +215,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.setVelocityY(0);
     this.disableBody(true, true); // set the player active to false
     this.scene.socket.emit('playerDied', { gameId: this.gameId, playerId: this.id }); // send a message to the server that the player has died
-    this.lives = 0; // sets lives to 0 after player dies
+    // this.lives = 0; // sets lives to 0 after player dies
 
     //player transition to game over scene, camera shake and fade out and still show active game, allowing player to rejoin the game until it has ended
     this.scene.cameras.main.shake(300, 4.7); // shake the camera when player dies 
@@ -228,7 +223,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.scene.cameras.main.once("camerafadeoutcomplete", () => {
       this.scene.cameras.main.fadeIn(3000), 125, 217, 217;    
       this.scene.scene.launch('GameOver', { playerId: this.id, typeOfGameOver: 'playerDeath'});  // launching runs the GameOver scene simultaneously with the game scene
-      this.scene.scene.resume('Game'); // allows for the game to play in the background while the game over screen is displayed
+      this.scene.scene.resume('Game'); // resume allows a gameOver scene to be a overlay on live game
     });
   }   
+
+  // player reset function used to reset playerArray after game over 
+  resetPlayer() {
+    this.active = true; // set player active to true
+    this.lives = 10; // reset player lives
+  }
 }
