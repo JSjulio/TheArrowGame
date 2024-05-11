@@ -40,7 +40,7 @@ export class GameOver extends Scene
     // if 2 or more players are still alive, the dead player will have the option to spectate the game or quit
     createDeadPlayerButtons () { 
         
-        let flashingText = this.add.text(385, 500, '👻 Ghost Mode Activated 👻', { fontSize: '18px', color: '#000000' });
+        let flashingText = this.add.text(385, 500, '👻 Ghost Mode Active 👻', { fontSize: '18px', color: '#000000' });
         this.tweens.add({
         targets: flashingText,
         alpha: { start: 0.7, to: 1 },

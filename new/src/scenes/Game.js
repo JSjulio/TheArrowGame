@@ -65,7 +65,7 @@ export class Game extends Scene {
     this.collisionLayer.setScale(scaleFactorX, scaleFactorY);
     this.collisionLayer.setCollisionByExclusion([-1]);
     this.collisionLayer.setCollisionByProperty({ collide: true });
-    this.collisionLayer.setAlpha(0.6);
+    this.collisionLayer.setAlpha(0);
 
     // Extract tile indices from the collision layer
     this.tileIndices = [];

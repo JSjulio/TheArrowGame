@@ -54,18 +54,8 @@ handleSetRoom(gameId) {
           socket: this.socket
         });
       } else if (data.failure) {
-          // If unsuccessful, display an error message
-          this.displayError('Game in session, choose another!');
           console.log('lobbyConsoleLog: ', data.message);
       }
     }); 
-  }
-  displayError(message) {
-    // Remove previous error message if it exists
-    if (!this.inputResponse) {
-      this.inputResponse = this.add.text(340, 375, message, { fill: '#ff0000' });
-    } else { 
-      this.inputResponse = this.add.text(340, 375, message, { fill: '#ff0000' });
-    }
   }
 }
