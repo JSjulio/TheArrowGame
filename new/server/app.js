@@ -8,7 +8,6 @@ const morgan = require("morgan");
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = process.env; 
 const cors = require('cors');
-const { count } = require("console");
 
 const PORT = process.env.PORT || 3000;
 
@@ -48,7 +47,7 @@ app.use((req, res, next) => {
 
 // Backend routes 
 app.use("/auth", require("./auth"));
-app.use("/api", require("./api"));
+// app.use("/api", require("./api")); not required but set up for future use
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -69,7 +68,6 @@ const io = socketIO(server, {
   }
 });
 
-
 //Start Socket Event Listeners----------------------------------------------------------------------------------------------------------------------------------
 
   // Initialize Game State
@@ -84,9 +82,9 @@ const io = socketIO(server, {
       const playerId = socket.id;
 
 
-      // Check if the game room exists in the gameStates, if not create it and add the player to socket room
+      // Check if the game room exists in the gameStates, if not create it
       if (!gameStates[gameId]) {
-        socket.join(gameId); // Add player to a seperate socket room
+        socket.join(gameId); // Add player to socket room
 
         //Intialize game parameters once game socket room is created within the lobby Scene- this init allows for entry/restriction into game rooms already started
         gameStates[gameId] = { 
@@ -96,9 +94,8 @@ const io = socketIO(server, {
           players: new Map()
         };
 
-        // add available player data to the players list temporarily for disconnection 
+        // add intial player data to the players list temporarily to handle disconnection while in lobby and ready scenes  
         gameStates[gameId].players.set(playerId, {playerName: playerName}) 
-        console.log('gameId values after players init 1:', Array.from(gameStates[gameId].players.values())); 
         socket.emit('gameRoomSetResponse', {gameId: gameId, success: true, message: `, success!.`});
         return;
       }
@@ -130,7 +127,6 @@ socket.on('startCountDown', (data) => {
     gameStates[gameId].waitingRoomCountDownInterval = setInterval(() => {
       if (gameStates[gameId] && gameStates[gameId].countdown > 0) {
         gameStates[gameId].countdown--;
-        console.log(`countdown in game room ${gameId}: ${gameStates[gameId].countdown}`);
         io.in(gameId).emit('updateCountdown', { countdown: gameStates[gameId].countdown });
         io.in(gameId).emit('disableReadyUp');
       }
@@ -145,7 +141,7 @@ socket.on('startCountDown', (data) => {
   } 
 });
 
-  // Set player data as new maps within gameStates - once player starts the Game Scene 
+  // Once player enters game scene, recreate the players map and set the player data
   socket.on('joinRoom', (data) => {
       
     const gameId = data.gameId; 
@@ -167,9 +163,9 @@ socket.on('startCountDown', (data) => {
   socket.on('requestGameTimer', (data) => {
     const gameId = data.gameId;
     
-  // Setting game parameters as started
+  // Setting gameId as started
   gameStates[gameId].started = true; // set game as started 
-  gameStates[gameId].gameCountDown = 60; // set game countdown
+  gameStates[gameId].gameCountDown = 100; // set game time
 
     // Start the countdown only if it has not already started
     if (!gameStates[gameId].gameCountStarted) {
@@ -181,7 +177,6 @@ socket.on('startCountDown', (data) => {
         if (gameStates[gameId] && gameStates[gameId].gameCountDown > 0) {
           gameStates[gameId].gameCountDown--;
           io.in(gameId).emit('updateGameTimer', { gameCountDown: gameStates[gameId].gameCountDown });
-          console.log('player values during count:', Array.from(gameStates[gameId].players.values()));
         } else {
           clearInterval(gameStates[gameId].countDownInterval);
           if (gameStates[gameId]) {  // Ensure the game state still exists before proceeding
@@ -216,9 +211,8 @@ function calculateAndAnnounceWinner(gameId) {
   }
 
   io.in(gameId).emit('gameOverEvent1', { message: message });
-  console.log('Final winner message:', message);
   
-  // Stop the game countdown and clear the game state
+  // clean game state following gamer over event
   clearInterval(gameStates[gameId].countDownInterval);
   clearInterval(gameStates[gameId].waitingRoomCountDownInterval);
   gameStates[gameId].players.clear();
@@ -235,7 +229,6 @@ function calculateAndAnnounceWinner(gameId) {
     }
   }
   removeAllUsersFromRoom(gameId);
-
 }
 
   // Listen for client movements (active keys being pressed which correlate to adjacent player movement)
@@ -266,7 +259,6 @@ function calculateAndAnnounceWinner(gameId) {
       
       socket.to(gameId).emit('setDeadPlayerStatus', { playerId, active: false});
     }
-    console.log(`Player ${playerId} died - in game room: ${gameId}.`);
 
     const activePlayers = Array.from(gameStates[gameId].players.values()).filter(playerId => playerId.active);
 
@@ -291,12 +283,8 @@ function calculateAndAnnounceWinner(gameId) {
           });
         }
       }
-
       removeAllUsersFromRoom(gameId) 
-
     }
-    console.log('active game rooms after last man:', gameStates);
-  
   });  
 
   // Listen for player disconnection
@@ -327,8 +315,6 @@ function calculateAndAnnounceWinner(gameId) {
          // delete disconnected player from gameStates
          gameStates[gameId].players.delete(socket.id);
          socket.broadcast.emit("removePlayer", socket.id);
-         // Log player disconnection
-         console.log(`Player with ID ${socket.id} has left game room ${gameId}`);
 
         // Check if no players are left in game or waiting room
         if (gameStates[gameId].players.size === 0) {

@@ -3,14 +3,14 @@ import { Scene } from "phaser";
 export class Ready extends Scene {
     constructor() {
         super("Ready");
-        this.readyCountDown = 15; // init count as 50 for display purposes, actual value will be received from server
+        this.readyCountDown = 15; // init count for initial display purposes only, actual value received from server
     }
 
     create(data) {        
     this.gameId = data.gameId;
     this.socket = data.socket;
     this.playerName = data.playerName; // Player's name from database
-    this.game.canvas.style.cursor = 'pointer';  
+    this.game.canvas.style.cursor = 'cell';  
     this.createReadyUpButton();
     this.setupEventListeners();
     }
@@ -25,7 +25,7 @@ export class Ready extends Scene {
 
         readyUpButton.on('pointerdown', () => {
             this.socket.emit('startCountDown', { gameId: this.gameId });
-            readyUpButton.disableInteractive(); // Disable button after clicking for the player that clicked it
+            readyUpButton.disableInteractive(); // Disable button for local client once clicked
             readyUpButton.setAlpha(0.3);
         })
         .on('pointerover', () => {
@@ -34,7 +34,7 @@ export class Ready extends Scene {
 
         this.socket.on('disableReadyUp', () => {
             if (readyUpButton.active) { 
-             readyUpButton.disableInteractive(); // disable button for all players once first player clicks it
+             readyUpButton.disableInteractive(); // disable button for all players in socket room once a player clicks it
              readyUpButton.setAlpha(0.3);
             }
          });
@@ -43,20 +43,16 @@ export class Ready extends Scene {
     setupEventListeners() {
         this.socket.on('updateCountdown', (data) => {
             this.readyCountDown = data.countdown; 
-            console.log('Countdown:', this.readyCountDown); 
             this.updateCountdownDisplay();
         });
 
-        this.socket.on('gameAlreadyStarted', (data) => {
+        this.socket.on('gameAlreadyStarted', () => {
             this.scene.start('LobbyScene', {playerName: this.playerName, socket: this.socket}); 
-            console.log(data.message);
        });
 
-        this.socket.on('startItUp', (data) => {
+        this.socket.on('startItUp', () => {
             this.handlePostTimerRoomState();
-            console.log(data.message);
         });
-        
     }
 
     updateCountdownDisplay() {

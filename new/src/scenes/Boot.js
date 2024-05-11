@@ -12,7 +12,7 @@ export class Boot extends Scene // the user does not actually asee this scene. I
 
     create ()
     {
-        this.scene.start('Preloader'); // this line directs user to whatever scene is defined within the quotation marks   
+        this.scene.start('Preloader'); 
 
     }
 }

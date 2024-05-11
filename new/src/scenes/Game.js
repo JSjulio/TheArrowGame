@@ -7,10 +7,10 @@ export class Game extends Scene {
   constructor() {
     super("Game");
     this.player = null; // initialized player object
-    this.arrows = [];
+    this.arrows = [];  // initialized arrow array
     this.lives = 10; // initialize player life
     this.active = true; // initialize players as active
-    this.gameCountDown = 60; //TODO-Change once done init count for display purposes, actual value will be received from server
+    this.gameCountDown = 100; // initialize game countdown, actual value received from server
   }
 
   preload() {
@@ -85,8 +85,6 @@ export class Game extends Scene {
       this.active,
     ); // here this.player encompasses the information that will be passed to the player map within the server
 
-    // console.log("player object is:", this.player);  
-
     //Sends the player to the server for storage/broadcast to other clients
     this.socket.emit("joinRoom", {
       player: this.player,
@@ -109,7 +107,6 @@ export class Game extends Scene {
 
     // Reposition the bounding box relative to the player's center
     this.player.body.setOffset(this.offsetX, this.offsetY);
-    // console.log("this.player:", this.player);
 
     this.playerArr = [];
 
@@ -127,9 +124,7 @@ export class Game extends Scene {
 
     //Creates the listener that waits for other player updates from the server
     this.socket.on("playerUpdates", (playerUpdated) => {
-      //Creates the listener that waits for other player updates from the server
       this.renderPlayers(playerUpdated, this);
-      // console.log("playerUpdated in game", playerUpdated);;
     });
 
     // Adds an collision listner between players and arrows
@@ -152,7 +147,6 @@ export class Game extends Scene {
 
     // Listen for playerShooting event from the server
     this.socket.on("playerShooting", (shootData) => {
-      // console.log(shootData);
       this.createArrow(
         shootData.x,
         shootData.y,
@@ -169,7 +163,7 @@ export class Game extends Scene {
       if (playerToUpdate) {
         playerToUpdate.active = active; // Set the player as inactive
         playerToUpdate.lives = 0; // Set the player's lives to 0
-        playerToUpdate.setAlpha(0.5);
+        playerToUpdate.setAlpha(0.5); // set the player's opacity to 0.5 at last known position
       }
 
       // set player as inactive, freezing the player, set opcacity to 0.5 and lives to 0
@@ -182,8 +176,6 @@ export class Game extends Scene {
 
     // Timer finished game over event
     this.socket.on("gameOverEvent1", (data) => {
-      console.log("gameOver data", data.message);
-
       this.scene.start("GameOver", {
         winnerMessage: data.message,
         typeOfGameOver: "timeFinished",
@@ -195,8 +187,6 @@ export class Game extends Scene {
 
     // Last player standing game over event
     this.socket.on("gameOverEvent2", (data) => {
-      console.log("gameOver data", data.message);
-
       this.scene.start("GameOver", {
         winnerMessage: data.message,
         typeOfGameOver: "lastPlayerStanding",
@@ -280,7 +270,6 @@ export class Game extends Scene {
         updatePlayer.setDirection(playerData.direction);
         updatePlayer.setPosition(playerData.x, playerData.y);
         updatePlayer.update(updateCursors);
-        // console.log(this.playerArr);
       }
     }
   }
@@ -292,10 +281,6 @@ export class Game extends Scene {
     arrow.setActive(true).setVisible(true);
     arrow.setOrigin(0.5, 0.5);
     arrow.setScale(2);
-
-    // arrowId is set to the playerId of the player who shot the arrow
-    // arrow.arrowId = playerId + Math.random();
-    console.log("arrowInfo:", arrow);
 
     // Set the arrow's properties
     this.physics.world.enable(arrow);
@@ -323,7 +308,6 @@ export class Game extends Scene {
     }
     arrow.destroy();
     player.loseLife();
-    console.log(`Arrow has hit player`, arrow, player);
   }
 
   update() {
@@ -345,7 +329,6 @@ export class Game extends Scene {
         arrow.active &&
         this.physics.world.collide(arrow, this.collisionLayer)
       ) {
-        // console.log('arrow collided with the collision layer: ', arrow);
         arrow.destroy(); // Destroy the individual arrow
         this.arrows.splice(index, 1); // Remove the arrow from the array
       }

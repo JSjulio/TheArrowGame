@@ -34,7 +34,7 @@ const config = {
     mode: Phaser.Scale.FIT, 
     autoCenter: Phaser.Scale.CENTER_BOTH, 
   },
-  scene: [Boot, Preloader, MainMenu, AuthScene, LobbyScene, Ready, Game, GameOver], // The scenes to add different pages to the Phaser application. Scenes resemble components
+  scene: [Boot, Preloader, MainMenu, AuthScene, LobbyScene, Ready, Game, GameOver], // The scenes to add different pages to the Phaser application.
   
 };
 

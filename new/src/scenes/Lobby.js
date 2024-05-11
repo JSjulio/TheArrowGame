@@ -6,8 +6,7 @@ export class LobbyScene extends Scene {
   constructor() {
     super("LobbyScene"); 
     this.gameId = null; 
-    this.socket = null; // socket initialization
-    this.inputResponse = null;
+    this.socket = null; 
   };
 
   create(data) {
@@ -29,7 +28,6 @@ export class LobbyScene extends Scene {
         const gameId = gameIdInput.node.value;
         if (gameId) {
           this.handleSetRoom(gameId);
-          // console.log(gameId);
         } else {
           console.log('gameId is required to join a game!');
         }
@@ -47,7 +45,6 @@ handleSetRoom(gameId) {
       if (data.success) {
         // If successful, store the gameId and start the 'Ready' scene
         this.gameId = data.gameId;
-        console.log('lobbyConsoleLog: Player game Id set to:', this.gameId, data.message);
         this.scene.start('Ready', {
           playerName: this.playerName,
           gameId: this.gameId,

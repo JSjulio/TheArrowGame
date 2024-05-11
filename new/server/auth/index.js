@@ -25,7 +25,6 @@ router.post("/register", async (req, res, next) => {
     }
 
     //bcrypt password hashing 
-    // might need to implement a try catch here? 
     const hashedPassword = await bcrypt.hash(password, 10)
 
     const player = await Prisma.player.create({
