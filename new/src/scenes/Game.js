@@ -36,6 +36,8 @@ export class Game extends Scene {
     this.sock = this.socket;
     this.playerName = data.playerName;
     this.playerId = data.socket.id;
+    this.game.canvas.style.cursor = 'cell';  
+
 
     //create floor collision layer
     this.map = this.make.tilemap({

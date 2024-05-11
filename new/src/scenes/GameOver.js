@@ -1,4 +1,5 @@
 import { Scene } from 'phaser';
+import { on } from 'process';
 
 export class GameOver extends Scene
 {
@@ -56,11 +57,17 @@ export class GameOver extends Scene
             backgroundColor: "#000",
             padding: { x: 10, y: 5 }
             }).setInteractive();
-            returnToGameButton.on('pointerdown', () => {
+            returnToGameButton.on('pointerover', () => {
+                this.game.canvas.style.cursor = 'alias';
+            })
+            .on('pointerdown', () => {
                 this.scene.resume('Game'); 
                 this.scene.stop('GameOver'); 
+                returnToGameButton.setAlpha(0.5);
+            })
+            .on('pointerout', () => {
+                this.game.canvas.style.cursor = 'pointer';
             });
-            returnToGameButton.setAlpha(2);
 
         const quitGame = this.add.text(545, 375, 'Quit Game', {
             font: "16px Arial",

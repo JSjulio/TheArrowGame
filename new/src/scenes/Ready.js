@@ -7,11 +7,12 @@ export class Ready extends Scene {
     }
 
     create(data) {        
-        this.gameId = data.gameId;
-        this.socket = data.socket;
-        this.playerName = data.playerName; // Player's name from database
-        this.createReadyUpButton();
-        this.setupEventListeners();
+    this.gameId = data.gameId;
+    this.socket = data.socket;
+    this.playerName = data.playerName; // Player's name from database
+    this.game.canvas.style.cursor = 'pointer';  
+    this.createReadyUpButton();
+    this.setupEventListeners();
     }
 
     createReadyUpButton() {
@@ -26,6 +27,9 @@ export class Ready extends Scene {
             this.socket.emit('startCountDown', { gameId: this.gameId });
             readyUpButton.disableInteractive(); // Disable button after clicking for the player that clicked it
             readyUpButton.setAlpha(0.3);
+        })
+        .on('pointerover', () => {
+            this.game.canvas.style.cursor = 'cell';
         });
 
         this.socket.on('disableReadyUp', () => {

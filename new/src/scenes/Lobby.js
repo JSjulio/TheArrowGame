@@ -7,16 +7,18 @@ export class LobbyScene extends Scene {
     super("LobbyScene"); 
     this.gameId = null; 
     this.socket = null; // socket initialization
+    this.inputResponse = null;
   };
 
   create(data) {
+    this.game.canvas.style.cursor = 'pointer';  
+    
     // Fade in the scene   
     this.cameras.main.fadeIn(1000);
 
     // Lobby scene data initialization
     this.playerName = data.playerName;  
     this.socket = io('http://localhost:3000'); 
-    // console.log ('socket id:', this.socket.id, 'name:', this.playerName);
 
     //creates text for gameId input form  
     const text = this.add.text(300, 250, 'GAME ID:', { fill: '#000000' }).setOrigin(0);
@@ -48,14 +50,22 @@ handleSetRoom(gameId) {
         console.log('lobbyConsoleLog: Player game Id set to:', this.gameId, data.message);
         this.scene.start('Ready', {
           playerName: this.playerName,
-          // player: this.player,
           gameId: this.gameId,
           socket: this.socket
         });
-      }  if (data.failure) {
-        console.log('game started choose another');
-        return;
+      } else if (data.failure) {
+          // If unsuccessful, display an error message
+          this.displayError('Game in session, choose another!');
+          console.log('lobbyConsoleLog: ', data.message);
       }
     }); 
+  }
+  displayError(message) {
+    // Remove previous error message if it exists
+    if (!this.inputResponse) {
+      this.inputResponse = this.add.text(340, 375, message, { fill: '#ff0000' });
+    } else { 
+      this.inputResponse = this.add.text(340, 375, message, { fill: '#ff0000' });
+    }
   }
 }

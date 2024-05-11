@@ -4,19 +4,12 @@ import io from "socket.io-client";
 export class AuthScene extends Scene {
   constructor() {
     super("AuthScene");
-    this.socket = null; // socket initialization
   }
 
   create() {
+    
     // Fade in the scene
     this.cameras.main.fadeIn(1000)
-
-    // Initialize the socket
-    // this.socket = io('http://localhost:3000'); 
-    
-  //   this.socket.on('connect', () => {
-  //     console.log("authConsoleLog: socket init!");
-  // }); 
 
     const bImage = this.add.image(512, 384, 'loginImage');
     bImage.setAlpha(.6);
@@ -27,12 +20,12 @@ export class AuthScene extends Scene {
       font: 'Arial',
       fontSize: '90px',
       fill: '#ffffff',
-    }).setOrigin(0.5).setShadow(3, 3, 'rgba(0,0,0,0.5)', 2)
-    .setScale(1.9);
-
+    })
+    .setOrigin(0.5).setShadow(3, 3, 'rgba(0,0,0,0.5)', 2)
+    .setScale(2.5);
       this.tweens.add({
       targets: titleText,
-      alpha: { start: 0.7, to: 1 },
+      alpha: { start: 0.5, to: 1 },
       ease: 'Linear',
       duration: 700,
       repeat: -1,
@@ -47,19 +40,22 @@ export class AuthScene extends Scene {
     this.add.text(100, yPosition + 40, `${text} Password:`, {fill: '#000'});
 
     const usernameInput = this.add.dom(300, yPosition, 'input').setOrigin(0);
-    const passwordInput = this.add.dom(300, yPosition + 40, 'input', { type: 'password' }, ).setOrigin(0);
+
+    const passwordInput = this.add.dom(300, yPosition + 40, 'input', { type: 'password' }, ).setOrigin(0); 
 
     const actionButton = this.add.text(100, yPosition + 80, text, { fill: '#0f0', backgroundColor: '#000', padding: 8})
       .setInteractive()
       .on('pointerover', () => {
+        this.game.canvas.style.cursor = 'pointer';
         this.tweens.add({
           targets: actionButton,
           alpha: { start: 0.7, to: 1 },
           ease: 'Linear',
           duration: 300,
           repeat: -1,
-          yoyo: true
-        })})
+          yoyo: true, 
+        })
+      })
       .on('pointerdown', () => {
         const username = usernameInput.node.value;
         const password = passwordInput.node.value;
@@ -97,8 +93,8 @@ export class AuthScene extends Scene {
         // Fade out effect before switching scenes
         this.cameras.main.fadeOut(1000, 0, 0, 0, (camera, progress) => {
           if (progress === 1) {
-            // if auth is successful, proceed to next scene and pass serverUrl, player data, and token to next scene 
-            this.scene.start('LobbyScene', { socket: this.socket, player: data.player, playerName: data.player.name});
+            // if auth is successful, proceed to next scene and pass over required data
+            this.scene.start('LobbyScene', { player: data.player, playerName: data.player.name});
           }
         });
       } else {

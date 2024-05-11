@@ -20,7 +20,7 @@ export class MainMenu extends Scene
     {
         this.add.image(512, 310, 'theArrowGame'); 
       
-        let flickerText = this.add.text(275, 520, 'ClICK ANYWHERE TO START!', {
+        let flickerText = this.add.text(240, 520, 'ClICK ANYWHERE TO START!', {
             frontFamily: 'Arial Black',
             fill: '#31CA01',
             fontSize: 37, 

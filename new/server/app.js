@@ -114,7 +114,7 @@ const io = socketIO(server, {
 
       // If socket connection does not meet the criteria above, emit a message to the client that their desired gameId cannot be joined
       if (!gameStates[gameId].started && gameStates[gameId].countdown <= 4) {
-        socket.emit('gameRoomSetResponse', {gameId: gameId, failure: true, message: `, Game ${gameId} already started, try another one !`});
+        socket.emit('gameRoomSetResponse', {gameId: gameId, failure: true, message: `Game ${gameId} is in session, try another!`});
         return;
       }
     });
