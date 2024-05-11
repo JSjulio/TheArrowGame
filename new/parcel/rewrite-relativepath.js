@@ -15,7 +15,7 @@ module.exports = new Reporter({
                 }
             }
             const line = "---------------------------------------------------------";
-            const msg = `❤️❤️❤️ Tell us about your game! - games@phaser.io ❤️❤️❤️`;
+            const msg = `❤️❤️❤️ By FullStackAcademy Gamers ❤️❤️❤️`;
             process.stdout.write(`${line}\n${msg}\n${line}\n`);
             process.stdout.write(`✨ Built ${bundles.length} bundles in ${event.buildTime}ms!\n`);
         }
