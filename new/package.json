@@ -1,7 +1,7 @@
 {
-  "name": "template-parcel",
-  "version": "1.1.1",
-  "description": "A Phaser 3 template using Parcel 2 as the bundler.",
+  "name": "the-arrow-game",
+  "version": "1.0.0",
+  "description": "A live multiplayer Phaser3 shooter game.",
   "source": "./index.html",
   "browserslist": "> 0.25%, last 2 versions, not dead",
   "scripts": {

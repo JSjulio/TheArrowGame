@@ -90,7 +90,7 @@ const io = socketIO(server, {
         gameStates[gameId] = { 
           countDownStarted: false,
           started: false,
-          countdown: 15,
+          countdown: 16,
           players: new Map()
         };
 
@@ -104,7 +104,6 @@ const io = socketIO(server, {
       if (!gameStates[gameId].started && gameStates[gameId].countdown >=5 ) {
         socket.join(gameId);
         gameStates[gameId].players.set(playerId, {playerName: playerName})       
-        console.log('gameId values after player init2:', Array.from(gameStates[gameId].players.values())); 
         socket.emit('gameRoomSetResponse', {gameId: gameId, success: true,  message: `, Countdown started, but we'll get you in there 🎯!.`});
         return;
       }
@@ -154,9 +153,7 @@ socket.on('startCountDown', (data) => {
           
           // set individual player data (game data) within the players map 
           gameStates[gameId].players.set(playerId, player);
-          
-          console.log('player values during set:', Array.from(gameStates[gameId].players.values()));
-        }
+       }
   
 });
   
@@ -165,7 +162,7 @@ socket.on('startCountDown', (data) => {
     
   // Setting gameId as started
   gameStates[gameId].started = true; // set game as started 
-  gameStates[gameId].gameCountDown = 100; // set game time
+  gameStates[gameId].gameCountDown = 101; // set game time
 
     // Start the countdown only if it has not already started
     if (!gameStates[gameId].gameCountStarted) {
@@ -330,13 +327,10 @@ function calculateAndAnnounceWinner(gameId) {
           // Delete the game room state
           delete gameStates[gameId];
           socket.leave(gameId); // Remove player from the socket room 
-          console.log(`Game room ${gameId} has been deleted due to no remaining players.`);
-          console.log('Active game rooms:', gameStates);
       }
     }
   }
 )}); 
-console.log('Active game rooms:', gameStates);
 });
  
 //END Socket Event Listeners---------------------------------------------------------------------------
