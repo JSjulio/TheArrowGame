@@ -81,7 +81,7 @@ export class AuthScene extends Scene {
 
   // Handle authentication (login/register)
   handleAuth(username, password, type) {
-    const path = type === 'login' ? '/auth/login' : '/auth/register';
+    const path = type === 'login' ? 'auth/login' : 'auth/register';
     fetch(config.apiBaseUrl + path, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
