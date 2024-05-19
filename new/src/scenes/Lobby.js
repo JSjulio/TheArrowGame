@@ -1,5 +1,7 @@
 import { Scene } from "phaser";
 import io from "socket.io-client";
+import config from "../config"; // import the apiBaseUrl from config.js
+
 
 
 export class LobbyScene extends Scene {
