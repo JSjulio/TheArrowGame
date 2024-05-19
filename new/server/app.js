@@ -22,6 +22,13 @@ app.use(express.static(path.join(__dirname, "..", "dist")));
 
 // Create an HTTP server instance
 const server = http.createServer(app);
+const io = socketIO(server, {
+  path: '/socket.io',
+  cors: {
+    origin: '*',  
+    methods: ["GET", "POST"]
+  }
+});
 
 // Logging middleware 
 app.use(morgan("dev"));
@@ -61,14 +68,7 @@ app.use((req, res) => {
   res.status(404).send("Not found.");
 });
 
-// Socket.io connection
-const io = socketIO(server, {
-  path: '/socket.io',
-  cors: {
-    origin: '*',  
-    methods: ["GET", "POST"]
-  }
-});
+
 
 //Start Socket Event Listeners----------------------------------------------------------------------------------------------------------------------------------
 
@@ -335,6 +335,8 @@ function calculateAndAnnounceWinner(gameId) {
 )}); 
 });
  
+server.listen(process.env.PORT || 3000);
+
 //END Socket Event Listeners---------------------------------------------------------------------------
 
 
