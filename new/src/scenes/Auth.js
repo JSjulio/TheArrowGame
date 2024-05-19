@@ -1,5 +1,6 @@
 import { Scene } from "phaser";
-import io from "socket.io-client";
+import config from "../config"; // import the apiBaseUrl from config.js
+
 
 export class AuthScene extends Scene {
   constructor() {
@@ -7,7 +8,9 @@ export class AuthScene extends Scene {
   }
 
   create() {
-    
+    console.log("API Base URL:", config.apiBaseUrl + '/auth/login'); 
+
+
     // Fade in the scene
     this.cameras.main.fadeIn(1000)
 
@@ -79,7 +82,7 @@ export class AuthScene extends Scene {
   // Handle authentication (login/register)
   handleAuth(username, password, type) {
     const path = type === 'login' ? '/auth/login' : '/auth/register';
-    fetch(`http://localhost:3000${path}`, {
+    fetch(config.apiBaseUrl + config.port + path, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: username, password: password }),
@@ -88,9 +91,6 @@ export class AuthScene extends Scene {
     .then(data => { 
       if (data.token) {
         // Handle successful authentication
-        console.log(`authConsoleLog: ${data.player.name} ${type} successful!`);
-  
-        // Fade out effect before switching scenes
         this.cameras.main.fadeOut(1000, 0, 0, 0, (camera, progress) => {
           if (progress === 1) {
             // if auth is successful, proceed to next scene and pass over required data

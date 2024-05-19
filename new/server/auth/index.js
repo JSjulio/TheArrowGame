@@ -17,7 +17,6 @@ router.post("/register", async (req, res, next) => {
         name: name,
       },
     });
-    console.log("req.body is:", req.body);
 
 
     if (existingPlayer) {
@@ -36,7 +35,6 @@ router.post("/register", async (req, res, next) => {
 
     if (player) {
       const token = jwt.sign({ id: player.id }, JWT_SECRET);
-      console.log('your token is:', token); 
       res.status(200).send({ player, token });
     } 
   } catch (error) {

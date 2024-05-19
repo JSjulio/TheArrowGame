@@ -13,11 +13,11 @@ const PORT = process.env.PORT || 3000;
 
 // Enable CORS middleware
 app.use(cors({
-  origin: 'http://localhost:1234'
+  origin: '*' 
 }));
 
 // Serve static files from the "client" directory
-app.use(express.static(path.join(__dirname, "..", "dist"))); // Refactoring may be required for the client directory path
+app.use(express.static(path.join(__dirname, "..", "dist"))); 
 
 // Create an HTTP server instance
 const server = http.createServer(app);
@@ -262,7 +262,7 @@ function calculateAndAnnounceWinner(gameId) {
     if (activePlayers.length === 1) {
       // if one player is left after a player dies, announce the winner / end game
       const remainingPlayer = activePlayers[0];
-      io.in(gameId).emit('gameOverEvent2', { message: `${remainingPlayer.playerName} wins as the sole survivor!`});
+      io.in(gameId).emit('gameOverEvent2', { message: `${remainingPlayer.playerName} wins!`});
     
       // clean game state
       clearInterval(gameStates[gameId].countDownInterval);

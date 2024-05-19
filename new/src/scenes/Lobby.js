@@ -17,7 +17,7 @@ export class LobbyScene extends Scene {
 
     // Lobby scene data initialization
     this.playerName = data.playerName;  
-    this.socket = io('http://localhost:3000'); 
+    this.socket = io('/'); 
 
     //creates text for gameId input form  
     const text = this.add.text(300, 250, 'GAME ID:', { fill: '#000000' }).setOrigin(0);
