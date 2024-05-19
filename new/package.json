@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development parcel index.html --no-cache --config ./parcel/.parcel.dev --open",
     "build": "parcel build --config ./parcel/.parcel.prod --no-cache",
-    "start": "node server/index.js",
+    "start": "node server/app.js",
     "migrate": "npx prisma migrate deploy",
     "seed": "node server/db/seed.js", 
     "postinstall": "npm run migrate"
