@@ -335,9 +335,5 @@ function calculateAndAnnounceWinner(gameId) {
  
 //END Socket Event Listeners---------------------------------------------------------------------------
 
-  // Start listening on the specified port
-  server.listen(PORT, "localhost", () => {
-    console.log(`Server is listening on http://localhost:${PORT}`);
-  });
 
   module.exports = app;
