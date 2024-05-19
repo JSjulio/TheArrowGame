@@ -3,7 +3,6 @@ import io from "socket.io-client";
 import config from "../config"; // import the apiBaseUrl from config.js
 
 
-
 export class LobbyScene extends Scene {
   constructor() {
     super("LobbyScene"); 
@@ -19,8 +18,11 @@ export class LobbyScene extends Scene {
 
     // Lobby scene data initialization
     this.playerName = data.playerName;  
-    this.socket = io(`${config.apiBaseUrl}/socket.io`);
-
+    this.socket = io(config.apiBaseUrl, { path: '/socket.io' });
+    this.socket.on('connect', () => {
+      console.log('LobbyScene: Connected to socket' + this.socket);
+    });
+    
     //creates text for gameId input form  
     const text = this.add.text(300, 250, 'GAME ID:', { fill: '#000000' }).setOrigin(0);
     const gameIdInput = this.add.dom(400, 250, "input").setOrigin(0);
