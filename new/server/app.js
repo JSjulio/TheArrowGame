@@ -62,8 +62,9 @@ app.use((req, res) => {
 
 // Socket.io connection
 const io = socketIO(server, {
+  path: '/socket.io',
   cors: {
-    origin: "*",
+    origin: '*',  
     methods: ["GET", "POST"]
   }
 });
