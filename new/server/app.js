@@ -13,7 +13,8 @@ const PORT = process.env.PORT || 3000;
 
 // Enable CORS middleware
 app.use(cors({
-  origin: '*' 
+  origin: '*', 
+  methods: ['GET', 'POST'],
 }));
 
 // Serve static files from the "client" directory
