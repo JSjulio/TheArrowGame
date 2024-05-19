@@ -10,7 +10,7 @@
     "start": "node server/index.js",
     "migrate": "npx prisma migrate deploy",
     "seed": "node server/db/seed.js", 
-    "postinstall": "npm run build && npm run migrate"
+    "postinstall": "npm run migrate"
   },
   "repository": {
     "type": "git",

@@ -8,7 +8,7 @@ export class Preloader extends Scene {
   preload() {
     this.load.setPath("assets"); 
 
-    this.load.image('theArrowGame', 'thearrowGame.png'); 
+    this.load.image('theArrowGame', 'theArrowGame.png'); 
     this.load.image('gameOver', 'GameOver.png');
   }
 
