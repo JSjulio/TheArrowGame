@@ -18,7 +18,7 @@ const readline = require('readline').createInterface({
     if (process.env.NODE_ENV !== 'development') {
         readline.question('Are you sure you want to seed the database in non-development environment? (y/N) ', answer => {
         if (answer.toLowerCase() === 'y') {
-            // Run seeding logic
+        
         } else {
             console.log('Seeding aborted!');
         }
