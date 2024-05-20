@@ -5,6 +5,7 @@
   "source": "./index.html",
   "browserslist": "> 0.25%, last 2 versions, not dead",
   "scripts": {
+    "dev": "cross-env NODE_ENV=development parcel index.html --no-cache --config ./parcel/.parcel.dev --open",
     "build": "parcel build --config ./parcel/.parcel.prod --no-cache",
     "start": "node server/app.js",
     "migrate": "npx prisma migrate deploy",
