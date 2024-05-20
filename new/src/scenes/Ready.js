@@ -16,7 +16,7 @@ export class Ready extends Scene {
     }
 
     createReadyUpButton() {
-        const readyUpButton = this.add.text(400, 250, "Ready Up", {
+        const readyUpButton = this.add.text(419, 250, "Ready Up", {
             font: "16px Arial",
             fill: "#ffffff",
             backgroundColor: "#000000",

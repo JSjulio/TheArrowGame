@@ -26,7 +26,7 @@ export class LobbyScene extends Scene {
     //creates text for gameId input form  
     const text = this.add.text(297, 250, 'GAME ROOM:  ', { fill: '#000000' }).setOrigin(0);
     const gameIdInput = this.add.dom(400, 250, "input").setOrigin(0);
-    const actionButton = this.add.text(407, 290, "ENTER!", { fill: "#D1ED9E", backgroundColor: "#111", padding: 8 })
+    const actionButton = this.add.text(419, 290, "ENTER!", { fill: "#D1ED9E", backgroundColor: "#111", padding: 8 })
       .setInteractive()
       .on("pointerdown", () => {
         const gameId = gameIdInput.node.value;
