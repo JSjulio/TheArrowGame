@@ -26,3 +26,6 @@ dist-ssr
 
 # Ignore env file 
 .env
+
+#ignore DS_Store
+.DS_Store
