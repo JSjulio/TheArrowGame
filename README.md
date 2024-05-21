@@ -1,48 +1,107 @@
+# The Arrow Game
+[The Arrow Game!](#https://the-arrow-game-1bbc9552076c.herokuapp.com/) 🎯
 
-# TheArrowGame - Development Setup 
-This repo is used to create the Node.js/express backend and initiate the Phaser3/Parcel template for theArrowGame. It functions as a personal failsafe. Progress from this repo will be merged with three other teammates' contributions in order to build the TheArrowGame. To read more visit [TheOfficialArrowGame ](https://github.com/JSjulio/Fullstack-Capstone-Starter-Project) site. 
+
+## Table of Contents
+1. [Introduction](#introduction)
+2. [Authentication, Game Room Selection, & Ready Up](#authentication-game-room-selection--ready-up)
+3. [Gameplay](#gameplay)
+4. [Game Over](#game-over)
+5. [Project Structure](#project-structure)
+6.  [Phaser Parcel Template](#phaser-parcel-template)
+7.  [Development](#development)
+8.  [Additional Instructions](#additional-instructions)
+9.  [Writing Code](#writing-code)
+10. [Template Project Structure](#template-project-structure)
+11. [Handling Assets](#handling-assets)
+12. [Deploying to Production](#deploying-to-production)
+13. [Customizing the Template](#customizing-the-template)
+14. [Cache Issues](#cache-issues)
+15. [Join the Phaser Community](#join-the-phaser-community)
+16. [Resources](#resources)
+
+
+# Introduction 
+The Arrow Game is an exciting 2D multiplayer web game where players compete in fast-paced arrow-shooting action. Built with JavaScript, Phaser 3, and Parcel 2, the game features dynamic maps created with Tiled and a robust backend using Socket.io, Node.js, and Express. The scalable server architecture allows for unlimited game room instances, offering a seamless multiplayer experience.
+
+
+## Authentication, Game Room Selection, & Ready Up
+
+1. **Authentication:**
+   - New players create an account.
+   - Returning players log in to access the web app.
+
+2. **Selecting a Game Room:**
+   - Enter the lobby and input a game room character to create or join a specific game instance.
+   - Players are then forwarded to the Ready scene.
+
+3. **Ready Up:**
+   - Once ready, one player within the Ready scene must select the 'Ready!' button to start the countdown.
+   - Players are unable to join a game room once the countdown 4 seconds or less or the game has started.
+   - After the countdown, players enter the game.
+
+## Gameplay 
+
+- **Starting Conditions:**
+  - All players spawn with 10 lives and a 100-second game timer.
+  
+- **Controls:**
+  - **Move:** Arrow keys
+  - **Shoot Arrows:** Space key
+  
+- **Objective:**
+  - Be the last player standing or have the most lives when the timer runs out.
+  
+- **Player Options Upon Death:**
+  - If two or more players remain, the player can choose to spectate or quit the application.
+
+
+## Game Over
+
+When the game over criteria are met, players are taken to the Game Over scene where the winner(s) are displayed. Players can then choose to:
+- Play again and return to the lobby scene.
+- Exit the app.
+
+
+# Project Structure
 
 ## Phaser Parcel Template
 
-theArrowGame uses a Phaser 3 project template that uses Parcel for bundling the frontend. Parcel allows for hot-reloading enabling for quick development workflow and includes scripts to generate production-ready builds.
+The Arrow Game uses a Phaser 3 project template with Parcel for bundling the frontend. Parcel supports hot-reloading for a quick development workflow and includes scripts for generating production-ready builds.
+
+### Ports in Development
+- **Front-end Port (1234):** Runs on PORT 1234 by default. If unavailable, Parcel chooses a random port.
+- **Back-end Port (3000):** Configured to run on Heroku's given port.
+- **Database Port (5432):** Prisma uses PORT 5432 to communicate with the database and listens to the front end on PORT 3000.
 
 
-### Ports
+## Development
 
-Front-end Port (1234): 
-    The front-end server runs on PORT 1234 by default. If 1234 is not available, Parcel automatically chooses a random port. For development purposes, we'll keep the ports separate.
+To develop from this repository, follow the following steps:
 
-Back-end Port (3000): 
-    The backend is hard-coded to run on port 3000.
-
-Database Port (5432):   
-    Prisma uses PORT 5432 to communicate with the database and listens to the Front-end on PORT 3000.
-
-## Getting Started
-
-### Follow these steps after cloning the repository:
-
-1. Clone the repository using git clone <repository-url>.
-2. Install all required modules with npm install.
-3. Install the latest Prisma version with npm i --save-dev prisma@latest.
-4. Initialize Prisma with npx prisma init.
-5. Set up DATABASE_URL in the .env file.
-    DATABASE_URL="postgresql://jsjulio:@localhost:5432/theArrowGame"
+1. Clone the repository.
+2. Install all required modules: npm install.
+3. Install Prisma: npm i --save-dev prisma@latest.
+4. Initialize Prisma: npx prisma init.
+5. Set up `.env` file: 
+    ```
+    DATABASE_URL="postgresql://psqluser:@localhost:5432/theArrowGame"
     JWT_SECRET="----"
     NODE_ENV="development"
+    ```
 
 6. Update the schema.prisma file to reflect your database schema.
-7. Run Prisma Migrate with npx prisma migrate dev --name init.
-8. Generate Prisma Client with npx prisma generate
-9. Seed the database with npm run seed.
-10. Install the latest Prisma Client with npm i @prisma/client@latest.
-11. Generate Prisma Client again with npx prisma generate.
-12. Start your application with:
+7. Run Prisma Migrate: `npx prisma migrate dev --name init`
+8. Generate Prisma Client: `npx prisma generate`
+9. Seed the database: `npm run seed`
+10. Install the latest Prisma Client: `npm i @prisma/client@latest`
+11. Generate Prisma Client again: `npx prisma generate`
+12. Start the application:
+ - Front end: `npm run dev`
+ - Back end: `npm run server`
 
-    a. npm run dev for front end 
-    b. npm run server for back end 
 
-## Additional Parcel/Phaser Instructions: 
+## Additional Instructions: 
 
 ### Versions
 
@@ -53,17 +112,18 @@ This template has been updated for:
 
 ![screenshot](screenshot.png)
 
-## Requirements
+### Requirements
 
 [Node.js](https://nodejs.org) is required to install dependencies and run scripts via `npm`.
 
-## Available Commands
+### Available Commands
 
 | Command | Description |
 |---------|-------------|
 | `npm install` | Install project dependencies |
 | `npm run dev` | Launch a development web server |
 | `npm run build` | Create a production build in the `dist` folder |
+
 
 ## Writing Code
 
@@ -72,6 +132,7 @@ After cloning the repo, run `npm install` from your project directory. Then, you
 The local development server runs on `http://localhost:1234` by default. Please see the Parcel documentation if you wish to change this, or add SSL support.
 
 Once the server is running you can edit any of the files in the `src` folder. Parcel will automatically recompile your code and then reload the browser.
+
 
 ## Template Project Structure
 
@@ -82,6 +143,7 @@ We have provided a default project structure to get you started. This is as foll
 - `src/main.js` - The main entry point. This contains the game configuration and starts the game.
 - `src/scenes/` - The Phaser Scenes are in this folder.
 - `public/assets` - Contains the static assets used by the game.
+
 
 ## Handling Assets
 
@@ -110,17 +172,20 @@ preload ()
 
 When you issue the `npm run build` command, all static assets are automatically copied to the `dist/assets` folder. This is done via the `parcel-reporter-static-files-copy` plugin.
 
+
 ## Deploying to Production
 
 After you run the `npm run build` command, your code will be built into a single bundle and saved to the `dist` folder, along with any other assets your project imported, or stored in the public assets folder.
 
 In order to deploy your game, you will need to upload *all* of the contents of the `dist` folder to a public facing web server.
 
+
 ## Customizing the Template
 
 ### Parcel
 
 If you want to customize your build, such as adding plugins for loading CSS or fonts, modify the `parcel/.parcel.*` file for cross-project changes. Or, you can create new Parcel configuration files and target them from specific npm tasks defined in `package.json`. Please see the [Parcel documentation](https://parceljs.org) for more information.
+
 
 ## Cache Issues
 
@@ -152,15 +217,11 @@ All rights reserved.
 
 ### Resources 
 
+**Visit:** [Get Started with Phaser 3: Fast and Painless](https://blog.ourcade.co/posts/2019/get-started-phaser3-fast-painless/)
+**Clone:** [template-parcel to set up a modern JavaScript workspace](https://github.com/phaserjs/template-parcel)
+**Watch:** [Phaser JS with ParcelJS + TypeScript](https://www.youtube.com/watch?v=0FFv6DFPJAo)
+**Watch:** [JavaScript Game Development With Phaser - Tiles Maps & Plugins](https://www.youtube.com/watch?v=MR2CvWxOEsw)
 
-**Visit** [Get Started with Phaser 3: Fast and Painless] (https://blog.ourcade.co/posts/2019/get-started-phaser3-fast-painless/)
-
-
-**Clone** [template-parcel to set up a modern Javascript workspace capable of running npm ruin dev, and npm build seamlessly] (https://github.com/phaserjs/template-parcel)
-
-*Watch* [00 Phaser JS with ParcelJS + Typescript - To get and understanding of parcel] (https://www.youtube.com/watch?v=0FFv6DFPJAo)
-
-**Watch** [Javascript Game Development With Phaser - Tiles Mnaps & Plugins] (https://www.youtube.com/watch?v=MR2CvWxOEsw)
 
 
 
